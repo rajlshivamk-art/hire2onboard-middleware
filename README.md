@@ -64,3 +64,23 @@ CORS_ORIGINS=["https://your-frontend-domain.com"]
 
 ## Deployment
 See [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed server setup instructions.
+
+## Development Workflow
+
+To make changes to this project:
+
+1.  **Pull Latest Code**
+    ```bash
+    git pull origin main
+    ```
+
+2.  **Make Changes**
+    - Edit files in `src/` (Frontend) or `backend/` (Backend).
+    - Test locally using `npm run dev` and `python main.py`.
+
+3.  **Save & Push**
+    ```bash
+    git add .
+    git commit -m "Description of changes"
+    git push origin main
+    ```

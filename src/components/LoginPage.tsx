@@ -33,8 +33,15 @@ export function LoginPage({ onLogin, onPublicAccess }: LoginPageProps) {
     try {
       const user = await api.auth.login(data.email, data.password);
       onLogin(user);
-    } catch (err) {
-      setAuthError(err instanceof Error ? err.message : 'Login failed. Please check your connection.');
+    } catch (err: any) {
+      console.error("Login Error:", err);
+      if (err.response?.data?.detail) {
+        setAuthError(err.response.data.detail);
+      } else if (err.message) {
+        setAuthError(err.message);
+      } else {
+        setAuthError('Login failed. Please check your connection.');
+      }
     }
   };
 
