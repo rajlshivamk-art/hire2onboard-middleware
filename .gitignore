@@ -1,0 +1,36 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.venv/
+env/
+.env
+
+# Node
+node_modules/
+dist/
+build/
+.DS_Store
+
+# IDE
+.vscode/
+.idea/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Local Config
+backend/config.py
+!backend/config.py
+# (We verified config.py is safe for commit now, but .env is not)
+
+# Temp
+dependency_error.txt
+applicant_sync_error.txt
+feedback_sync_error.txt
+interview_creation_error.txt
+offer_sync_error.txt

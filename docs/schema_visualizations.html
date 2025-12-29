@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Database Schema & Flow Diagrams</title>
+    <script type="module">
+        import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+        mermaid.initialize({ startOnLoad: true, theme: 'default' });
+    </script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            padding: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            color: #333;
+        }
+
+        h1 {
+            border-bottom: 2px solid #eee;
+            padding-bottom: 0.5rem;
+        }
+
+        h2 {
+            margin-top: 2rem;
+            color: #0056b3;
+        }
+
+        .diagram-container {
+            background: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 1rem;
+            overflow-x: auto;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .download-hint {
+            margin-top: 0.5rem;
+            font-size: 0.9rem;
+            color: #666;
+            font-style: italic;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Recruitment Software - System Visualization</h1>
+    <p>This document contains the visual representations of the database schema and the application workflow.</p>
+
+    <h2>1. Database Schema (ER Diagram)</h2>
+    <div class="diagram-container">
+        <pre class="mermaid">
+erDiagram
+    USERS ||--o{ APPLICATIONS : "manages"
+    USERS ||--o{ DOCUMENTS : "uploads"
+    JOBS ||--o{ APPLICATIONS : "contains"
+    APPLICATIONS ||--o{ DOCUMENTS : "references"
+    APPLICATIONS ||--o{ FEEDBACK : "contains"
+    APPLICATIONS ||--o{ ONBOARDING_TASKS : "contains"
+
+    USERS {
+        ObjectId _id
+        String name
+        String email
+        String role
+        Object permissions
+    }
+    
+    JOBS {
+        ObjectId _id
+        String title
+        String status
+        Object salaryRange
+        Array requirements
+    }
+
+    APPLICATIONS {
+        ObjectId _id
+        ObjectId jobId
+        ObjectId assignedRecruiterId
+        String stage
+        Object info
+    }
+
+    DOCUMENTS {
+        ObjectId _id
+        ObjectId entityId
+        String entityType
+        String category "Resume|Offer|Contract"
+        String fileUrl
+    }
+        </pre>
+    </div>
+
+    <h2>2. Candidate Application Details (State Diagram)</h2>
+    <div class="diagram-container">
+        <pre class="mermaid">
+stateDiagram-v2
+    [*] --> Applied
+    Applied --> Screening : Recruiter Reviews
+    Screening --> Round1 : Pass Screening
+    Screening --> Rejected : Fail Screening
+
+    Round1 --> Round2 : Pass Technical
+    Round1 --> Rejected : Fail Technical
+
+    Round2 --> Round3 : Pass Deep Dive
+    Round2 --> Rejected : Fail Deep Dive
+
+    Round3 --> Management : Pass System Design
+    Round3 --> Rejected : Fail System Design
+
+    Management --> Offer : Hiring Manager Approval
+    Management --> Rejected : No Fit
+
+    state Offer {
+        [*] --> DraftOffer
+        DraftOffer --> SentOffer : Generate & Email
+        SentOffer --> Accepted : Candidate Signs
+        SentOffer --> Declined : Candidate Rejects
+    }
+
+    Accepted --> Onboarding : Move to Onboarding
+    Onboarding --> Hired : All Tasks Complete
+    
+    Hired --> [*]
+    Rejected --> [*]
+    Declined --> [*]
+        </pre>
+    </div>
+
+    <h2>3. System Architecture (C4 Container)</h2>
+    <div class="diagram-container">
+        <pre class="mermaid">
+C4Context
+    title System Context Diagram for Recruitment Software
+
+    Person(candidate, "Candidate", "An applicant looking for a job")
+    Person(recruiter, "Recruiter", "Manages job postings and candidates")
+    Person(interviewer, "Interviewer", "Conducts interviews and provides feedback")
+    Person(manager, "Hiring Manager", "Makes final hiring decisions")
+
+    System_Boundary(ats, "Recruitment Tracking System") {
+        Container(web_app, "Web Application", "React, Vite, TypeScript", "Provides the UI for all users to interact with the system.")
+        Container(api, "API Gateway", "Python, FastAPI", "Handles business logic and data processing.")
+        ContainerDb(database, "Database", "MongoDB", "Stores users, jobs, applications, and metadata.")
+        ContainerDb(file_storage, "File Storage", "Local / S3", "Centralized document storage.")
+    }
+
+    Rel(candidate, web_app, "Applies for jobs via", "HTTPS")
+    Rel(recruiter, web_app, "Manages pipeline via", "HTTPS")
+    Rel(interviewer, web_app, "Submits feedback via", "HTTPS")
+    Rel(manager, web_app, "Approves offers via", "HTTPS")
+
+    Rel(web_app, api, "API Calls", "JSON/HTTPS")
+    Rel(api, database, "Reads/Writes Data", "Mongo Driver")
+    Rel(api, file_storage, "Uploads/Retrieves Files", "File System/SDK")
+        </pre>
+    </div>
+
+    <div class="download-hint">
+        <strong>Tip:</strong> You can print this page to PDF (Ctrl+P / Cmd+P) to save a permanent copy of these
+        diagrams.
+    </div>
+</body>
+
+</html>
