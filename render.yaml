@@ -1,5 +1,5 @@
+version: "1"
 services:
-  # Backend Service
   - type: web
     name: recruitment-backend
     env: python
@@ -20,7 +20,6 @@ services:
       - key: ERP_PASSWORD
         sync: false
 
-# Frontend Service (Must be under staticSites)
 staticSites:
   - name: recruitment-frontend
     buildCommand: npm install && npm run build
