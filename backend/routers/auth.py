@@ -138,13 +138,13 @@ async def get_current_user_optional(request: Request) -> Optional[User]:
 @router.post("/login", response_model=UserResponse)
 async def login(response: Response, user_credentials: UserLogin):
     # 1. Try ERP Login
-    erp_cookies = ERPService.login(user_credentials.email, user_credentials.password)
+    erp_cookies = await ERPService.login(user_credentials.email, user_credentials.password)
     
     user = None
     
     if erp_cookies:
         # ERP Login Success
-        user_info = ERPService.get_user_info(erp_cookies)
+        user_info = await ERPService.get_user_info(erp_cookies)
         if user_info:
             # Upsert User in Local DB
             user = await User.find_one(User.email == user_credentials.email)
@@ -153,11 +153,12 @@ async def login(response: Response, user_credentials: UserLogin):
                 user = User(
                     name=user_info.get("full_name", "Unknown"),
                     email=user_credentials.email,
-                    role="HR", # Default role for new ERP users (Administrator)
+                    role="HR", # Default role for new ERP users
                     password=pwd_context.hash(user_credentials.password), # Store hashed password
                     company=user_info.get("company")
                 )
                 await user.insert()
+
             else:
                 # Update existing user details (sync)
                 user.name = user_info.get("full_name", user.name)

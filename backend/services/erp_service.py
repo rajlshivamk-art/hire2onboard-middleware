@@ -36,24 +36,56 @@ class ERPService:
     BASE_URL = settings.ERP_BASE_URL
     
     @classmethod
-    async def login(cls) -> Optional[httpx.Cookies]:
+    async def login(cls, username: Optional[str] = None, password: Optional[str] = None) -> Optional[httpx.Cookies]:
         """
         Authenticate against ERPNext/Frappe.
-        Returns cookies if successful, None otherwise.
+        If username/password provided, uses them (User Auth).
+        Otherwise uses Settings credentials (Admin/System Sync).
         """
         login_url = f"{cls.BASE_URL}/api/method/login"
+        
+        usr = username or settings.ERP_USER
+        pwd = password or settings.ERP_PASSWORD
+        
         try:
             async with httpx.AsyncClient(timeout=10.0) as client:
                 response = await client.post(login_url, data={
-                    'usr': settings.ERP_USER,
-                    'pwd': settings.ERP_PASSWORD
+                    'usr': usr,
+                    'pwd': pwd
                 })
                 
                 if response.status_code == 200 and response.json().get('message') == 'Logged In':
                     return response.cookies
+                # For auth check, if it fails, return None (Invalid credentials)
         except Exception as e:
             print(f"ERP Login Error: {e}")
             return None
+        return None
+
+    @classmethod
+    async def get_user_info(cls, cookies: httpx.Cookies) -> Optional[Dict[str, Any]]:
+        """
+        Fetch logged in user's info from ERPNext.
+        """
+        try:
+            async with httpx.AsyncClient(cookies=cookies, timeout=10.0) as client:
+                # /api/method/frappe.auth.get_logged_user returns user id
+                # But better to fetch 'User' document
+                resp = await client.get(f"{cls.BASE_URL}/api/method/frappe.auth.get_logged_user")
+                if resp.status_code == 200:
+                    user_email = resp.json().get('message')
+                    
+                    # Now fetch User details (Full Name, etc)
+                    user_resp = await client.get(f"{cls.BASE_URL}/api/resource/User/{user_email}")
+                    if user_resp.status_code == 200:
+                         data = user_resp.json().get('data')
+                         return {
+                             "full_name": data.get("full_name"),
+                             "email": data.get("email"),
+                             "company": "TBD" # ERPNext User doesn't always have Company directly linked, often in Employee
+                         }
+        except Exception as e:
+            print(f"Error fetching User Info: {e}")
         return None
 
     @classmethod
@@ -171,26 +203,33 @@ class ERPService:
         if not cookies: return
 
         try:
-            # ERPNext 'Job Offer' Doctype
-            payload = {
-                "applicant": applicant_email, # Usually needs ID, but let's try email or we have to fetch ID first.
-                # If ERPNext requires 'Job Applicant' name (ID), we ideally query it. 
-                # For now, we assume email mapping or simplistic fields. 
-                # Actually, standard ERPNext Job Offer links to 'Job Applicant' ID.
-                # We can try to use a Helper to find ID by email if needed.
-                "offer_date": datetime.now().strftime("%Y-%m-%d"),
-                "job_title": job_title,
-                "status": "Pending",
-                "salary": offer_data.get("salary")
-            }
-            
-            # Helper: Find Applicant ID by Email
-            # ... (Simplification: Just try to Post. If it fails, we log it)
-            
             async with httpx.AsyncClient(cookies=cookies, timeout=10.0) as client:
+                # 1. Look up Applicant ID first (Robust Linkage)
+                params = {"filters": f'[["email_id","=","{applicant_email}"]]'}
+                find_resp = await client.get(f"{cls.BASE_URL}/api/resource/Job Applicant", params=params)
+                
+                applicant_id = applicant_email # Fallback to email if not found (might fail but worth trying)
+                
+                if find_resp.status_code == 200:
+                    data = find_resp.json().get('data', [])
+                    if data:
+                        applicant_id = data[0]['name']
+                    else:
+                        print(f"Warning: Could not find Job Applicant for {applicant_email}, relying on email.")
+
+                # 2. Create Job Offer
+                payload = {
+                    "job_applicant": applicant_id, # Correct field name for ERPNext is usually 'job_applicant'
+                    "offer_date": datetime.now().strftime("%Y-%m-%d"),
+                    "job_title": job_title,
+                    "status": "Pending",
+                    "salary": offer_data.get("salary"),
+                    "applicant_name": applicant_id # Some versions use this
+                }
+                
                 resp = await client.post(f"{cls.BASE_URL}/api/resource/Job Offer", json=payload)
                 if resp.status_code == 200:
-                    print(f"Synced Job Offer for {applicant_email}")
+                    print(f"Synced Job Offer for {applicant_email} (Linked to {applicant_id})")
                 else:
                     print(f"Failed to sync Job Offer: {resp.text}")
         except Exception as e:
