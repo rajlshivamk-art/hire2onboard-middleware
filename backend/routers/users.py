@@ -118,8 +118,13 @@ async def get_user(userId: str):
         raise HTTPException(status_code=404, detail="User not found")
     return user
 
+from ..schemas import UserCreate, UserBase, UserResponse, UserUpdate
+
+# ... imports ...
+
+
 @router.put("/{userId}", response_model=UserResponse)
-async def update_user(userId: str, user_update: UserCreate):
+async def update_user(userId: str, user_update: UserUpdate):
     if not PydanticObjectId.is_valid(userId):
          raise HTTPException(status_code=404, detail="User not found")
          
@@ -127,7 +132,7 @@ async def update_user(userId: str, user_update: UserCreate):
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
         
-    update_data = user_update.model_dump()
+    update_data = user_update.model_dump(exclude_unset=True)
     
     # Check for email uniqueness if email is being updated
     if update_data.get("email") and update_data["email"] != user.email:

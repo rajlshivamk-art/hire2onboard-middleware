@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-// Force update: Admin Settings Logic (v2)
+
 import { Shield, Users, Settings, Eye, EyeOff, Edit2, Save, X, UserPlus, Trash2 } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -20,9 +20,7 @@ const userSchema = z.object({
 
 type UserFormValues = z.infer<typeof userSchema>;
 
-interface AdminSettingsProps { }
-
-export function AdminSettings({ }: AdminSettingsProps) {
+export function AdminSettings() {
 
 
   const [users, setUsers] = useState<User[]>([]);
@@ -150,10 +148,9 @@ export function AdminSettings({ }: AdminSettingsProps) {
         const userToEdit = users.find(u => u.id === editingId);
         if (!userToEdit) return;
 
-        // Backend expects password for UserCreate schema validation
+        // Backend now supports partial updates via UserUpdate schema
         const updateData = {
-          ...data,
-          password: "password" // Dummy password to satisfy validation, handled on backend to not overwrite if not needed or separate logic needed
+          ...data
         };
 
         const updatedUser = await api.users.update(editingId, updateData);

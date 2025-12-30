@@ -19,6 +19,18 @@ class UserBase(BaseModel):
 class UserCreate(UserBase):
     password: str
 
+class UserUpdate(BaseModel):
+    name: Optional[str] = None
+    email: Optional[str] = None
+    role: Optional[str] = None
+    company: Optional[str] = None
+    canViewSalary: Optional[bool] = None
+    canMoveCandidate: Optional[bool] = None
+    canEditJob: Optional[bool] = None
+    canManageUsers: Optional[bool] = None
+    isSuperUser: Optional[bool] = None
+    password: Optional[str] = None
+
 class UserLogin(BaseModel):
     email: str # Changed from EmailStr to allow usernames
     password: str
