@@ -20,12 +20,11 @@ services:
       - key: ERP_PASSWORD
         sync: false
 
-  # Frontend Service
-  - type: static
-    name: recruitment-frontend
-    env: static
+# Frontend Service (Must be under staticSites)
+staticSites:
+  - name: recruitment-frontend
     buildCommand: npm install && npm run build
-    staticPublishPath: ./build
+    publishPath: ./build
     envVars:
       - key: VITE_API_URL
         fromService:
