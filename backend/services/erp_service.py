@@ -95,3 +95,36 @@ class ERPService:
         except Exception as e:
             print(f"Error fetching employees: {e}")
         return []
+
+    @classmethod
+    async def create_job_applicant(cls, application_data: Dict[str, Any], job_title: str):
+        """
+        Create a Job Applicant in ERPNext.
+        """
+        cookies = await cls.login()
+        if not cookies:
+            print("ERP Sync Failed: Could not login")
+            return
+
+        try:
+            # Map fields to ERPNext 'Job Applicant' Doctype
+            payload = {
+                "applicant_name": application_data.get("name"),
+                "email_id": application_data.get("email"),
+                "job_title": job_title,
+                "status": "Open", 
+                "cover_letter": application_data.get("coverLetter"),
+                # Add source if available
+                "source": application_data.get("source") or "Website"
+            }
+            
+            async with httpx.AsyncClient(cookies=cookies, timeout=10.0) as client:
+                resp = await client.post(f"{cls.BASE_URL}/api/resource/Job Applicant", json=payload)
+                
+                if resp.status_code == 200:
+                    print(f"Successfully synced applicant {application_data.get('email')} to ERP")
+                else:
+                    print(f"Failed to sync applicant to ERP: {resp.text}")
+                    
+        except Exception as e:
+            print(f"Error creating job applicant in ERP: {e}")
