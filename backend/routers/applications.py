@@ -277,12 +277,19 @@ async def update_application_stage(applicationId: str, update: StageUpdate, back
                 }
             )
             print(f"Scheduled stage update email ({update.stage}) for {app.email}")
-        else:
             print(f"Skipping email for stage: {update.stage}")
 
     except Exception as e:
         print(f"Error scheduling stage update email: {e}")
     # ----------------------
+    
+    # --- ERP Sync (Status Update) ---
+    background_tasks.add_task(
+        ERPService.update_applicant_status,
+        applicant_email=app.email,
+        status=update.stage
+    )
+    # --------------------------------
     
     return app
 

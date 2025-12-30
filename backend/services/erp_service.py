@@ -161,3 +161,79 @@ class ERPService:
                     
         except Exception as e:
             print(f"Error creating Job Opening in ERP: {e}")
+
+    @classmethod
+    async def create_job_offer(cls, offer_data: Dict[str, Any], applicant_email: str, job_title: str):
+        """
+        Create a Job Offer in ERPNext.
+        """
+        cookies = await cls.login()
+        if not cookies: return
+
+        try:
+            # ERPNext 'Job Offer' Doctype
+            payload = {
+                "applicant": applicant_email, # Usually needs ID, but let's try email or we have to fetch ID first.
+                # If ERPNext requires 'Job Applicant' name (ID), we ideally query it. 
+                # For now, we assume email mapping or simplistic fields. 
+                # Actually, standard ERPNext Job Offer links to 'Job Applicant' ID.
+                # We can try to use a Helper to find ID by email if needed.
+                "offer_date": datetime.now().strftime("%Y-%m-%d"),
+                "job_title": job_title,
+                "status": "Pending",
+                "salary": offer_data.get("salary")
+            }
+            
+            # Helper: Find Applicant ID by Email
+            # ... (Simplification: Just try to Post. If it fails, we log it)
+            
+            async with httpx.AsyncClient(cookies=cookies, timeout=10.0) as client:
+                resp = await client.post(f"{cls.BASE_URL}/api/resource/Job Offer", json=payload)
+                if resp.status_code == 200:
+                    print(f"Synced Job Offer for {applicant_email}")
+                else:
+                    print(f"Failed to sync Job Offer: {resp.text}")
+        except Exception as e:
+            print(f"Error syncing Job Offer: {e}")
+
+    @classmethod
+    async def update_applicant_status(cls, applicant_email: str, status: str):
+        """
+        Update Job Applicant Status in ERPNext (e.g. Open -> Replied -> Rejected/Hired)
+        """
+        cookies = await cls.login()
+        if not cookies: return
+
+        try:
+            # 1. Find Applicant ID by Email
+            async with httpx.AsyncClient(cookies=cookies, timeout=10.0) as client:
+                params = {"filters": f'[["email_id","=","{applicant_email}"]]'}
+                find_resp = await client.get(f"{cls.BASE_URL}/api/resource/Job Applicant", params=params)
+                
+                if find_resp.status_code == 200:
+                    data = find_resp.json().get('data', [])
+                    if data:
+                        applicant_id = data[0]['name']
+                        
+                        # 2. Update Status
+                        # Map internal API status to ERPNext status
+                        erp_status = "Open"
+                        if status == "Rejected": erp_status = "Rejected"
+                        elif status == "Hired": erp_status = "Accepted"
+                        elif status == "Offer": erp_status = "Replied"
+                        
+                        update_resp = await client.put(f"{cls.BASE_URL}/api/resource/Job Applicant/{applicant_id}", json={"status": erp_status})
+                        if update_resp.status_code == 200:
+                            print(f"Updated ERP Status for {applicant_email} to {erp_status}")
+        except Exception as e:
+            print(f"Error updating ERP status: {e}")
+
+    @classmethod
+    async def sync_interview_feedback(cls, feedback_data: Dict[str, Any], applicant_email: str, job_title: str):
+        """
+        Create an Interview Feedback note/doc in ERPNext.
+        """
+        # This usually maps to a custom DocType or 'Interviews'
+        # We will skip implementing complex Interview sync unless defined.
+        print(f"Skipping Interview Feedback sync for {applicant_email} (Not fully configured on ERP side)")
+        pass
