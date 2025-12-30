@@ -34,9 +34,11 @@ async def lifespan(app: FastAPI):
 app = FastAPI(title="Recruitment Software API", version="1.0.0", lifespan=lifespan)
 
 # Configure CORS
+origins_list = [origin.strip() for origin in settings.CORS_ORIGINS.split(",") if origin.strip()]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.CORS_ORIGINS,  # Allow all origins for dev
+    allow_origins=origins_list,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

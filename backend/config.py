@@ -16,7 +16,7 @@ class Settings(BaseSettings):
     ERP_BASE_URL: str = "https://hrdemo.rajlaxmiworld.in"
     
     # Cors
-    CORS_ORIGINS: list[str] = ["*"]
+    CORS_ORIGINS: str = "*"
 
     # Email Settings
     MAIL_USERNAME: str = "kunal.s@indianwellness.org"
