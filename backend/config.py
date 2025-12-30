@@ -15,8 +15,8 @@ class Settings(BaseSettings):
     ERP_PASSWORD: str = "admin@1231"
     ERP_BASE_URL: str = "https://hrdemo.rajlaxmiworld.in"
     
-    # Cors
-    CORS_ORIGINS: str = "*"
+    # Cors - Explicitly list origins because allow_credentials=True doesn't work with "*"
+    CORS_ORIGINS: str = "http://localhost:5173,https://hrms-3nbj.onrender.com,https://hrms-recruitment-portal.onrender.com"
 
     # Email Settings
     MAIL_USERNAME: str = "kunal.s@indianwellness.org"
