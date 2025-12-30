@@ -49,7 +49,20 @@ server {
 }
 ```
 
-## 3. Production Readiness Checks
+## 3. Render Deployment (Easiest)
+This project includes a `render.yaml` blueprint for automatic deployment.
+
+1.  Push your code to a GitHub/GitLab repository.
+2.  Log in to [Render](https://render.com/).
+3.  Click **New +** and select **Blueprint**.
+4.  Connect your repository.
+5.  Render will detect `render.yaml` and ask for environment variables:
+    - `MONGODB_URL`: Your MongoDB connection string.
+    - `SECRET_KEY`: (Auto-generated).
+    - `ERP_USER` / `ERP_PASSWORD`: Your ERP credentials.
+6.  Click **Apply**. Render will deploy both the backend and frontend.
+
+## 4. Production Readiness Checks
 - [ ] **HTTPS**: Ensure SSL is enabled.
 - [ ] **CORS**: Set `CORS_ORIGINS` to the actual frontend domain.
 - [ ] **Database**: Ensure MongoDB IP whitelist includes the production server IP.

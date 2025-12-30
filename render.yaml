@@ -1,0 +1,34 @@
+services:
+  # Backend Service
+  - type: web
+    name: recruitment-backend
+    env: python
+    buildCommand: |
+      pip install -r requirements.txt
+    startCommand: python -m uvicorn backend.main:app --host 0.0.0.0 --port $PORT --workers 4
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: MONGODB_URL
+        sync: false
+      - key: SECRET_KEY
+        generateValue: true
+      - key: CORS_ORIGINS
+        sync: false
+      - key: ERP_USER
+        sync: false
+      - key: ERP_PASSWORD
+        sync: false
+
+  # Frontend Service
+  - type: static
+    name: recruitment-frontend
+    env: static
+    buildCommand: npm install && npm run build
+    staticPublishPath: ./build
+    envVars:
+      - key: VITE_API_URL
+        fromService:
+          type: web
+          name: recruitment-backend
+          property: url
