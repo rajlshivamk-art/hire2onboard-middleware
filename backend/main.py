@@ -60,6 +60,31 @@ async def root():
 async def health_check():
     return {"status": "healthy"}
 
+@app.get("/api/test-email")
+async def test_email_endpoint():
+    """Temporary endpoint to debug email issues on Live Server"""
+    from fastapi_mail import FastMail, MessageSchema, MessageType
+    from backend.utils.email import conf
+    from backend.config import settings
+    
+    try:
+        message = MessageSchema(
+            subject="Test Email from Live Server Debugger",
+            recipients=[settings.MAIL_USERNAME],
+            body=f"<h1>Live Server Email Test</h1><p>Sent from: {settings.ENVIRONMENT}</p><p>Server: {settings.MAIL_SERVER}</p>",
+            subtype=MessageType.html
+        )
+        fm = FastMail(conf)
+        await fm.send_message(message)
+        return {"status": "success", "message": f"Email sent to {settings.MAIL_USERNAME}"}
+    except Exception as e:
+        return {"status": "error", "detail": str(e), "config": {
+            "server": settings.MAIL_SERVER,
+            "port": settings.MAIL_PORT,
+            "user": settings.MAIL_USERNAME,
+            "has_password": bool(settings.MAIL_PASSWORD)
+        }}
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("backend.main:app", host="0.0.0.0", port=8000, reload=True)
