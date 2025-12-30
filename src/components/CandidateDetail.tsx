@@ -404,20 +404,21 @@ export function CandidateDetail({
 
 
 
-              <div className="flex items-start gap-3">
-                <Linkedin className="w-5 h-5 text-blue-600 mt-0.5" />
-                <div className="flex-1">
-                  <p className="text-gray-600 text-sm">LinkedIn</p>
-                  <a
-                    href={candidate.linkedIn.trim().startsWith('http') ? candidate.linkedIn.trim() : `https://${candidate.linkedIn.trim()}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-blue-600 hover:underline break-all"
-                  >
-                    View Profile
-                  </a>
+              {candidate.linkedIn && (
+                <div className="flex items-start gap-3">
+                  <Linkedin className="w-5 h-5 text-blue-600 mt-0.5" />
+                  <div className="flex-1">
+                    <p className="text-gray-600 text-sm">LinkedIn</p>
+                    <a
+                      href={candidate.linkedIn.trim().startsWith('http') ? candidate.linkedIn.trim() : `https://${candidate.linkedIn.trim()}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:underline break-all"
+                    >
+                      View Profile
+                    </a>
+                  </div>
                 </div>
-              </div>
               )}
 
               {candidate.coverLetter && (
