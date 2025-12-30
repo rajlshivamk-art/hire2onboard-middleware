@@ -10,7 +10,6 @@ export interface User {
   canEditJob: boolean;
   canManageUsers: boolean;
   company?: string;
-  isSuperUser?: boolean;
 }
 
 export type CandidateStage =

@@ -49,10 +49,7 @@ export function AdminSettings({ }: AdminSettingsProps) {
   };
 
   const loadCompanies = async () => {
-    // Check for Super Admin (isSuperUser flag OR email 'administrator' case-insensitive)
-    const isSuperAdmin = currentUser.isSuperUser || currentUser.email.toLowerCase() === 'administrator';
-
-    if (isSuperAdmin) {
+    if (currentUser.email === 'administrator' || currentUser.role === 'HR') {
       try {
         const list = await api.users.getCompanies();
         setCompanies(list);
@@ -388,7 +385,7 @@ export function AdminSettings({ }: AdminSettingsProps) {
         </div>
 
         {/* Import Bar for Admin/HR */}
-        {(currentUser.isSuperUser || currentUser.email.toLowerCase() === 'administrator') && (
+        {(currentUser.email === 'administrator' || currentUser.role === 'HR') && (
           <div className="bg-blue-50 p-4 border-b border-blue-100 flex items-center justify-between gap-4">
             <div className="flex items-center gap-4 flex-1">
               <span className="text-blue-800 font-medium text-sm">Import from ERP:</span>
@@ -634,7 +631,7 @@ export function AdminSettings({ }: AdminSettingsProps) {
                 </div>
 
                 {/* Company Selection for Super Admin */}
-                {(currentUser.isSuperUser || currentUser.email.toLowerCase() === 'administrator') && (
+                {(currentUser.email === 'administrator' || currentUser.isSuperUser) && (
                   <div>
                     <label className="block text-gray-700 mb-2">Assign Company</label>
                     <select
