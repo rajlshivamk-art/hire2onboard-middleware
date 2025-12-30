@@ -50,22 +50,41 @@ from backend.config import settings
 
 @app.get("/api/test-email")
 async def test_email_endpoint():
+    results = {}
+    
+    # 1. Connectivity Check
+    import socket
+    def check_port(host, port):
+        try:
+            sock = socket.create_connection((host, port), timeout=5)
+            sock.close()
+            return "Open"
+        except Exception as e:
+            return f"Closed/Blocked ({str(e)})"
+
+    results["connectivity"] = {
+        "google_80": check_port("google.com", 80),
+        "hostinger_465": check_port("smtp.hostinger.com", 465),
+        "hostinger_587": check_port("smtp.hostinger.com", 587)
+    }
+
+    # 2. Try Sending Email (if connectivity works)
     try:
         await send_email(
-            recipients=["kunal.s@indianwellness.org"], # Send to self
+            recipients=["kunal.s@indianwellness.org"], 
             subject="Test Email from Render",
-            template_name="recruiter_new_application_alert", # Re-use existing template
+            template_name="recruiter_new_application_alert",
             context={
                 "name": "Test User",
                 "email": "test@example.com",
                 "job_title": "Test Debugging"
             }
         )
-        return {"message": "Email sent successfully! Check inbox."}
+        results["email_status"] = "Email sent successfully!"
     except Exception as e:
-        import traceback
-        traceback.print_exc()
-        return {"error": str(e), "detail": "Check Render Logs for full traceback"}
+         results["email_status"] = f"Failed: {str(e)}"
+    
+    return results
 # ----------------------------------------------
 
 from fastapi.middleware.gzip import GZipMiddleware
