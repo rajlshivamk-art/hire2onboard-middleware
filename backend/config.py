@@ -29,6 +29,9 @@ class Settings(BaseSettings):
     MAIL_PORT: int = 465
     USE_CREDENTIALS: bool = True
     VALIDATE_CERTS: bool = True
+    
+    # Auto-detect Render environment
+    ENVIRONMENT: str = "production" if os.environ.get("RENDER") else "development"
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 

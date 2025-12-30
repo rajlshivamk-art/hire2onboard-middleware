@@ -208,8 +208,8 @@ async def login(response: Response, user_credentials: UserLogin):
         value=access_token,
         httponly=True,
         max_age=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
-        samesite="none",
-        secure=True 
+        samesite="none" if settings.ENVIRONMENT == "production" else "lax",
+        secure=True if settings.ENVIRONMENT == "production" else False 
     )
     
     return user
