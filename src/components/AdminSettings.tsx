@@ -33,7 +33,7 @@ export function AdminSettings({ }: AdminSettingsProps) {
 
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
-  const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+  const currentUser = JSON.parse(sessionStorage.getItem('currentUser') || '{}');
 
   useEffect(() => {
     loadUsers();
