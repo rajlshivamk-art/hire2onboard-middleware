@@ -404,21 +404,20 @@ export function CandidateDetail({
 
 
 
-              {candidate.linkedIn && (
-                <div className="flex items-start gap-3">
-                  <Linkedin className="w-5 h-5 text-blue-600 mt-0.5" />
-                  <div className="flex-1">
-                    <p className="text-gray-600 text-sm">LinkedIn</p>
-                    <a
-                      href={candidate.linkedIn.startsWith('http') ? candidate.linkedIn : `https://${candidate.linkedIn}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-blue-600 hover:underline break-all"
-                    >
-                      View Profile
-                    </a>
-                  </div>
+              <div className="flex items-start gap-3">
+                <Linkedin className="w-5 h-5 text-blue-600 mt-0.5" />
+                <div className="flex-1">
+                  <p className="text-gray-600 text-sm">LinkedIn</p>
+                  <a
+                    href={candidate.linkedIn.trim().startsWith('http') ? candidate.linkedIn.trim() : `https://${candidate.linkedIn.trim()}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:underline break-all"
+                  >
+                    View Profile
+                  </a>
                 </div>
+              </div>
               )}
 
               {candidate.coverLetter && (
@@ -440,7 +439,16 @@ export function CandidateDetail({
                     Resume
                   </p>
                   <a
-                    href={candidate.resumeUrl}
+                    href={(() => {
+                      if (!candidate.resumeUrl || candidate.resumeUrl === '#') return '#';
+                      if (candidate.resumeUrl.startsWith('http')) return candidate.resumeUrl;
+                      const apiBase = import.meta.env.VITE_API_URL || '';
+                      // If apiBase ends with /api and url starts with /api, strip one to avoid duplication
+                      if (apiBase.endsWith('/api') && candidate.resumeUrl.startsWith('/api/')) {
+                        return `${apiBase.slice(0, -4)}${candidate.resumeUrl}`;
+                      }
+                      return `${apiBase}${candidate.resumeUrl}`;
+                    })()}
                     target="_blank"
                     rel="noopener noreferrer"
                     onClick={handleResumeClick}
