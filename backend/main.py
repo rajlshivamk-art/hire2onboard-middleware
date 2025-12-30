@@ -44,48 +44,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# --- DEBUG: Test Email Endpoint (Temporary) ---
-from backend.utils.email import send_email
-from backend.config import settings
 
-@app.get("/api/test-email")
-async def test_email_endpoint():
-    results = {}
-    
-    # 1. Connectivity Check
-    import socket
-    def check_port(host, port):
-        try:
-            sock = socket.create_connection((host, port), timeout=5)
-            sock.close()
-            return "Open"
-        except Exception as e:
-            return f"Closed/Blocked ({str(e)})"
-
-    results["connectivity"] = {
-        "google_80": check_port("google.com", 80),
-        "hostinger_465": check_port("smtp.hostinger.com", 465),
-        "hostinger_587": check_port("smtp.hostinger.com", 587)
-    }
-
-    # 2. Try Sending Email (if connectivity works)
-    try:
-        await send_email(
-            recipients=["kunal.s@indianwellness.org"], 
-            subject="Test Email from Render",
-            template_name="recruiter_new_application_alert",
-            context={
-                "name": "Test User",
-                "email": "test@example.com",
-                "job_title": "Test Debugging"
-            }
-        )
-        results["email_status"] = "Email sent successfully!"
-    except Exception as e:
-         results["email_status"] = f"Failed: {str(e)}"
-    
-    return results
-# ----------------------------------------------
 
 from fastapi.middleware.gzip import GZipMiddleware
 app.add_middleware(GZipMiddleware, minimum_size=1000)

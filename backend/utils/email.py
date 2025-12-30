@@ -149,3 +149,4 @@ async def send_email(
              print(f"Email sent to {recipients} (Confirmed via exception handling)")
         else:
              print(f"Failed to send email: {e}")
+             raise e # Re-raise so the caller knows it failed
