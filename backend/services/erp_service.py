@@ -128,3 +128,36 @@ class ERPService:
                     
         except Exception as e:
             print(f"Error creating job applicant in ERP: {e}")
+
+    @classmethod
+    async def create_job_opening(cls, job_data: Dict[str, Any]):
+        """
+        Create a Job Opening in ERPNext.
+        """
+        cookies = await cls.login()
+        if not cookies:
+            print("ERP Sync Failed: Could not login")
+            return
+
+        try:
+            # Map fields to ERPNext 'Job Opening' Doctype
+            # Note: Fields depend on specific ERPNext customization. 
+            # Standard fields: job_title, status, company, description
+            payload = {
+                "job_title": job_data.get("title"),
+                "status": "Open", 
+                "company": job_data.get("company") or settings.ERP_USER, # Fallback to default company or user
+                "description": job_data.get("description"),
+                # "route": ... (optional)
+            }
+            
+            async with httpx.AsyncClient(cookies=cookies, timeout=10.0) as client:
+                resp = await client.post(f"{cls.BASE_URL}/api/resource/Job Opening", json=payload)
+                
+                if resp.status_code == 200:
+                    print(f"Successfully synced Job Opening '{job_data.get('title')}' to ERP")
+                else:
+                    print(f"Failed to sync Job Opening to ERP: {resp.text}")
+                    
+        except Exception as e:
+            print(f"Error creating Job Opening in ERP: {e}")
