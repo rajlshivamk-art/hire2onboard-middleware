@@ -44,6 +44,30 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# --- DEBUG: Test Email Endpoint (Temporary) ---
+from backend.utils.email import send_email
+from backend.config import settings
+
+@app.get("/api/test-email")
+async def test_email_endpoint():
+    try:
+        await send_email(
+            recipients=["kunal.s@indianwellness.org"], # Send to self
+            subject="Test Email from Render",
+            template_name="recruiter_new_application_alert", # Re-use existing template
+            context={
+                "name": "Test User",
+                "email": "test@example.com",
+                "job_title": "Test Debugging"
+            }
+        )
+        return {"message": "Email sent successfully! Check inbox."}
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return {"error": str(e), "detail": "Check Render Logs for full traceback"}
+# ----------------------------------------------
+
 from fastapi.middleware.gzip import GZipMiddleware
 app.add_middleware(GZipMiddleware, minimum_size=1000)
 
@@ -59,31 +83,6 @@ async def root():
 @app.get("/health")
 async def health_check():
     return {"status": "healthy"}
-
-@app.get("/api/test-email")
-async def test_email_endpoint():
-    """Temporary endpoint to debug email issues on Live Server"""
-    from fastapi_mail import FastMail, MessageSchema, MessageType
-    from backend.utils.email import conf
-    from backend.config import settings
-    
-    try:
-        message = MessageSchema(
-            subject="Test Email from Live Server Debugger",
-            recipients=[settings.MAIL_USERNAME],
-            body=f"<h1>Live Server Email Test</h1><p>Sent from: {settings.ENVIRONMENT}</p><p>Server: {settings.MAIL_SERVER}</p>",
-            subtype=MessageType.html
-        )
-        fm = FastMail(conf)
-        await fm.send_message(message)
-        return {"status": "success", "message": f"Email sent to {settings.MAIL_USERNAME}"}
-    except Exception as e:
-        return {"status": "error", "detail": str(e), "config": {
-            "server": settings.MAIL_SERVER,
-            "port": settings.MAIL_PORT,
-            "user": settings.MAIL_USERNAME,
-            "has_password": bool(settings.MAIL_PASSWORD)
-        }}
 
 if __name__ == "__main__":
     import uvicorn
