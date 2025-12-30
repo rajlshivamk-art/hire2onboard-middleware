@@ -49,7 +49,7 @@ export function AdminSettings({ }: AdminSettingsProps) {
   };
 
   const loadCompanies = async () => {
-    if (currentUser.email === 'administrator' || currentUser.role === 'HR') {
+    if (currentUser.email === 'administrator') {
       try {
         const list = await api.users.getCompanies();
         setCompanies(list);
@@ -385,7 +385,7 @@ export function AdminSettings({ }: AdminSettingsProps) {
         </div>
 
         {/* Import Bar for Admin/HR */}
-        {(currentUser.email === 'administrator' || currentUser.role === 'HR') && (
+        {(currentUser.email === 'administrator') && (
           <div className="bg-blue-50 p-4 border-b border-blue-100 flex items-center justify-between gap-4">
             <div className="flex items-center gap-4 flex-1">
               <span className="text-blue-800 font-medium text-sm">Import from ERP:</span>
@@ -631,7 +631,7 @@ export function AdminSettings({ }: AdminSettingsProps) {
                 </div>
 
                 {/* Company Selection for Super Admin */}
-                {(currentUser.email === 'administrator' || currentUser.isSuperUser) && (
+                {(currentUser.email === 'administrator') && (
                   <div>
                     <label className="block text-gray-700 mb-2">Assign Company</label>
                     <select
