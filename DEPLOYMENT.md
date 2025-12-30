@@ -49,20 +49,39 @@ server {
 }
 ```
 
-## 3. Render Deployment (Easiest)
-This project includes a `render.yaml` blueprint for automatic deployment.
+## 3. Manual Render Deployment (Recommended)
+Since the auto-blueprint can be tricky, here is the manual method. It works 100% of the time.
 
-1.  Push your code to a GitHub/GitLab repository.
-2.  Log in to [Render](https://render.com/).
-3.  Click **New +** and select **Blueprint**.
-4.  Connect your repository.
-5.  Render will detect `render.yaml` and ask for environment variables:
-    - `MONGODB_URL`: Your MongoDB connection string.
-    - `SECRET_KEY`: (Auto-generated).
-    - `ERP_USER` / `ERP_PASSWORD`: Your ERP credentials.
-6.  Click **Apply**. Render will deploy both the backend and frontend.
+### Part A: Deploy Backend
+1.  Go to [Render Dashboard](https://dashboard.render.com/).
+2.  Click **New +** -> **Web Service**.
+3.  Connect your repository.
+4.  **Name**: `recruitment-backend`
+5.  **Runtime**: `Python 3`
+6.  **Build Command**: `pip install -r requirements.txt`
+7.  **Start Command**: `python -m uvicorn backend.main:app --host 0.0.0.0 --port $PORT`
+8.  **Environment Variables** (Add these):
+    - `PYTHON_VERSION`: `3.11.0`
+    - `MONGODB_URL`: (Your MongoDB Connection String)
+    - `SECRET_KEY`: (Any random string)
+    - `CORS_ORIGINS`: `["*"]` (For now, to allow all connections)
+    - `ERP_USER` / `ERP_PASSWORD`: (Your ERP creds)
+9.  Click **Create Web Service**.
+10. **Copy the URL** (e.g., `https://recruitment-backend.onrender.com`). You need this for the frontend.
+
+### Part B: Deploy Frontend
+1.  Go to [Render Dashboard](https://dashboard.render.com/).
+2.  Click **New +** -> **Static Site**.
+3.  Connect your repository.
+4.  **Name**: `recruitment-frontend`
+5.  **Build Command**: `npm install && npm run build`
+6.  **Publish Directory**: `build`
+7.  **Environment Variables**:
+    - `VITE_API_URL`: Paste the Backend URL from Part A (e.g., `https://recruitment-backend.onrender.com`)
+8.  Click **Create Static Site**.
 
 ## 4. Production Readiness Checks
 - [ ] **HTTPS**: Ensure SSL is enabled.
-- [ ] **CORS**: Set `CORS_ORIGINS` to the actual frontend domain.
-- [ ] **Database**: Ensure MongoDB IP whitelist includes the production server IP.
+- [ ] **CORS**: Update `CORS_ORIGINS` in Backend to your new Frontend URL.
+- [ ] **Database**: Ensure MongoDB IP whitelist includes `0.0.0.0/0` (or Render's IPs).
+
