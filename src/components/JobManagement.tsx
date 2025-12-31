@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Plus, Search, MapPin, Clock, IndianRupee, Ban, RefreshCw, Trash2 } from 'lucide-react';
+import { Plus, Search, MapPin, Trash2, Filter, Briefcase, DollarSign, Users, Calendar } from 'lucide-react';
 import { User, Job } from '../types';
 import { api } from '../lib/api';
 
@@ -10,6 +10,9 @@ interface JobManagementProps {
 
 export function JobManagement({ user, navigateTo }: JobManagementProps) {
   const [jobs, setJobs] = useState<Job[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState('All');
+  const [departmentFilter, setDepartmentFilter] = useState('All');
 
   useEffect(() => {
     loadJobs();
@@ -141,7 +144,7 @@ export function JobManagement({ user, navigateTo }: JobManagementProps) {
                   <div className="flex flex-wrap items-center gap-3 mb-2">
                     <h3 className="text-lg font-bold text-gray-900 group-hover:text-blue-600 transition-colors">{job.title}</h3>
                     <span className={`px-2 py-1 rounded-full text-xs font-medium ${job.status === 'Open' ? 'bg-green-50 text-green-700' :
-                        job.status === 'Closed' ? 'bg-red-50 text-red-700' : 'bg-gray-100 text-gray-700'
+                      job.status === 'Closed' ? 'bg-red-50 text-red-700' : 'bg-gray-100 text-gray-700'
                       }`}>
                       {job.status}
                     </span>
@@ -214,72 +217,52 @@ export function JobManagement({ user, navigateTo }: JobManagementProps) {
                   >
                     Applications
                   </button>
-                        } catch (error) {
-                    console.error('Failed to re-open job:', error);
-                  alert('Failed to re-open job');
+
+
+                  {user.canEditJob && (
+                    <button
+                      onClick={async () => {
+                        if (window.confirm('Are you sure you want to DELETE this job? This will delete all associated applications locally. This does NOT delete from ERP.')) {
+                          try {
+                            await api.jobs.delete(job.id);
+                            loadJobs();
+                          } catch (error) {
+                            console.error('Failed to delete job:', error);
+                            alert('Failed to delete job');
+                          }
                         }
-                      }
-                    }}
-                  className="px-4 py-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors whitespace-nowrap flex items-center gap-2"
-                  >
-                  <RefreshCw className="w-4 h-4" />
-                  Re-open
-                </button>
-                )}
-                {user.canEditJob && (
-                  <button
-                    onClick={() => {
-                      navigateTo('create-job', { jobId: job.id });
-                    }}
-                    className="px-4 py-2 bg-gray-100 text-gray-700 hover:bg-gray-200 rounded-lg transition-colors"
-                  >
-                    Edit
-                  </button>
-                )}
-                {user.canEditJob && (
-                  <button
-                    onClick={async () => {
-                      if (window.confirm('Are you sure you want to DELETE this job? This will delete all associated applications locally. This does NOT delete from ERP.')) {
-                        try {
-                          await api.jobs.delete(job.id);
-                          loadJobs();
-                        } catch (error) {
-                          console.error('Failed to delete job:', error);
-                          alert('Failed to delete job');
-                        }
-                      }
-                    }}
-                    className="px-4 py-2 text-gray-400 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors whitespace-nowrap flex items-center gap-2"
-                    title="Delete Job"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                )}
+                      }}
+                      className="px-4 py-2 text-gray-400 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors whitespace-nowrap flex items-center gap-2"
+                      title="Delete Job"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Requirements */}
+              < div className="border-t border-gray-200 pt-4 mt-4" >
+                <p className="text-gray-700 mb-2">Requirements:</p>
+                <div className="flex flex-wrap gap-2">
+                  {job.requirements.map((req, idx) => (
+                    <span
+                      key={idx}
+                      className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm"
+                    >
+                      {req}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              <div className="border-t border-gray-200 pt-4 mt-4">
+                <p className="text-gray-500 text-sm">Posted on {new Date(job.postedDate).toLocaleDateString()}</p>
               </div>
             </div>
-
-            {/* Requirements */ }
-            < div className = "border-t border-gray-200 pt-4 mt-4" >
-              <p className="text-gray-700 mb-2">Requirements:</p>
-              <div className="flex flex-wrap gap-2">
-                {job.requirements.map((req, idx) => (
-                  <span
-                    key={idx}
-                    className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm"
-                  >
-                    {req}
-                  </span>
-                ))}
-              </div>
-            </div>
-
-      <div className="border-t border-gray-200 pt-4 mt-4">
-        <p className="text-gray-500 text-sm">Posted on {new Date(job.postedDate).toLocaleDateString()}</p>
+          ))
+        )}
       </div>
-    </div>
-  ))
-}
-      </div >
     </div >
   );
 }
