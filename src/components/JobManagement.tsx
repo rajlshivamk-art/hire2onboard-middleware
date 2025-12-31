@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Plus, Search, MapPin, Trash2, Filter, Briefcase, DollarSign, Users, Calendar } from 'lucide-react';
+import { Plus, Search, MapPin, Trash2, Filter, Briefcase, IndianRupee, Users, Calendar } from 'lucide-react';
 import { User, Job } from '../types';
 import { api } from '../lib/api';
 
@@ -159,7 +159,7 @@ export function JobManagement({ user, navigateTo }: JobManagementProps) {
                       {job.location}
                     </div>
                     <div className="flex items-center gap-1">
-                      <DollarSign size={16} />
+                      <IndianRupee size={16} />
                       {job.salaryRange.min.toLocaleString()} - {job.salaryRange.max.toLocaleString()}
                     </div>
                     <div className="flex items-center gap-1">

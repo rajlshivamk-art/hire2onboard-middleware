@@ -314,8 +314,8 @@ export function ApplicationForm({
       </div>
 
       {/* Form */}
-      <div className="max-w-4xl mx-auto px-6 py-12">
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
+      <div className="max-w-4xl mx-auto px-4 py-6 md:px-6 md:py-12">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 md:p-8">
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Personal Information */}
             <div>
@@ -649,21 +649,20 @@ export function ApplicationForm({
             </div>
 
             {/* Submit */}
-            <div className="flex gap-4 pt-6 border-t border-gray-200">
-              <button
-                type="submit"
-                disabled={uploadStatus === 'uploading'}
-                className={`flex-1 text-white py-4 rounded-lg transition-colors ${uploadStatus === 'uploading' ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'}`}
-              >
-
-                Submit Application
-              </button>
+            <div className="flex flex-col-reverse sm:flex-row gap-4 pt-6 border-t border-gray-200">
               <button
                 type="button"
                 onClick={onBack}
-                className="px-8 py-4 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+                className="w-full sm:w-auto px-8 py-4 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
               >
                 Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={uploadStatus === 'uploading'}
+                className={`w-full sm:flex-1 text-white py-4 rounded-lg transition-colors ${uploadStatus === 'uploading' ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'}`}
+              >
+                Submit Application
               </button>
             </div>
           </form>
