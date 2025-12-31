@@ -419,7 +419,7 @@ export function CreateEditJob({ user, navigateTo, jobId }: CreateEditJobProps) {
                   type="text"
                   value={customSource}
                   placeholder="e.g. Campus Drive, WhatsApp Group, Email Newsletter"
-                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full sm:flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   onChange={(e) => setCustomSource(e.target.value)}
                 />
               </div>
@@ -427,32 +427,34 @@ export function CreateEditJob({ user, navigateTo, jobId }: CreateEditJobProps) {
               {customSource && (
                 <div className="mt-4 p-4 bg-blue-50 border border-blue-100 rounded-lg animate-in fade-in slide-in-from-top-2">
                   <p className="text-sm text-blue-800 mb-2 font-medium">Generated Link for "{customSource}":</p>
-                  <div className="flex gap-2">
+                  <div className="flex flex-col sm:flex-row gap-2">
                     <input
                       readOnly
                       value={`${window.location.origin}/?screen=apply&jobId=${jobId}&source=${encodeURIComponent(customSource)}`}
-                      className="flex-1 px-3 py-2 bg-white border border-blue-200 rounded-lg text-sm text-gray-600 focus:outline-none font-mono"
+                      className="w-full sm:flex-1 px-3 py-2 bg-white border border-blue-200 rounded-lg text-sm text-gray-600 focus:outline-none font-mono"
                     />
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const link = `${window.location.origin}/?screen=apply&jobId=${jobId}&source=${encodeURIComponent(customSource)}`;
-                        navigator.clipboard.writeText(link);
-                        alert(`Copied ${customSource} link to clipboard!`);
-                      }}
-                      className="px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded-lg text-sm font-medium transition-colors"
-                    >
-                      Copy Link
-                    </button>
-                    <a
-                      href={`${window.location.origin}/?screen=apply&jobId=${jobId}&source=${encodeURIComponent(customSource)}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="px-4 py-2 bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 rounded-lg text-sm font-medium transition-colors flex items-center"
-                      title="Test Link"
-                    >
-                      Open
-                    </a>
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const link = `${window.location.origin}/?screen=apply&jobId=${jobId}&source=${encodeURIComponent(customSource)}`;
+                          navigator.clipboard.writeText(link);
+                          alert(`Copied ${customSource} link to clipboard!`);
+                        }}
+                        className="flex-1 sm:flex-none px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded-lg text-sm font-medium transition-colors"
+                      >
+                        Copy Link
+                      </button>
+                      <a
+                        href={`${window.location.origin}/?screen=apply&jobId=${jobId}&source=${encodeURIComponent(customSource)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex-1 sm:flex-none px-4 py-2 bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 rounded-lg text-sm font-medium transition-colors flex items-center justify-center"
+                        title="Test Link"
+                      >
+                        Open
+                      </a>
+                    </div>
                   </div>
                 </div>
               )}
@@ -464,36 +466,37 @@ export function CreateEditJob({ user, navigateTo, jobId }: CreateEditJobProps) {
             {['LinkedIn', 'Indeed', 'Naukri', 'Twitter', 'Facebook', 'Instagram'].map((source) => {
               const link = `${window.location.origin}/?screen=apply&jobId=${jobId}&source=${source}`;
               return (
-                <div key={source} className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+                <div key={source} className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 border-b border-gray-100 pb-4 last:border-0 sm:pb-0">
                   <div className="w-24 font-medium text-gray-700 flex items-center gap-2">
                     {source}
                   </div>
-                  <div className="flex-1 flex gap-2">
+                  <div className="flex-1 flex flex-col sm:flex-row gap-2">
                     <input
                       readOnly
                       value={link}
-                      className="flex-1 px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-600 focus:outline-none"
+                      className="w-full sm:flex-1 px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-600 focus:outline-none"
                     />
-                    <button
-                      type="button"
-                      onClick={() => {
-                        navigator.clipboard.writeText(link);
-                        // Using a simple toast or alert here - keeping it consistent with existing alerts
-                        alert(`Copied ${source} link to clipboard!`);
-                      }}
-                      className="px-4 py-2 text-blue-600 hover:bg-blue-50 rounded-lg bg-white border border-blue-200 text-sm font-medium transition-colors"
-                    >
-                      Copy
-                    </button>
-                    <a
-                      href={link}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="px-4 py-2 bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 rounded-lg text-sm font-medium transition-colors flex items-center"
-                      title="Test Link"
-                    >
-                      Open
-                    </a>
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          navigator.clipboard.writeText(link);
+                          alert(`Copied ${source} link to clipboard!`);
+                        }}
+                        className="flex-1 sm:flex-none px-4 py-2 text-blue-600 hover:bg-blue-50 rounded-lg bg-white border border-blue-200 text-sm font-medium transition-colors"
+                      >
+                        Copy
+                      </button>
+                      <a
+                        href={link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex-1 sm:flex-none px-4 py-2 bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 rounded-lg text-sm font-medium transition-colors flex items-center justify-center"
+                        title="Test Link"
+                      >
+                        Open
+                      </a>
+                    </div>
                   </div>
                 </div>
               );
