@@ -440,7 +440,7 @@ export function Dashboard({ user, navigateTo }: DashboardProps) {
         user.canEditJob && (
           <div className="mt-6 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl shadow-sm p-6 text-white">
             <h2 className="mb-4">Quick Actions</h2>
-            <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex gap-4">
               <button
                 onClick={() => navigateTo('create-job')}
                 className="bg-white text-blue-600 px-6 py-3 rounded-lg hover:bg-blue-50 transition-colors"
