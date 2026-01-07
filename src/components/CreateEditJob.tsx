@@ -5,32 +5,42 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { api } from '../lib/api';
 
+const PREDEFINED_DEPARTMENTS = ['Engineering', 'Product', 'Sales', 'Marketing', 'Operations'];
+const PREDEFINED_TYPES = ['Full-time', 'Part-time', 'Contract'];
+
 const jobSchema = z.object({
   title: z.string().min(3, 'Title must be at least 3 characters'),
   department: z.string().min(1, 'Department is required'),
+  customDepartment: z.string().optional(),
+
   location: z.string().min(3, 'Location must be at least 3 characters'),
-  type: z.enum(['Full-time', 'Part-time', 'Contract']),
+
+  type: z.string().min(1, 'Employment type is required'),
+  customEmploymentType: z.string().optional(),
+
   description: z.string().min(10, 'Description must be at least 10 characters'),
   requirements: z.array(z.string()).min(1, 'At least one requirement is needed'),
-  salaryMin: z.number().min(0, 'Minimum salary must be positive'),
-  salaryMax: z.number().min(0, 'Maximum salary must be positive'),
-  openings: z.number().min(1, 'Must have at least 1 opening'),
+  salaryMin: z.number().min(0),
+  salaryMax: z.number().min(0),
+  openings: z.number().min(1),
   postingChannels: z.array(z.string()).optional(),
   startDate: z.string().optional(),
   endDate: z.string().optional(),
-  company: z.string().optional(), // Added company field for Admin overrides
-}).refine((data) => data.salaryMax >= data.salaryMin, {
-  message: "Max salary must be greater than or equal to min salary",
-  path: ["salaryMax"],
-}).refine((data) => {
-  if (data.startDate && data.endDate) {
-    return new Date(data.endDate) >= new Date(data.startDate);
-  }
-  return true;
-}, {
-  message: "End date must be after start date",
-  path: ["endDate"],
-});
+  company: z.string().optional(),
+})
+  .refine((data) => data.salaryMax >= data.salaryMin, {
+    message: "Max salary must be greater than or equal to min salary",
+    path: ["salaryMax"],
+  })
+  .refine((data) => {
+    if (data.startDate && data.endDate) {
+      return new Date(data.endDate) >= new Date(data.startDate);
+    }
+    return true;
+  }, {
+    message: "End date must be after start date",
+    path: ["endDate"],
+  });
 
 type JobFormValues = z.infer<typeof jobSchema>;
 
@@ -51,15 +61,19 @@ export function CreateEditJob({ user, navigateTo, jobId }: CreateEditJobProps) {
       navigateTo('dashboard');
     }
   }, [user, navigateTo]);
+
   const [newRequirement, setNewRequirement] = useState('');
   const [customSource, setCustomSource] = useState('');
+
+  const [useCustomDepartment, setUseCustomDepartment] = useState(false);
+  const [useCustomEmploymentType, setUseCustomEmploymentType] = useState(false);
 
   const {
     register,
     handleSubmit,
     setValue,
     watch,
-    reset, // Added reset
+    reset,
     formState: { errors, isSubmitting },
   } = useForm<JobFormValues>({
     resolver: zodResolver(jobSchema) as unknown as Resolver<JobFormValues>,
@@ -74,51 +88,43 @@ export function CreateEditJob({ user, navigateTo, jobId }: CreateEditJobProps) {
   });
 
   useEffect(() => {
-    console.log("CreateEditJob mounted/updated. JobId:", jobId);
-    if (jobId) {
-      setLoading(true);
-      api.jobs.getById(jobId)
-        .then(job => {
-          console.log("Fetched job details:", job);
-          if (!job) {
-            console.error("Job details are null/undefined");
-            setLoading(false);
-            return;
-          }
-          try {
-            // Safety: Ensure dates are YYYY-MM-DD
-            const safeDate = (d: string | null | undefined) => d ? d.split('T')[0] : '';
+    if (!jobId) return;
 
-            reset({
-              title: job.title || '',
-              department: job.department || '',
-              location: job.location || '',
-              type: job.type as any,
-              description: job.description || '',
-              requirements: job.requirements || [],
-              salaryMin: job.salaryRange?.min || 0,
-              salaryMax: job.salaryRange?.max || 0,
-              openings: job.openings || 1,
-              postingChannels: job.postingChannels || [],
-              startDate: safeDate(job.startDate),
-              endDate: safeDate(job.endDate),
-            });
-          } catch (resetError) {
-            console.error("Detailed Reset Error:", resetError);
-            alert("Error loading job form: " + String(resetError));
-          }
-        })
-        .catch(err => {
-          console.error(err);
-          alert("Failed to fetch job: " + String(err));
-        })
-        .finally(() => setLoading(false));
-    }
+    setLoading(true);
+    api.jobs.getById(jobId)
+      .then(job => {
+        if (!job) return;
+
+        const safeDate = (d?: string) => d ? d.split('T')[0] : '';
+
+        const isCustomDept = job.department && !PREDEFINED_DEPARTMENTS.includes(job.department);
+        const isCustomType = job.type && !PREDEFINED_TYPES.includes(job.type);
+
+        setUseCustomDepartment(!!isCustomDept);
+        setUseCustomEmploymentType(!!isCustomType);
+
+        reset({
+          title: job.title || '',
+          department: isCustomDept ? '' : job.department,
+          customDepartment: isCustomDept ? job.department : '',
+          location: job.location || '',
+          type: isCustomType ? '' : job.type,
+          customEmploymentType: isCustomType ? job.type : '',
+          description: job.description || '',
+          requirements: job.requirements || [],
+          salaryMin: job.salaryRange?.min || 0,
+          salaryMax: job.salaryRange?.max || 0,
+          openings: job.openings || 1,
+          postingChannels: job.postingChannels || [],
+          startDate: safeDate(job.startDate),
+          endDate: safeDate(job.endDate),
+        });
+      })
+      .finally(() => setLoading(false));
   }, [jobId, reset]);
 
   const requirements = watch('requirements');
 
-  // Register requirements manually to ensure it's part of the form state
   useEffect(() => {
     register('requirements');
   }, [register]);
@@ -126,34 +132,36 @@ export function CreateEditJob({ user, navigateTo, jobId }: CreateEditJobProps) {
   if (loading) return <div>Loading job details...</div>;
 
   const onSubmit = async (data: JobFormValues) => {
+    const payload = { ...data };
+
+    if (useCustomDepartment && data.customDepartment?.trim()) {
+      payload.department = data.customDepartment.trim();
+    }
+
+    if (useCustomEmploymentType && data.customEmploymentType?.trim()) {
+      payload.type = data.customEmploymentType.trim();
+    }
+
     try {
       if (jobId) {
-        await api.jobs.update(jobId, data);
+        await api.jobs.update(jobId, payload);
         alert('Job updated successfully!');
         navigateTo('jobs');
       } else {
-        const newJob = await api.jobs.create(data);
-        console.log("Job created response:", newJob);
-        if (!newJob || !newJob.id) {
+        const newJob = await api.jobs.create(payload);
+        if (!newJob?.id) {
           alert("Error: Job created but ID is missing!");
           return;
         }
-        alert(`Job created successfully! (ID: ${newJob.id}). Scroll down to see tracking links.`);
-        // Redirect to edit mode for the new job so user can see links immediately
+        alert(`Job created successfully! (ID: ${newJob.id})`);
         navigateTo('create-job', { jobId: newJob.id });
       }
     } catch (err: any) {
-      console.error("Job update failed:", err);
-      // Improve error message extraction
       let errorMessage = 'Failed to save job';
-      if (err.response && err.response.data && err.response.data.detail) {
-        if (typeof err.response.data.detail === 'string') {
-          errorMessage = err.response.data.detail;
-        } else {
-          errorMessage = JSON.stringify(err.response.data.detail);
-        }
-      } else if (err.message) {
-        errorMessage = err.message;
+      if (err?.response?.data?.detail) {
+        errorMessage = typeof err.response.data.detail === 'string'
+          ? err.response.data.detail
+          : JSON.stringify(err.response.data.detail);
       }
       alert(`Error: ${errorMessage}`);
     }
@@ -218,22 +226,43 @@ export function CreateEditJob({ user, navigateTo, jobId }: CreateEditJobProps) {
 
             <div>
               <label className="block text-gray-700 mb-2">Department *</label>
-              <select
-                {...register('department')}
-                className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.department ? 'border-red-500' : 'border-gray-300'
-                  }`}
+
+              {!useCustomDepartment ? (
+                <select
+                  {...register('department')}
+                  className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.department ? 'border-red-500' : 'border-gray-300'
+                    }`}
+                >
+                  <option value="">Select Department</option>
+                  <option value="Engineering">Engineering</option>
+                  <option value="Product">Product</option>
+                  <option value="Sales">Sales</option>
+                  <option value="Marketing">Marketing</option>
+                  <option value="Operations">Operations</option>
+                  <option value="Other">Other</option>
+                </select>
+              ) : (
+                <input
+                  type="text"
+                  {...register('customDepartment')}
+                  placeholder="Enter custom department"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                />
+              )}
+
+              <button
+                type="button"
+                onClick={() => setUseCustomDepartment(!useCustomDepartment)}
+                className="mt-2 text-sm text-blue-600 hover:underline"
               >
-                <option value="">Select Department</option>
-                <option value="Engineering">Engineering</option>
-                <option value="Product">Product</option>
-                <option value="Sales">Sales</option>
-                <option value="Marketing">Marketing</option>
-                <option value="Operations">Operations</option>
-              </select>
+                {useCustomDepartment ? 'Select from list' : 'Add custom department'}
+              </button>
+
               {errors.department && (
                 <p className="mt-1 text-sm text-red-600">{errors.department.message}</p>
               )}
             </div>
+
 
             <div>
               <label className="block text-gray-700 mb-2">Location *</label>
@@ -251,18 +280,36 @@ export function CreateEditJob({ user, navigateTo, jobId }: CreateEditJobProps) {
 
             <div>
               <label className="block text-gray-700 mb-2">Employment Type *</label>
-              <select
-                {...register('type')}
-                className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.type ? 'border-red-500' : 'border-gray-300'}`}
-              >
-                <option value="Full-time">Full-time</option>
-                <option value="Part-time">Part-time</option>
-                <option value="Contract">Contract</option>
-              </select>
-              {errors.type && (
-                <p className="mt-1 text-sm text-red-600">{errors.type.message}</p>
+
+              {!useCustomEmploymentType ? (
+                <select
+                  {...register('type')}
+                  className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.type ? 'border-red-500' : 'border-gray-300'
+                    }`}
+                >
+                  <option value="Full-time">Full-time</option>
+                  <option value="Part-time">Part-time</option>
+                  <option value="Contract">Contract</option>
+                  <option value="Other">Other</option>
+                </select>
+              ) : (
+                <input
+                  type="text"
+                  {...register('customEmploymentType')}
+                  placeholder="Enter custom employment type"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                />
               )}
+
+              <button
+                type="button"
+                onClick={() => setUseCustomEmploymentType(!useCustomEmploymentType)}
+                className="mt-2 text-sm text-blue-600 hover:underline"
+              >
+                {useCustomEmploymentType ? 'Select from list' : 'Add custom type'}
+              </button>
             </div>
+
 
             <div>
               <label className="block text-gray-700 mb-2">Salary Min (INR) *</label>
@@ -344,7 +391,7 @@ export function CreateEditJob({ user, navigateTo, jobId }: CreateEditJobProps) {
 
           <div>
             <label className="block text-gray-700 mb-2">Requirements</label>
-            <div className="flex gap-2 mb-3">
+            {/* <div className="flex gap-2 mb-3">
               <input
                 type="text"
                 value={newRequirement}
@@ -361,7 +408,36 @@ export function CreateEditJob({ user, navigateTo, jobId }: CreateEditJobProps) {
                 <Plus className="w-5 h-5" />
                 Add
               </button>
+            </div> */}
+            <div className="mb-3 flex flex-col sm:flex-row gap-2">
+              <input
+                type="text"
+                value={newRequirement}
+                onChange={(e) => setNewRequirement(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    addRequirement();
+                  }
+                }}
+                className="w-full sm:flex-1 px-4 py-3 border border-gray-300 rounded-lg 
+               focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="e.g. 5+ years of React experience"
+              />
+
+              <button
+                type="button"
+                onClick={addRequirement}
+                className="w-full sm:w-auto bg-blue-600 text-white px-6 py-3 rounded-lg 
+               hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 
+               font-medium whitespace-nowrap"
+              >
+                <Plus className="w-5 h-5" />
+                Add
+              </button>
             </div>
+
+
             <div className="flex flex-wrap gap-2">
               {(requirements || []).map((req, idx) => (
                 <div
