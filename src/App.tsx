@@ -11,6 +11,7 @@ import { AdminSettings } from "./components/AdminSettings";
 import { PublicJobBoard } from "./components/PublicJobBoard";
 import { ApplicationForm } from "./components/ApplicationForm";
 import { CandidateList } from "./components/CandidateList";
+import { Toaster } from 'react-hot-toast';
 import { User } from "./types";
 import { api } from "./lib/api";
 
@@ -148,192 +149,203 @@ export default function App() {
   }
 
   return (
-    <div className="flex h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-indigo-50/20">
-      {/* Mobile Header */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 bg-white/80 backdrop-blur-xl border-b border-gray-200/50 z-40 px-4 py-3 shadow-sm">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/30">
-              <span className="text-white font-bold text-lg">{currentUser?.company?.substring(0, 1) || "A"}</span>
+    <>
+      <Toaster
+        position="top-right"
+        toastOptions={{
+          duration: 3000,
+          style: {
+            zIndex: 9999,
+          },
+        }}
+      />
+      <div className="flex h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-indigo-50/20">
+        {/* Mobile Header */}
+        <div className="lg:hidden fixed top-0 left-0 right-0 bg-white/80 backdrop-blur-xl border-b border-gray-200/50 z-40 px-4 py-3 shadow-sm">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/30">
+                <span className="text-white font-bold text-lg">{currentUser?.company?.substring(0, 1) || "A"}</span>
+              </div>
+              <h1 className="text-blue-600 tracking-tight text-lg bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                {currentUser?.company || "Recruitment HRMS"}
+              </h1>
             </div>
-            <h1 className="text-blue-600 tracking-tight text-lg bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-              {currentUser?.company || "Recruitment HRMS"}
-            </h1>
+            <button
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="p-2 hover:bg-gray-100 rounded-xl transition-all"
+            >
+              {isMobileMenuOpen ? (
+                <X className="w-6 h-6 text-gray-700" />
+              ) : (
+                <Menu className="w-6 h-6 text-gray-700" />
+              )}
+            </button>
           </div>
-          <button
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="p-2 hover:bg-gray-100 rounded-xl transition-all"
-          >
-            {isMobileMenuOpen ? (
-              <X className="w-6 h-6 text-gray-700" />
-            ) : (
-              <Menu className="w-6 h-6 text-gray-700" />
-            )}
-          </button>
         </div>
-      </div>
 
-      {/* Mobile Menu Overlay */}
-      {isMobileMenuOpen && (
-        <div
-          className="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-40 mt-[57px]"
-          onClick={() => setIsMobileMenuOpen(false)}
-        />
-      )}
+        {/* Mobile Menu Overlay */}
+        {isMobileMenuOpen && (
+          <div
+            className="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-40 mt-[57px]"
+            onClick={() => setIsMobileMenuOpen(false)}
+          />
+        )}
 
-      {/* Sidebar */}
-      <aside className={`
+        {/* Sidebar */}
+        <aside className={`
         fixed lg:static inset-y-0 left-0 z-50
         w-64 bg-white/80 backdrop-blur-xl border-r border-gray-200/50 shadow-2xl lg:shadow-none
         transform transition-transform duration-300 ease-in-out
         ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
         mt-[57px] lg:mt-0
       `}>
-        <div className="p-6 border-b border-gray-100/50 hidden lg:block bg-gradient-to-br from-blue-50/50 to-indigo-50/30">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg shadow-blue-500/30 ring-2 ring-blue-100">
-              <span className="text-white font-bold text-xl">{currentUser?.company?.substring(0, 1) || "A"}</span>
+          <div className="p-6 border-b border-gray-100/50 hidden lg:block bg-gradient-to-br from-blue-50/50 to-indigo-50/30">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg shadow-blue-500/30 ring-2 ring-blue-100">
+                <span className="text-white font-bold text-xl">{currentUser?.company?.substring(0, 1) || "A"}</span>
+              </div>
+              <h1 className="text-blue-600 tracking-tight bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                {currentUser?.company || "Recruitment HRMS"}
+              </h1>
             </div>
-            <h1 className="text-blue-600 tracking-tight bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-              {currentUser?.company || "Recruitment HRMS"}
-            </h1>
+            <div className="bg-white/80 backdrop-blur-sm rounded-xl p-3 shadow-sm border border-gray-100">
+              <p className="text-gray-900 text-sm">
+                {currentUser.name}
+              </p>
+              <p className="text-gray-500 text-xs mt-1">
+                {currentUser.email === 'administrator' ? 'Super HR' : currentUser.role}
+              </p>
+            </div>
           </div>
-          <div className="bg-white/80 backdrop-blur-sm rounded-xl p-3 shadow-sm border border-gray-100">
-            <p className="text-gray-900 text-sm">
-              {currentUser.name}
-            </p>
-            <p className="text-gray-500 text-xs mt-1">
-              {currentUser.email === 'administrator' ? 'Super HR' : currentUser.role}
-            </p>
-          </div>
-        </div>
 
-        <div className="p-4 border-b border-gray-100 lg:hidden bg-gradient-to-br from-blue-50/50 to-indigo-50/30">
-          <div className="bg-white/80 backdrop-blur-sm rounded-xl p-3 shadow-sm border border-gray-100">
-            <p className="text-gray-900 text-sm">
-              {currentUser.name}
-            </p>
-            <p className="text-gray-500 text-xs mt-1">
-              {currentUser.email === 'administrator' ? 'Super HR' : currentUser.role}
-            </p>
+          <div className="p-4 border-b border-gray-100 lg:hidden bg-gradient-to-br from-blue-50/50 to-indigo-50/30">
+            <div className="bg-white/80 backdrop-blur-sm rounded-xl p-3 shadow-sm border border-gray-100">
+              <p className="text-gray-900 text-sm">
+                {currentUser.name}
+              </p>
+              <p className="text-gray-500 text-xs mt-1">
+                {currentUser.email === 'administrator' ? 'Super HR' : currentUser.role}
+              </p>
+            </div>
           </div>
-        </div>
 
-        <nav className="px-4 space-y-1 py-4">
-          <button
-            onClick={() => navigateTo("dashboard")}
-            className={`w-full text-left px-4 py-2.5 rounded-xl transition-all duration-200 ${currentScreen === "dashboard"
-              ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-500/30"
-              : "text-gray-700 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 hover:text-blue-600"
-              }`}
-          >
-            Dashboard
-          </button>
-          <button
-            onClick={() => navigateTo("jobs")}
-            className={`w-full text-left px-4 py-2.5 rounded-xl transition-all duration-200 ${currentScreen === "jobs" ||
-              currentScreen === "create-job"
-              ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-500/30"
-              : "text-gray-700 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 hover:text-blue-600"
-              }`}
-          >
-            Job Postings
-          </button>
-          <button
-            onClick={() => navigateTo("pipeline")}
-            className={`w-full text-left px-4 py-2.5 rounded-xl transition-all duration-200 ${currentScreen === "pipeline"
-              ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-500/30"
-              : "text-gray-700 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 hover:text-blue-600"
-              }`}
-          >
-            Recruitment Pipeline
-          </button>
-          <button
-            onClick={() => navigateTo("onboarding")}
-            className={`w-full text-left px-4 py-2.5 rounded-xl transition-all duration-200 ${currentScreen === "onboarding"
-              ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-500/30"
-              : "text-gray-700 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 hover:text-blue-600"
-              }`}
-          >
-            Onboarding
-          </button>
-          {(currentUser.role === "HR" || currentUser.canManageUsers) && (
+          <nav className="px-4 space-y-1 py-4">
             <button
-              onClick={() => navigateTo("admin")}
-              className={`w-full text-left px-4 py-2.5 rounded-xl transition-all duration-200 ${currentScreen === "admin"
+              onClick={() => navigateTo("dashboard")}
+              className={`w-full text-left px-4 py-2.5 rounded-xl transition-all duration-200 ${currentScreen === "dashboard"
                 ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-500/30"
                 : "text-gray-700 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 hover:text-blue-600"
                 }`}
             >
-              Admin Settings
+              Dashboard
             </button>
-          )}
-        </nav>
+            <button
+              onClick={() => navigateTo("jobs")}
+              className={`w-full text-left px-4 py-2.5 rounded-xl transition-all duration-200 ${currentScreen === "jobs" ||
+                currentScreen === "create-job"
+                ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-500/30"
+                : "text-gray-700 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 hover:text-blue-600"
+                }`}
+            >
+              Job Postings
+            </button>
+            <button
+              onClick={() => navigateTo("pipeline")}
+              className={`w-full text-left px-4 py-2.5 rounded-xl transition-all duration-200 ${currentScreen === "pipeline"
+                ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-500/30"
+                : "text-gray-700 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 hover:text-blue-600"
+                }`}
+            >
+              Recruitment Pipeline
+            </button>
+            <button
+              onClick={() => navigateTo("onboarding")}
+              className={`w-full text-left px-4 py-2.5 rounded-xl transition-all duration-200 ${currentScreen === "onboarding"
+                ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-500/30"
+                : "text-gray-700 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 hover:text-blue-600"
+                }`}
+            >
+              Onboarding
+            </button>
+            {(currentUser.role === "HR" || currentUser.canManageUsers) && (
+              <button
+                onClick={() => navigateTo("admin")}
+                className={`w-full text-left px-4 py-2.5 rounded-xl transition-all duration-200 ${currentScreen === "admin"
+                  ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-500/30"
+                  : "text-gray-700 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 hover:text-blue-600"
+                  }`}
+              >
+                Admin Settings
+              </button>
+            )}
+          </nav>
 
-        <div className="absolute bottom-0 w-64 p-4 border-t border-gray-200/50 bg-white/50 backdrop-blur-sm">
-          <button
-            onClick={handleLogout}
-            className="w-full text-left px-4 py-2.5 rounded-xl text-red-600 hover:bg-red-50 transition-all duration-200"
-          >
-            Logout
-          </button>
-        </div>
-      </aside>
+          <div className="absolute bottom-0 w-64 p-4 border-t border-gray-200/50 bg-white/50 backdrop-blur-sm">
+            <button
+              onClick={handleLogout}
+              className="w-full text-left px-4 py-2.5 rounded-xl text-red-600 hover:bg-red-50 transition-all duration-200"
+            >
+              Logout
+            </button>
+          </div>
+        </aside>
 
-      {/* Main Content */}
-      <main className="flex-1 overflow-auto pt-[57px] lg:pt-0">
-        {currentScreen === "dashboard" && (
-          <Dashboard
-            user={currentUser}
-            navigateTo={navigateTo}
-          />
-        )}
-        {currentScreen === "jobs" && (
-          <JobManagement
-            user={currentUser}
-            navigateTo={navigateTo}
-          />
-        )}
-        {currentScreen === "create-job" && (
-          <CreateEditJob
-            user={currentUser}
-            navigateTo={navigateTo}
-            jobId={selectedJobId}
-          />
-        )}
-        {currentScreen === "pipeline" && (
-          <KanbanBoard
-            user={currentUser}
-            navigateTo={navigateTo}
-          />
-        )}
-        {currentScreen === "candidate-detail" &&
-          selectedCandidateId && (
-            <CandidateDetail
+        {/* Main Content */}
+        <main className="flex-1 overflow-auto pt-[57px] lg:pt-0">
+          {currentScreen === "dashboard" && (
+            <Dashboard
               user={currentUser}
-              candidateId={selectedCandidateId}
               navigateTo={navigateTo}
             />
           )}
-        {currentScreen === "candidate-list" && (
-          <CandidateList
-            user={currentUser}
-            navigateTo={navigateTo}
-            filter={listFilter}
-            initialStage={listStageFilter}
-          />
-        )}
-        {currentScreen === "onboarding" && (
-          <OnboardingScreen
-            user={currentUser}
-            navigateTo={navigateTo}
-          />
-        )}
-        {currentScreen === "admin" &&
-          (currentUser.role === "HR" || currentUser.canManageUsers) && (
-            <AdminSettings />
+          {currentScreen === "jobs" && (
+            <JobManagement
+              user={currentUser}
+              navigateTo={navigateTo}
+            />
           )}
-      </main>
-    </div>
+          {currentScreen === "create-job" && (
+            <CreateEditJob
+              user={currentUser}
+              navigateTo={navigateTo}
+              jobId={selectedJobId}
+            />
+          )}
+          {currentScreen === "pipeline" && (
+            <KanbanBoard
+              user={currentUser}
+              navigateTo={navigateTo}
+            />
+          )}
+          {currentScreen === "candidate-detail" &&
+            selectedCandidateId && (
+              <CandidateDetail
+                user={currentUser}
+                candidateId={selectedCandidateId}
+                navigateTo={navigateTo}
+              />
+            )}
+          {currentScreen === "candidate-list" && (
+            <CandidateList
+              user={currentUser}
+              navigateTo={navigateTo}
+              filter={listFilter}
+              initialStage={listStageFilter}
+            />
+          )}
+          {currentScreen === "onboarding" && (
+            <OnboardingScreen
+              user={currentUser}
+              navigateTo={navigateTo}
+            />
+          )}
+          {currentScreen === "admin" &&
+            (currentUser.role === "HR" || currentUser.canManageUsers) && (
+              <AdminSettings />
+            )}
+        </main>
+      </div>
+    </>
   );
 }

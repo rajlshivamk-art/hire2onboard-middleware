@@ -5,6 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { api } from '../lib/api';
 import { User } from '../types';
+import toast from 'react-hot-toast';
 
 const PREDEFINED_DEPARTMENTS = ['Engineering', 'Product', 'Sales', 'Marketing', 'Operations'];
 const PREDEFINED_TYPES = ['Full-time', 'Part-time', 'Contract'];
@@ -77,18 +78,9 @@ interface CreateEditJobProps {
 }
 
 export function CreateEditJob({ user, navigateTo, jobId }: CreateEditJobProps) {
-  const [loading, setLoading] = useState(jobId ? true : false);
-
-  useEffect(() => {
-    if (!user.canEditJob) {
-      alert("You do not have permission to edit jobs.");
-      navigateTo('dashboard');
-    }
-  }, [user, navigateTo]);
-
+  const [loading, setLoading] = useState(!!jobId);
   const [newRequirement, setNewRequirement] = useState('');
   const [customSource, setCustomSource] = useState('');
-
   const [useCustomDepartment, setUseCustomDepartment] = useState(false);
   const [useCustomEmploymentType, setUseCustomEmploymentType] = useState(false);
 
@@ -112,6 +104,40 @@ export function CreateEditJob({ user, navigateTo, jobId }: CreateEditJobProps) {
     },
   });
 
+  /** Permission check */
+  useEffect(() => {
+    if (!user.canEditJob) {
+      toast.error('You do not have permission to edit jobs');
+      navigateTo('dashboard');
+    }
+  }, [user, navigateTo]);
+
+  /** ✅ RESET when switching from Edit → Create (NO refresh needed) */
+  useEffect(() => {
+    if (!jobId) {
+      reset({
+        title: '',
+        department: 'Engineering',
+        customDepartment: '',
+        type: 'Full-time',
+        customEmploymentType: '',
+        location: '',
+        description: '',
+        requirements: [],
+        salaryMin: 0,
+        salaryMax: 0,
+        openings: 1,
+        postingChannels: [],
+        startDate: undefined,
+        endDate: undefined,
+        company: '',
+      });
+      setUseCustomDepartment(false);
+      setUseCustomEmploymentType(false);
+    }
+  }, [jobId, reset]);
+
+  /** Load job for edit */
   useEffect(() => {
     if (!jobId) return;
 
@@ -156,59 +182,55 @@ export function CreateEditJob({ user, navigateTo, jobId }: CreateEditJobProps) {
     register('requirements');
   }, [register]);
 
-  if (loading) return <div>Loading job details...</div>;
+  if (loading) return <div className="p-4 md:p-8 text-center">Loading job details...</div>;
 
   const onSubmit = async (data: JobFormValues) => {
-    const payload = { ...data };
+    const payload: any = { ...data };
 
-    // Handle custom department
     if ((department === 'Other' || useCustomDepartment) && data.customDepartment?.trim()) {
       payload.department = data.customDepartment.trim();
     }
-
-    // Handle custom employment type
     if ((employmentType === 'Other' || useCustomEmploymentType) && data.customEmploymentType?.trim()) {
       payload.type = data.customEmploymentType.trim();
     }
 
-    // Clean up unused fields
     delete payload.customDepartment;
     delete payload.customEmploymentType;
 
     try {
       if (jobId) {
         await api.jobs.update(jobId, payload);
-        alert('Job updated successfully!');
+        toast.success('Job updated successfully!');
         navigateTo('jobs');
       } else {
         const newJob = await api.jobs.create(payload);
         if (!newJob?.id) {
-          alert("Error: Job created but ID is missing!");
+          toast.error("Error: Job created but ID is missing!");
           return;
         }
-        alert(`Job created successfully! (ID: ${newJob.id})`);
+        toast.success(`Job created successfully! (ID: ${newJob.id})`);
         navigateTo('create-job', { jobId: newJob.id });
       }
     } catch (err: any) {
-      let errorMessage = 'Failed to save job';
-      if (err?.response?.data?.detail) {
-        errorMessage = typeof err.response.data.detail === 'string'
-          ? err.response.data.detail
-          : JSON.stringify(err.response.data.detail);
-      }
-      alert(`Error: ${errorMessage}`);
+      const msg =
+        err?.response?.data?.detail
+          ? typeof err.response.data.detail === 'string'
+            ? err.response.data.detail
+            : JSON.stringify(err.response.data.detail)
+          : 'Failed to save job';
+
+      toast.error(`Error: ${msg}`);
     }
   };
 
   const addRequirement = () => {
-    if (newRequirement.trim()) {
-      setValue('requirements', [...requirements, newRequirement.trim()], { shouldValidate: true });
-      setNewRequirement('');
-    }
+    if (!newRequirement.trim()) return;
+    setValue('requirements', [...requirements, newRequirement.trim()], { shouldValidate: true });
+    setNewRequirement('');
   };
 
-  const removeRequirement = (index: number) => {
-    setValue('requirements', requirements.filter((_, i) => i !== index), { shouldValidate: true });
+  const removeRequirement = (i: number) => {
+    setValue('requirements', requirements.filter((_, idx) => idx !== i), { shouldValidate: true });
   };
 
   return (
@@ -228,7 +250,7 @@ export function CreateEditJob({ user, navigateTo, jobId }: CreateEditJobProps) {
 
         <form onSubmit={handleSubmit(onSubmit, (errors) => {
           console.error("Form Validation Errors:", errors);
-          alert("Please check the form for errors. Missing or invalid fields need to be fixed.");
+          toast.error("Please check the form for errors. Missing or invalid fields need to be fixed.");
         })} className="space-y-6">
           {/* Admin Override: Company Selection */}
           {(user.role === 'HR' && user.email === 'administrator') && (
@@ -553,7 +575,7 @@ export function CreateEditJob({ user, navigateTo, jobId }: CreateEditJobProps) {
                         onClick={() => {
                           const link = `${window.location.origin}/?screen=apply&jobId=${jobId}&source=${encodeURIComponent(customSource)}`;
                           navigator.clipboard.writeText(link);
-                          alert(`Copied ${customSource} link to clipboard!`);
+                          toast.success(`Copied ${customSource} link to clipboard!`);
                         }}
                         className="px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded-lg text-sm font-medium transition-colors"
                       >
@@ -593,7 +615,7 @@ export function CreateEditJob({ user, navigateTo, jobId }: CreateEditJobProps) {
                         type="button"
                         onClick={() => {
                           navigator.clipboard.writeText(link);
-                          alert(`Copied ${source} link to clipboard!`);
+                          toast.success(`Copied ${source} link to clipboard!`);
                         }}
                         className="px-4 py-2 text-blue-600 hover:bg-blue-50 rounded-lg bg-white border border-blue-200 text-sm font-medium transition-colors"
                       >
