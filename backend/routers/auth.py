@@ -6,8 +6,10 @@ from datetime import datetime, timedelta
 from typing import Optional
 from backend.config import settings
 from backend.models import User
-from backend.schemas import UserLogin, UserResponse
+from backend.schemas import UserLogin, UserResponse, ForgotPasswordRequest, ResetPasswordRequest
 from backend.services.erp_service import ERPService # New Import
+import uuid
+from fastapi_mail import FastMail, MessageSchema, ConnectionConfig, MessageType
 import bcrypt
 # Passlib/Bcrypt compatibility fix
 if not hasattr(bcrypt, "__about__"):
@@ -223,3 +225,62 @@ async def logout(response: Response):
 @router.get("/me", response_model=UserResponse)
 async def read_users_me(current_user: User = Depends(get_current_user)):
     return current_user
+
+
+
+@router.post("/forgot-password")
+async def forgot_password(payload: ForgotPasswordRequest):
+    email = payload.email
+
+    user = await User.find_one(User.email == email)
+    if user:
+        reset_token = str(uuid.uuid4())
+        expiry = datetime.utcnow() + timedelta(minutes=30)
+
+        user.reset_token = reset_token
+        user.reset_token_expiry = expiry
+        await user.save()
+
+        reset_link = f"{settings.FRONTEND_URL}/reset-password?token={reset_token}"
+
+        # ⚡ FastMail ConnectionConfig
+        conf = ConnectionConfig(
+            MAIL_USERNAME=settings.MAIL_USERNAME,
+            MAIL_PASSWORD=settings.MAIL_PASSWORD,
+            MAIL_FROM=settings.MAIL_FROM,
+            MAIL_FROM_NAME=settings.MAIL_FROM_NAME,
+            MAIL_SERVER=settings.MAIL_SERVER,
+            MAIL_PORT=settings.MAIL_PORT,
+            MAIL_STARTTLS=settings.MAIL_STARTTLS,
+            MAIL_SSL_TLS=settings.MAIL_SSL_TLS,
+            USE_CREDENTIALS=settings.USE_CREDENTIALS,
+            VALIDATE_CERTS=settings.VALIDATE_CERTS,
+            TEMPLATE_FOLDER=None  # keep None if you don't use templates
+        )
+
+        message = MessageSchema(
+            subject="Password Reset Request",
+            recipients=[email],
+            body=f"Click the link to reset your password: {reset_link}",
+            subtype=MessageType.html,
+        )
+
+        fm = FastMail(conf)
+        await fm.send_message(message)
+
+    return {"message": "If the email exists, a reset link has been sent"}
+
+
+@router.post("/reset-password")
+async def reset_password(payload: ResetPasswordRequest):
+    user = await User.find_one(User.reset_token == payload.token)
+
+    if not user or not user.reset_token_expiry or user.reset_token_expiry < datetime.utcnow():
+        raise HTTPException(status_code=400, detail="Invalid or expired token")
+
+    user.password = pwd_context.hash(payload.new_password)
+    user.reset_token = None
+    user.reset_token_expiry = None
+    await user.save()
+
+    return {"message": "Password reset successful"}

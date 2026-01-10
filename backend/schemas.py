@@ -170,3 +170,10 @@ class OfferCreate(BaseModel):
 
 class TaskStatusUpdate(BaseModel):
     status: str
+
+class ForgotPasswordRequest(BaseModel):
+    email: EmailStr
+
+class ResetPasswordRequest(BaseModel):
+    token: str
+    new_password: str

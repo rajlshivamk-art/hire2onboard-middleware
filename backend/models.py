@@ -8,7 +8,8 @@ class User(Document, UserBase):
     id: Optional[PydanticObjectId] = None
     password: str 
     company: Optional[str] = None # Added for multi-tenancy
-
+    reset_token: Optional[str] = None #forgot password f
+    reset_token_expiry: Optional[datetime] = None #forgot password f
     class Settings:
         name = "users"
         indexes = [
