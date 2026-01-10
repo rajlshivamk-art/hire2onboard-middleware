@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Menu, X } from "lucide-react";
 import { LoginPage } from "./components/LoginPage";
+import { ResetPasswordPage } from './components/ResetPasswordPage';
 import { Dashboard } from "./components/Dashboard";
 import { JobManagement } from "./components/JobManagement";
 import { CreateEditJob } from "./components/CreateEditJob";
@@ -11,9 +12,13 @@ import { AdminSettings } from "./components/AdminSettings";
 import { PublicJobBoard } from "./components/PublicJobBoard";
 import { ApplicationForm } from "./components/ApplicationForm";
 import { CandidateList } from "./components/CandidateList";
+import { ForgotPasswordPage } from "./components/ForgotPasswordPage";
 import { Toaster } from 'react-hot-toast';
 import { User } from "./types";
 import { api } from "./lib/api";
+
+const urlParams = new URLSearchParams(window.location.search);
+const resetToken = urlParams.get('token');
 
 export default function App() {
   const [currentUser, setCurrentUser] = useState<User | null>(() => {
@@ -22,54 +27,24 @@ export default function App() {
   });
 
   const [currentScreen, setCurrentScreen] = useState<string>(() => {
-    // If we have a session user, go to dashboard, otherwise login
-    // checking sessionStorage directly here is redundant but safe since state init runs once
     const saved = sessionStorage.getItem("currentUser");
     return saved ? "dashboard" : "login";
   });
 
-  const [selectedJobId, setSelectedJobId] = useState<
-    string | null
-  >(null);
-  const [selectedCandidateId, setSelectedCandidateId] =
-    useState<string | null>(null);
+  const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
+  const [selectedCandidateId, setSelectedCandidateId] = useState<string | null>(null);
   const [listFilter, setListFilter] = useState<'total' | 'hired' | 'rejected'>('total');
   const [listStageFilter, setListStageFilter] = useState<string>('all');
-  // const [candidates, setCandidates] = useState<any[]>([]); // Removed unused state
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  const handleLogin = (user: User) => {
-    // Session storage survives refresh but is cleared on closing tab/window
-    sessionStorage.setItem("currentUser", JSON.stringify(user));
-    setCurrentUser(user);
-    setCurrentScreen("dashboard");
-  };
-
-  const handleLogout = () => {
-    sessionStorage.removeItem("currentUser");
-    setCurrentUser(null);
-    setCurrentScreen("login"); // Go back to login, not public jobs
-  };
-
-  const navigateTo = (
-    screen: string,
-    params?: { jobId?: string; candidateId?: string; filter?: 'total' | 'hired' | 'rejected'; stage?: string },
-  ) => {
-    setCurrentScreen(screen);
-    if (params && 'jobId' in params) setSelectedJobId(params.jobId || null);
-    if (params?.candidateId)
-      setSelectedCandidateId(params.candidateId);
-    if (params?.filter) setListFilter(params.filter);
-    if (params?.stage) setListStageFilter(params.stage);
-    else setListStageFilter('all'); // Reset if not provided
-    setIsMobileMenuOpen(false); // Close mobile menu on navigation
-  };
-
-  /* URL Parameter Parsing for Deep Linking (Source Tracking) */
   const [sourceParam, setSourceParam] = useState<string | null>(null);
 
   useEffect(() => {
-    // Parse query parameters
+    // If reset token exists in URL, show reset password screen
+    if (resetToken) {
+      setCurrentScreen("reset-password");
+    }
+
     const params = new URLSearchParams(window.location.search);
     const screenParam = params.get('screen');
     const jobIdParam = params.get('jobId');
@@ -80,26 +55,49 @@ export default function App() {
       setSelectedJobId(jobIdParam);
     }
 
-    if (source) {
-      setSourceParam(source);
-    }
+    if (source) setSourceParam(source);
 
-    // Refresh user profile if logged in
     if (currentUser) {
       api.users.getById(currentUser.id)
         .then((u: User) => {
           setCurrentUser(u);
           sessionStorage.setItem("currentUser", JSON.stringify(u));
         })
-        .catch((err: any) => console.error("Failed to refresh profile:", err));
+        .catch(err => console.error("Failed to refresh profile:", err));
     }
   }, []);
 
-  const handleApplicationSubmit = (_application: any) => {
-    // In real app, this update is handled by Dashboard fetching fresh data
+  const handleLogin = (user: User) => {
+    sessionStorage.setItem("currentUser", JSON.stringify(user));
+    setCurrentUser(user);
+    setCurrentScreen("dashboard");
   };
 
-  // Public portal screens (no login required)
+  const handleLogout = () => {
+    sessionStorage.removeItem("currentUser");
+    setCurrentUser(null);
+    setCurrentScreen("login");
+    setSelectedJobId(null);
+    setSelectedCandidateId(null);
+  };
+
+  const navigateTo = (
+    screen: string,
+    params?: { jobId?: string; candidateId?: string; filter?: 'total' | 'hired' | 'rejected'; stage?: string },
+  ) => {
+    setCurrentScreen(screen);
+    if (params?.jobId) setSelectedJobId(params.jobId);
+    if (params?.candidateId) setSelectedCandidateId(params.candidateId);
+    if (params?.filter) setListFilter(params.filter);
+    setListStageFilter(params?.stage || 'all');
+    setIsMobileMenuOpen(false);
+  };
+
+  const handleApplicationSubmit = (_application: any) => { /* handled by dashboard */ };
+
+  // -------------------------
+  // PUBLIC SCREENS
+  // -------------------------
   if (currentScreen === "public-jobs") {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-indigo-50/20">
@@ -121,9 +119,7 @@ export default function App() {
             </button>
           </div>
         </div>
-        <PublicJobBoard
-          onApply={(jobId) => navigateTo("apply", { jobId })}
-        />
+        <PublicJobBoard onApply={(jobId) => navigateTo("apply", { jobId })} />
       </div>
     );
   }
@@ -139,11 +135,34 @@ export default function App() {
     );
   }
 
+  // -------------------------
+  // RESET PASSWORD
+  // -------------------------
+  if (currentScreen === "reset-password" && resetToken) {
+    return (
+      <ResetPasswordPage
+        token={resetToken}
+        onSuccess={() => setCurrentScreen("login")}
+      />
+    );
+  }
+
+  // -------------------------
+  // FORGOT PASSWORD
+  // -------------------------
+  if (currentScreen === "forgot-password") {
+    return <ForgotPasswordPage onBack={() => setCurrentScreen("login")} />;
+  }
+
+  // -------------------------
+  // LOGIN
+  // -------------------------
   if (currentScreen === "login" || !currentUser) {
     return (
       <LoginPage
         onLogin={handleLogin}
         onPublicAccess={() => setCurrentScreen("public-jobs")}
+        onForgotPassword={() => setCurrentScreen("forgot-password")}
       />
     );
   }
@@ -151,14 +170,20 @@ export default function App() {
   return (
     <>
       <Toaster
-        position="top-right"
+        position="top-center"
         toastOptions={{
           duration: 3000,
           style: {
             zIndex: 9999,
+            background: '#111827', // neutral dark (Tailwind gray-900)
+            color: '#FFFFFF',
+            borderRadius: '3px',   // barely noticeable
+            padding: '10px 14px',
+            fontSize: '13px',
           },
         }}
       />
+
       <div className="flex h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-indigo-50/20">
         {/* Mobile Header */}
         <div className="lg:hidden fixed top-0 left-0 right-0 bg-white/80 backdrop-blur-xl border-b border-gray-200/50 z-40 px-4 py-3 shadow-sm">
@@ -187,7 +212,7 @@ export default function App() {
         {/* Mobile Menu Overlay */}
         {isMobileMenuOpen && (
           <div
-            className="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-40 mt-[57px]"
+            className="lg:hidden fixed inset-0 bg-white/30 backdrop-blur-xl z-40 mt-[57px]"
             onClick={() => setIsMobileMenuOpen(false)}
           />
         )}
