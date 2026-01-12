@@ -226,10 +226,10 @@ async def logout(response: Response):
 async def read_users_me(current_user: User = Depends(get_current_user)):
     return current_user
 
-
+from fastapi import BackgroundTasks
 
 @router.post("/forgot-password")
-async def forgot_password(payload: ForgotPasswordRequest):
+async def forgot_password(payload: ForgotPasswordRequest, background_tasks: BackgroundTasks):
     email = payload.email
 
     user = await User.find_one(User.email == email)
@@ -243,32 +243,42 @@ async def forgot_password(payload: ForgotPasswordRequest):
 
         reset_link = f"{settings.FRONTEND_URL}/reset-password?token={reset_token}"
 
-        # ⚡ FastMail ConnectionConfig
-        conf = ConnectionConfig(
-            MAIL_USERNAME=settings.MAIL_USERNAME,
-            MAIL_PASSWORD=settings.MAIL_PASSWORD,
-            MAIL_FROM=settings.MAIL_FROM,
-            MAIL_FROM_NAME=settings.MAIL_FROM_NAME,
-            MAIL_SERVER=settings.MAIL_SERVER,
-            MAIL_PORT=settings.MAIL_PORT,
-            MAIL_STARTTLS=settings.MAIL_STARTTLS,
-            MAIL_SSL_TLS=settings.MAIL_SSL_TLS,
-            USE_CREDENTIALS=settings.USE_CREDENTIALS,
-            VALIDATE_CERTS=settings.VALIDATE_CERTS,
-            TEMPLATE_FOLDER=None  # keep None if you don't use templates
-        )
-
-        message = MessageSchema(
-            subject="Password Reset Request",
-            recipients=[email],
-            body=f"Click the link to reset your password: {reset_link}",
-            subtype=MessageType.html,
-        )
-
-        fm = FastMail(conf)
-        await fm.send_message(message)
+        # Add email sending as a background task
+        background_tasks.add_task(send_reset_email, email, reset_link)
 
     return {"message": "If the email exists, a reset link has been sent"}
+
+
+async def send_reset_email(email: str, reset_link: str):
+    from fastapi_mail import FastMail, ConnectionConfig, MessageSchema, MessageType
+
+    conf = ConnectionConfig(
+        MAIL_USERNAME=settings.MAIL_USERNAME,
+        MAIL_PASSWORD=settings.MAIL_PASSWORD,
+        MAIL_FROM=settings.MAIL_FROM,
+        MAIL_FROM_NAME=settings.MAIL_FROM_NAME,
+        MAIL_SERVER=settings.MAIL_SERVER,
+        MAIL_PORT=settings.MAIL_PORT,
+        MAIL_STARTTLS=settings.MAIL_STARTTLS,
+        MAIL_SSL_TLS=settings.MAIL_SSL_TLS,
+        USE_CREDENTIALS=settings.USE_CREDENTIALS,
+        VALIDATE_CERTS=settings.VALIDATE_CERTS,
+        TEMPLATE_FOLDER=None
+    )
+
+    message = MessageSchema(
+        subject="Password Reset Request",
+        recipients=[email],
+        body=f"Click the link to reset your password: {reset_link}",
+        subtype=MessageType.html,
+    )
+
+    fm = FastMail(conf)
+    try:
+        await fm.send_message(message)
+    except Exception as e:
+        # Log error instead of blocking API
+        print(f"Failed to send reset email to {email}: {e}")
 
 
 @router.post("/reset-password")
