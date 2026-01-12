@@ -98,23 +98,32 @@ async def create_user(user: UserCreate, current_user: User = Depends(get_current
     return new_user
 
 @router.get("/{userId}", response_model=UserResponse)
-async def get_user(userId: str):
+async def get_user(userId: str, current_user: User = Depends(get_current_user)):
     if not PydanticObjectId.is_valid(userId):
          raise HTTPException(status_code=404, detail="User not found")
     
     user = await User.get(PydanticObjectId(userId))
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
+    
+    # Security: only SuperAdmin or same company HR can view
+    if current_user.email != "administrator" and user.company != current_user.company:
+        raise HTTPException(status_code=403, detail="Not authorized to view this user")
+    
     return user
 
 @router.put("/{userId}", response_model=UserResponse)
-async def update_user(userId: str, user_update: UserUpdate):
+async def update_user(userId: str, user_update: UserUpdate, current_user: User = Depends(get_current_user)):
     if not PydanticObjectId.is_valid(userId):
          raise HTTPException(status_code=404, detail="User not found")
          
     user = await User.get(PydanticObjectId(userId))
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
+    
+    # Security: only SuperAdmin or same company HR can update
+    if current_user.email != "administrator" and user.company != current_user.company:
+        raise HTTPException(status_code=403, detail="Not authorized to update this user")
         
     update_data = user_update.model_dump(exclude_unset=True)
     
@@ -137,17 +146,20 @@ async def update_user(userId: str, user_update: UserUpdate):
     return user
 
 @router.delete("/{userId}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_user(userId: str):
+async def delete_user(userId: str, current_user: User = Depends(get_current_user)):
     if not PydanticObjectId.is_valid(userId):
          raise HTTPException(status_code=404, detail="User not found")
 
     user = await User.get(PydanticObjectId(userId))
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
+    
+    # Security: only SuperAdmin or same company HR can delete
+    if current_user.email != "administrator" and user.company != current_user.company:
+        raise HTTPException(status_code=403, detail="Not authorized to delete this user")
         
     # Cascade: Unassign this user from any Applications
     from ..models import Application
-    # Find all applications where this user is the assigned recruiter
     apps = await Application.find(Application.assignedRecruiterId == userId).to_list()
     if apps:
         print(f"Unassigning {len(apps)} applications from deleted user {user.email}")
