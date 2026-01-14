@@ -132,6 +132,32 @@ export const api = {
         },
 
     },
+    interactions: {
+        getByCandidate: async (applicationId: string) => {
+            const response = await apiClient.get(
+                `/applications/${applicationId}/interactions`
+            );
+            return response.data;
+        },
+
+        create: async (
+            applicationId: string,
+            data: {
+                recruiterId: string;
+                recruiterName: string;
+                method: string;
+                status: string;
+                candidateUpdate?: string;
+                note?: string;
+            }
+        ) => {
+            const response = await apiClient.post(
+                `/applications/${applicationId}/interactions`,
+                data
+            );
+            return response.data;
+        },
+    },
     users: {
         getAll: async () => {
             const response = await apiClient.get<User[]>('/users');

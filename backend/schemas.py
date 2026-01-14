@@ -1,5 +1,5 @@
 from typing import List, Optional
-from datetime import datetime
+from datetime import datetime, timezone
 from pydantic import BaseModel, EmailStr, Field, ConfigDict
 
 from beanie import PydanticObjectId
@@ -177,3 +177,12 @@ class ForgotPasswordRequest(BaseModel):
 class ResetPasswordRequest(BaseModel):
     token: str
     new_password: str
+
+class CandidateInteraction(BaseModel):
+    recruiterId: str
+    recruiterName: str
+    method: str                         # Call / Email / Message
+    status: str                         # Pending / Completed / No Answer / Rescheduled
+    candidateUpdate: Optional[str] = None # Candidate feedback: Available / Delayed / Not Interested
+    note: Optional[str] = None          # Candidate feedback: Available / Delayed / Not Interested
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))

@@ -2,7 +2,7 @@ from typing import List, Optional
 from datetime import datetime
 from beanie import Document, PydanticObjectId
 from pydantic import EmailStr, Field
-from .schemas import UserBase, JobBase, FeedbackBase, ApplicationBase
+from .schemas import UserBase, JobBase, FeedbackBase, ApplicationBase, CandidateInteraction
 
 class User(Document, UserBase):
     id: Optional[PydanticObjectId] = None
@@ -56,6 +56,7 @@ class Application(Document, ApplicationBase):
     assignedRecruiterId: Optional[str] = None
     onboardingTasks: List[OnboardingTask] = []
     company: Optional[str] = None # Added for multi-tenancy
+    interactions: List[CandidateInteraction] = []
 
     class Settings:
         name = "applications"

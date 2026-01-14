@@ -4,7 +4,7 @@ from typing import List, Optional
 from datetime import datetime
 from beanie import PydanticObjectId
 from ..models import Application, Feedback, OnboardingTask, User, Job
-from ..schemas import ApplicationCreate, ApplicationUpdate, FeedbackCreate, ApplicationResponse, FeedbackResponse, StageUpdate, TaskCreate, OfferCreate, TaskStatusUpdate
+from ..schemas import ApplicationCreate, ApplicationUpdate, FeedbackCreate, ApplicationResponse, FeedbackResponse, StageUpdate, TaskCreate, OfferCreate, TaskStatusUpdate, CandidateInteraction
 from ..utils.files import upload_file_from_stream, get_file_stream
 from ..utils.email import send_email
 from .auth import get_current_user # Imported get_current_user
@@ -560,3 +560,38 @@ async def get_resume(file_id: str):
         import traceback
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Internal Server Error: {str(e)}")
+
+# Add a new candidate interaction
+@router.post("/{application_id}/interactions", response_model=CandidateInteraction)
+async def add_candidate_interaction(
+    application_id: PydanticObjectId,
+    interaction: CandidateInteraction,
+    current_user = Depends(get_current_user)  # RBAC can be enforced inside this
+):
+    # Ensure only recruiter / HR assigned can add
+    if current_user.role not in ["SuperAdmin", "HR", "Recruiter"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+
+    app = await Application.get(application_id)
+    if not app:
+        raise HTTPException(status_code=404, detail="Application not found")
+
+    app.interactions.append(interaction)
+    await app.save()
+    return interaction
+
+# Get all interactions for a candidate
+@router.get("/{application_id}/interactions", response_model=List[CandidateInteraction])
+async def get_candidate_interactions(
+    application_id: PydanticObjectId,
+    current_user = Depends(get_current_user)
+):
+    app = await Application.get(application_id)
+    if not app:
+        raise HTTPException(status_code=404, detail="Application not found")
+
+    # Only assigned recruiter, HR, or SuperAdmin can view
+    if current_user.role not in ["SuperAdmin", "HR", "Recruiter"] and current_user.id != app.assignedRecruiterId:
+        raise HTTPException(status_code=403, detail="Not authorized")
+
+    return app.interactions

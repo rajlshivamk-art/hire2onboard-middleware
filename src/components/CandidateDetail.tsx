@@ -19,6 +19,7 @@ import {
 import { User, Candidate, CandidateStage, Job } from "../types";
 import { api } from "../lib/api";
 import { InterviewFeedbackModal } from "./InterviewFeedbackModal";
+import { CandidateInteractions } from "./CandidateInteractions";
 import { RejectionModal } from "./RejectionModal";
 import { OfferModal } from "./OfferModal";
 
@@ -38,7 +39,7 @@ export function CandidateDetail({
   const [allJobs, setAllJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<
-    "history" | "feedback" | "emails" | "documents" | "onboarding"
+    "history" | "feedback" | "emails" | "documents" | "onboarding" | "interactions"
   >("feedback");
   const [showFeedbackModal, setShowFeedbackModal] =
     useState(false);
@@ -583,6 +584,15 @@ export function CandidateDetail({
                 History
               </button>
               <button
+                onClick={() => setActiveTab("interactions")}
+                className={`px-3 py-2 text-xs sm:text-sm whitespace-nowrap ${activeTab === "interactions"
+                  ? "border-b-2 border-blue-600 text-blue-600"
+                  : "text-gray-600 hover:text-gray-900"
+                  }`}
+              >
+                Interactions
+              </button>
+              <button
                 onClick={() => setActiveTab("feedback")}
                 className={`px-3 py-2 text-xs sm:text-sm whitespace-nowrap ${activeTab === "feedback"
                   ? "border-b-2 border-blue-600 text-blue-600"
@@ -622,6 +632,13 @@ export function CandidateDetail({
 
             {/* Tab Content */}
             <div>
+              {activeTab === "interactions" && (
+                <CandidateInteractions
+                  candidateId={candidate.id}
+                  user={user}
+                />
+              )}
+
               {activeTab === "feedback" && (
                 <>
                   <div className="max-h-[500px] overflow-y-auto mb-4 space-y-4">
