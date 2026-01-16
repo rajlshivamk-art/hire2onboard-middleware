@@ -4,6 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { User } from '../types';
 import { api } from '../lib/api';
+import { setAccessToken } from '../types';
 
 const loginSchema = z.object({
   email: z.string().min(1, 'Email or Username is required'),
@@ -32,8 +33,10 @@ export function LoginPage({ onLogin, onPublicAccess, onForgotPassword }: LoginPa
   const onSubmit = async (data: LoginFormValues) => {
     setAuthError('');
     try {
-      const user = await api.auth.login(data.email, data.password);
+      const { access_token, user } = await api.auth.login(data.email, data.password);
+      setAccessToken(access_token);
       onLogin(user);
+
     } catch (err: any) {
       if (err.response?.data?.detail) setAuthError(err.response.data.detail);
       else if (err.message) setAuthError(err.message);

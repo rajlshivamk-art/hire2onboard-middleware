@@ -5,7 +5,7 @@ from motor.motor_asyncio import AsyncIOMotorClient
 from beanie import init_beanie
 
 from backend.config import settings
-from backend.models import User, Job, Application, Feedback, OnboardingTask
+from backend.models import User, Job, Application, Feedback, OnboardingTask, RefreshToken
 from backend.routers import auth, jobs, applications, users
 from backend.db_initializer import initialize_db
 from backend.utils.files import init_gridfs
@@ -18,7 +18,7 @@ async def lifespan(app: FastAPI):
     
     await init_beanie(
         database=db,
-        document_models=[User, Job, Application, OnboardingTask]
+        document_models=[User, Job, Application, OnboardingTask, RefreshToken]
     )
     
     # Initialize GridFS

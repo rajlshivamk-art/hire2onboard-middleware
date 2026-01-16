@@ -8,6 +8,7 @@ class Settings(BaseSettings):
     SECRET_KEY: str = "your-secret-key-for-jwt"
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
+    REFRESH_TOKEN_EXPIRE_DAYS: int = 10080
     MONGODB_URL: str = "mongodb://127.0.0.1:27017/recruitment_db"
     TEMPLATE_FOLDER: str | None = None
     

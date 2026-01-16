@@ -40,6 +40,11 @@ class UserResponse(UserBase):
     
     model_config = ConfigDict(from_attributes=True)
 
+class LoginResponse(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+    user: UserResponse
+
 # Job Schemas
 class JobBase(BaseModel):
     title: str
@@ -186,3 +191,32 @@ class CandidateInteraction(BaseModel):
     candidateUpdate: Optional[str] = None # Candidate feedback: Available / Delayed / Not Interested
     note: Optional[str] = None          # Candidate feedback: Available / Delayed / Not Interested
     timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    scheduledAt: Optional[datetime] = None 
+
+class InterviewSchedule(BaseModel):
+    id: PydanticObjectId = Field(default_factory=PydanticObjectId)
+
+    # Context
+    applicationId: str
+    candidateId: str
+
+    # Who created the schedule (HR / Recruiter)
+    createdById: str
+    createdByRole: str  # HR | Recruiter
+
+    # Who will take the interview
+    interviewerId: Optional[str] = None
+    interviewerName: Optional[str] = None
+
+    # Interview details
+    scheduledAt: datetime
+    mode: str  # In-Person | Video | Call
+    roundName: Optional[str] = None
+
+    # Lifecycle
+    status: str = "Scheduled"
+    # Scheduled | Completed | Cancelled | Rescheduled | No-Show
+
+    createdAt: datetime = Field(
+        default_factory=lambda: datetime.now(timezone.utc)
+    )

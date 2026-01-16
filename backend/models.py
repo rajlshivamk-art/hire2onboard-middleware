@@ -2,7 +2,7 @@ from typing import List, Optional
 from datetime import datetime
 from beanie import Document, PydanticObjectId
 from pydantic import EmailStr, Field
-from .schemas import UserBase, JobBase, FeedbackBase, ApplicationBase, CandidateInteraction
+from .schemas import UserBase, JobBase, FeedbackBase, ApplicationBase, CandidateInteraction, InterviewSchedule
 
 class User(Document, UserBase):
     id: Optional[PydanticObjectId] = None
@@ -57,6 +57,7 @@ class Application(Document, ApplicationBase):
     onboardingTasks: List[OnboardingTask] = []
     company: Optional[str] = None # Added for multi-tenancy
     interactions: List[CandidateInteraction] = []
+    interviewSchedules: List[InterviewSchedule] = []  
 
     class Settings:
         name = "applications"
@@ -67,4 +68,17 @@ class Application(Document, ApplicationBase):
             [("appliedDate", -1)],
             "source",
             "company" # Index company
+        ]
+
+class RefreshToken(Document):
+    id: Optional[PydanticObjectId] = None
+    user_id: PydanticObjectId  # link to User
+    token: str
+    expires_at: datetime
+
+    class Settings:
+        name = "refresh_tokens"  # collection name in MongoDB
+        indexes = [
+            "user_id",
+            [("expires_at", 1)]  # optional TTL index for cleanup
         ]
