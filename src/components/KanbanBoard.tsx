@@ -224,7 +224,7 @@ function Column({ stage, candidates, user, onCardClick, onDrop, onHeaderClick }:
 }
 
 export function KanbanBoard({ user, navigateTo }: KanbanBoardProps) {
-  const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
+  const [selectedJobId, setSelectedJobId] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [candidates, setCandidates] = useState<Candidate[]>([]);
   const [dateFilter, setDateFilter] = useState('all'); // 'all', '30d', '3m', '6m', '1y', 'custom', 'specific_date'
@@ -244,17 +244,13 @@ export function KanbanBoard({ user, navigateTo }: KanbanBoardProps) {
         ]);
         setCandidates(candidatesData);
         setJobs(jobsData);
-
-        // Default to first job if no selection and jobs exist
-        if (!selectedJobId && jobsData.length > 0) {
-          setSelectedJobId(jobsData[0].id);
-        }
       } catch (error) {
         console.error('Failed to fetch data:', error);
       }
     };
     loadData();
   }, [user.id]);
+
 
   const handleDrop = async (candidateId: string, newStage: CandidateStage) => {
     // Optimistic UI update
@@ -275,7 +271,7 @@ export function KanbanBoard({ user, navigateTo }: KanbanBoardProps) {
 
   const filteredCandidates = useMemo(() => candidates.filter((c) => {
     // 1. Job Filter
-    const matchesJob = c.jobId === selectedJobId;
+    const matchesJob = selectedJobId === 'all' ? true : c.jobId === selectedJobId;
 
     // 2. Text Search
     const matchesSearch = c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -407,10 +403,11 @@ export function KanbanBoard({ user, navigateTo }: KanbanBoardProps) {
             <div className="flex items-center gap-2">
               <label className="text-gray-700 font-medium">Job:</label>
               <select
-                value={selectedJobId || ''}
+                value={selectedJobId}
                 onChange={(e) => setSelectedJobId(e.target.value)}
                 className="px-4 py-2 border border-blue-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-full sm:w-auto bg-white"
               >
+                <option value="all">All Jobs</option>
                 {jobs.map((job) => (
                   <option key={job.id} value={job.id}>
                     {job.title}
