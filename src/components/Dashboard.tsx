@@ -1,13 +1,20 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Users, Briefcase, Calendar, Clock, TrendingUp, AlertCircle, UserCheck, Star, Plus } from 'lucide-react';
 import { User, Candidate } from '../types';
 import { AddCandidateModal } from './AddCandidateModal';
 import { api } from '../lib/api';
+import toast from 'react-hot-toast';
 
 interface DashboardProps {
   user: User;
   navigateTo: (screen: string, params?: any) => void;
 }
+
+const interviewReminderCache = new Set<string>();
+let isToastQueueRunning = false;
+let hasRunReminderSession = false;
+
+
 // Utility to calculate time ago (duplicated from KanbanBoard for consistency)
 function getTimeAgo(dateString: string) {
   const date = new Date(dateString);
@@ -43,7 +50,7 @@ export function Dashboard({ user, navigateTo }: DashboardProps) {
   const [jobs, setJobs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAddCandidateModal, setShowAddCandidateModal] = useState(false);
-  const [dateFilter, setDateFilter] = useState('all'); // 'all', '30d', '3m', '6m', '1y', 'custom'
+  const [dateFilter, setDateFilter] = useState('all');
   const [customStartDate, setCustomStartDate] = useState('');
   const [customEndDate, setCustomEndDate] = useState('');
 
@@ -51,70 +58,203 @@ export function Dashboard({ user, navigateTo }: DashboardProps) {
     try {
       const [candidatesData, jobsData] = await Promise.all([
         api.applications.getAll(),
-        api.jobs.getAll()
+        api.jobs.getAll(),
       ]);
+
       setCandidates(candidatesData);
       setJobs(jobsData);
     } catch (error) {
       console.error('Failed to fetch data:', error);
+      toast.error('Failed to load dashboard data');
     } finally {
       setLoading(false);
     }
   };
+  useEffect(() => {
+    interviewReminderCache.clear();
+    isToastQueueRunning = false;
+    hasRunReminderSession = false;
+  }, [user.id]);
 
   useEffect(() => {
     fetchData();
   }, [user.id]);
 
-  const refreshData = () => {
-    fetchData();
-  };
+  const refreshData = () => fetchData();
 
-  // Filter candidates based on selected date range
+  // ---------------- FILTERED CANDIDATES ----------------
   const filteredCandidates = candidates.filter(c => {
     if (dateFilter === 'all') return true;
-    const date = new Date(c.appliedDate);
+
+    const appliedAt = new Date(c.appliedDate);
+    if (Number.isNaN(appliedAt.getTime())) return false;
 
     if (dateFilter === 'custom') {
       if (!customStartDate || !customEndDate) return true;
       const start = new Date(customStartDate);
       const end = new Date(customEndDate);
       end.setHours(23, 59, 59, 999);
-      return date >= start && date <= end;
+      return appliedAt >= start && appliedAt <= end;
     }
 
-    const now = new Date();
-    const diffTime = Math.abs(now.getTime() - date.getTime());
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    const diffDays =
+      Math.abs(Date.now() - appliedAt.getTime()) /
+      (1000 * 60 * 60 * 24);
 
     if (dateFilter === '30d') return diffDays <= 30;
     if (dateFilter === '3m') return diffDays <= 90;
     if (dateFilter === '6m') return diffDays <= 180;
     if (dateFilter === '1y') return diffDays <= 365;
+
     return true;
   });
 
-  const openJobs = jobs.filter(j => j.status === 'Open' || j.status === 'Active').length;
-  // Use filtered candidates for metrics
-  const totalCandidates = filteredCandidates.length;
-  const candidatesInPipeline = filteredCandidates.filter(c =>
-    !['Rejected', 'Archived', 'Onboarding'].includes(c.stage)
+  // ---------------- METRICS ----------------
+  const openJobs = jobs.filter(
+    j => j.status === 'Open' || j.status === 'Active'
   ).length;
 
-  const upcomingInterviews = filteredCandidates.filter(c =>
-    ['Round 1', 'Round 2', 'Round 3', 'Management Round'].includes(c.stage)
+  const totalCandidates = filteredCandidates.length;
+
+  const candidatesInPipeline = filteredCandidates.filter(
+    c => !['Rejected', 'Archived', 'Onboarding'].includes(c.stage)
+  ).length;
+
+  // ---------------- UPCOMING INTERVIEWS (FINAL & SAFE) ----------------
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const upcomingInterviews = filteredCandidates
+    .flatMap(application =>
+      (application.interviewSchedules ?? []).map(interview => ({
+        candidate: application,
+        interview,
+      }))
+    )
+    .filter(({ interview }) => {
+      if (!interview?.scheduledAt) return false;
+
+      const date = new Date(interview.scheduledAt);
+      if (Number.isNaN(date.getTime())) return false;
+
+      return (
+        interview.status?.toLowerCase() === 'scheduled' &&
+        date >= today
+      );
+    })
+    .sort(
+      (a, b) =>
+        new Date(a.interview.scheduledAt).getTime() -
+        new Date(b.interview.scheduledAt).getTime()
+    );
+
+  // ---------------- TOAST ON NEW INTERVIEW ----------------
+  const formatTimeDiff = (diffMs: number) => {
+    const totalMinutes = Math.floor(diffMs / 60000);
+
+    if (totalMinutes < 60) {
+      return `${Math.max(1, totalMinutes)}m`;
+    }
+
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
+
+    if (hours < 24) {
+      return minutes > 0 ? `${hours}h ${minutes}m` : `${hours}h`;
+    }
+
+    const days = Math.floor(hours / 24);
+    const remHours = hours % 24;
+
+    return remHours > 0 ? `${days}d ${remHours}h` : `${days}d`;
+  };
+
+  useEffect(() => {
+    if (loading) return;
+    if (hasRunReminderSession) return; // 🚫 stop re-run on navigation
+    if (isToastQueueRunning) return;
+
+    const ONE_DAY_MS = 24 * 60 * 60 * 1000;
+    const TOAST_DURATION = 5000;
+    const now = Date.now();
+
+    const queue = upcomingInterviews
+      .map(({ interview, candidate }) => {
+        const ts = new Date(interview.scheduledAt).getTime();
+        return { interview, candidate, diffMs: ts - now };
+      })
+      .filter(
+        i =>
+          i.diffMs > 0 &&
+          i.diffMs <= ONE_DAY_MS &&
+          !interviewReminderCache.has(i.interview.id)
+      )
+      .sort((a, b) => a.diffMs - b.diffMs);
+
+    if (queue.length === 0) {
+      hasRunReminderSession = true;
+      return;
+    }
+
+    isToastQueueRunning = true;
+    hasRunReminderSession = true; // ✅ mark session as handled
+
+    const showToastAtIndex = (index: number) => {
+      if (index >= queue.length) {
+        toast(
+          `📅 ${queue.length} interview${queue.length > 1 ? "s" : ""} scheduled today`,
+          {
+            duration: 2000,
+            style: {
+              background: "#1f2937",
+              color: "#fff",
+            },
+          }
+        );
+
+        isToastQueueRunning = false;
+        return;
+      }
+
+      const { interview, candidate, diffMs } = queue[index];
+      const timeText = formatTimeDiff(diffMs);
+
+      toast(
+        `Interview with ${candidate.name} in ${timeText} (${interview.roundName})`,
+
+        {
+          duration: TOAST_DURATION,
+          style: {
+            background: "#111827",
+            color: "#e5e7eb",
+          },
+        }
+      );
+
+      interviewReminderCache.add(interview.id);
+
+      setTimeout(() => {
+        showToastAtIndex(index + 1);
+      }, TOAST_DURATION + 300);
+    };
+
+    showToastAtIndex(0);
+  }, [upcomingInterviews, loading]);
+
+  // ---------------- PENDING ACTIONS ----------------
+  const pendingActions = filteredCandidates.filter(
+    c => c.stage === 'Round 2' && user.role === 'Tech Interviewer'
   );
 
-  const pendingActions = filteredCandidates.filter(c =>
-    c.stage === 'Round 2' && user.role === 'Tech Interviewer'
+  // ---------------- REFERRALS ----------------
+  const referredCandidates = filteredCandidates.filter(
+    c => c.referredBy && c.referredBy.trim() !== ''
   );
 
+  if (loading) {
+    return <div className="p-8 text-center">Loading dashboard...</div>;
+  }
 
-
-  // Filter candidates with referrals
-  const referredCandidates = filteredCandidates.filter(c => c.referredBy && c.referredBy.trim() !== '');
-
-  if (loading) return <div className="p-8 text-center">Loading dashboard...</div>;
 
   return (
     <div className="p-4 md:p-6 lg:p-8">
@@ -305,73 +445,51 @@ export function Dashboard({ user, navigateTo }: DashboardProps) {
             <h2 className="text-gray-900">Upcoming Interviews</h2>
             <Calendar className="w-5 h-5 text-gray-400" />
           </div>
+
           <div className="space-y-3 max-h-80 overflow-y-auto">
-            {upcomingInterviews.slice(0, 5).map((candidate) => {
+            {upcomingInterviews.slice(0, 5).map(({ candidate, interview }) => {
               const job = jobs.find(j => j.id === candidate.jobId);
-              // Get the most recent feedback for this candidate
-              const candidateFeedback = (candidate.feedback || [])
-                .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-              const latestFeedback = candidateFeedback[0];
 
               return (
                 <div
-                  key={candidate.id}
-                  className="p-4 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer transition-colors border border-gray-200"
-                  onClick={() => navigateTo('candidate-detail', { candidateId: candidate.id })}
+                  key={interview.id}
+                  className="p-4 bg-gray-50 rounded-lg border border-gray-200 hover:bg-gray-100 cursor-pointer transition"
+                  onClick={() =>
+                    navigateTo('candidate-detail', { candidateId: candidate.id })
+                  }
                 >
-                  <div className="flex items-start justify-between mb-2">
-                    <div className="flex-1">
+                  <div className="flex items-start justify-between">
+                    <div>
                       <p className="text-gray-900">{candidate.name}</p>
-                      <p className="text-gray-600 text-sm">{job?.title} - {candidate.stage}</p>
+                      <p className="text-sm text-gray-600">
+                        {job?.title || 'Position'} · {interview.roundName}
+                      </p>
                     </div>
-                    <div className="text-right">
-                      {(() => {
-                        const timeText = getTimeAgo(candidate.appliedDate);
-                        return (
-                          <p className={`text-sm font-medium ${timeText === 'Just now' ? 'text-green-600' : 'text-gray-600'}`}>
-                            {timeText}
-                          </p>
-                        );
-                      })()}
-                    </div>
+
+                    <span className="text-sm font-medium text-blue-600 whitespace-nowrap">
+                      {new Date(interview.scheduledAt).toLocaleDateString()}{' '}
+                      {new Date(interview.scheduledAt).toLocaleTimeString([], {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })}
+                    </span>
                   </div>
 
-                  {latestFeedback && (
-                    <div className="mt-3 pt-3 border-t border-gray-300">
-                      <div className="flex items-center gap-2 mb-1">
-                        <Star className="w-4 h-4 text-yellow-500" />
-                        <p className="text-gray-700 text-sm">
-                          Latest: <span className="font-medium">{latestFeedback.stage}</span>
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs text-gray-500">{latestFeedback.reviewerName}</span>
-                        <span className="text-gray-400">•</span>
-                        <div className="flex items-center gap-1">
-                          {[...Array(5)].map((_, i) => (
-                            <Star
-                              key={i}
-                              className={`w-3 h-3 ${i < (latestFeedback.rating || 0) ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'
-                                }`}
-                            />
-                          ))}
-                        </div>
-                        <span className="text-xs text-gray-500">
-                          ({latestFeedback.rating}/5)
-                        </span>
-                      </div>
-                      <p className="text-xs text-gray-600 mt-1 line-clamp-2">{latestFeedback.comments}</p>
-                    </div>
-                  )}
+                  <div className="mt-2 flex items-center gap-2 text-xs text-gray-500">
+                    <Clock className="w-3 h-3" />
+                    Scheduled interview
+                  </div>
                 </div>
               );
             })}
+
             {upcomingInterviews.length === 0 && (
-              <p className="text-gray-500 text-sm text-center py-4">No upcoming interviews</p>
+              <p className="text-gray-500 text-sm text-center py-4">
+                No upcoming interviews scheduled
+              </p>
             )}
           </div>
         </div>
-
         {/* Pending Actions */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
           <div className="flex items-center justify-between mb-4">

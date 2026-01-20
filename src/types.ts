@@ -51,6 +51,7 @@ export interface Candidate {
   onboardingTasks?: OnboardingTask[];
   source?: string;
   skills?: string[];
+  interviewSchedules?: InterviewSchedule[];
 }
 
 export interface Feedback {
@@ -99,14 +100,60 @@ export interface OnboardingTask {
   completedDate?: string;
 }
 
-let accessToken: string | null = null;
+export interface InterviewSchedule {
+  id: string;
+  applicationId: string;
+  scheduledAt: string;
+  roundName?: string;
+  mode: string;
+  status: "Scheduled" | "Completed" | "Cancelled" | "No-Show" | "Rescheduled";
+  createdById: string;
+  createdByRole: string;
+}
+
+
+let accessToken: string | null = localStorage.getItem('access_token');
+
+export const getAccessToken = () => accessToken;
 
 export const setAccessToken = (token: string | null) => {
   accessToken = token;
+  if (token) {
+    localStorage.setItem('access_token', token);
+  } else {
+    localStorage.removeItem('access_token');
+  }
 };
-
-export const getAccessToken = (): string | null => accessToken;
 
 export const clearAccessToken = () => {
   accessToken = null;
 };
+
+export type Application = {
+  id: string;
+  jobId: string;
+  name: string;
+  email: string;
+  phone: string;
+  resumeUrl: string;
+  photoUrl?: string;
+  coverLetter?: string;
+  linkedIn?: string;
+  portfolio?: string;
+  yearsOfExperience?: number;
+  skills: string[];
+  source?: string;
+  currentSalary?: number;
+  expectedSalary?: number;
+  offeredSalary?: number;
+
+  stage: CandidateStage;
+  appliedDate: string;
+  feedback: Feedback[];
+  rejectionReason?: string;
+  assignedRecruiterId?: string;
+  onboardingTasks: OnboardingTask[];
+  company?: string;
+  interactions: any[];
+  interviewSchedules: InterviewSchedule[];
+}

@@ -20,6 +20,7 @@ import { User, Candidate, CandidateStage, Job } from "../types";
 import { api } from "../lib/api";
 import { InterviewFeedbackModal } from "./InterviewFeedbackModal";
 import { CandidateInteractions } from "./CandidateInteractions";
+import { InterviewScheduler } from "./InterviewScheduler";
 import { RejectionModal } from "./RejectionModal";
 import { OfferModal } from "./OfferModal";
 
@@ -49,6 +50,7 @@ export function CandidateDetail({
   const [isEditingJob, setIsEditingJob] = useState(false);
   const [newJobId, setNewJobId] = useState("");
   const [editingFeedback, setEditingFeedback] = useState<any>(null);
+
 
   const fetchCandidate = async () => {
     try {
@@ -826,6 +828,11 @@ export function CandidateDetail({
 
         {/* Right Sidebar - Actions */}
         <div className="lg:col-span-1">
+          <InterviewScheduler
+            applicationId={candidate.id}
+            currentUser={user}
+          />
+
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 sticky top-8">
             <h3 className="text-gray-900 mb-4">Actions</h3>
 

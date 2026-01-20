@@ -23,7 +23,7 @@ async def get_users(current_user: User = Depends(get_current_user)):
 
     return []
 
-@router.get("/companies", response_model=List[str])
+@router.get("/companies/", response_model=List[str])
 async def get_companies(current_user: User = Depends(get_current_user)):
     # Only Super Users can fetch all companies
     if current_user.isSuperUser or current_user.email == "administrator":

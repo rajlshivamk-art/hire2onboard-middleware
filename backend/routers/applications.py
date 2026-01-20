@@ -480,26 +480,56 @@ async def delete_task(applicationId: str, taskId: str):
     raise HTTPException(status_code=404, detail="Task not found")
 
 @router.patch("/{applicationId}", response_model=ApplicationResponse)
-async def update_application(applicationId: str, app_update: ApplicationUpdate):
+async def update_application(
+    applicationId: str,
+    app_update: ApplicationUpdate,
+    current_user: User = Depends(get_current_user)
+):
     if not PydanticObjectId.is_valid(applicationId):
-         raise HTTPException(status_code=404, detail="Application not found")
+        raise HTTPException(status_code=404, detail="Application not found")
 
     app = await Application.get(PydanticObjectId(applicationId))
     if not app:
         raise HTTPException(status_code=404, detail="Application not found")
-        
+
     update_data = app_update.model_dump(exclude_unset=True)
-    
-    # If jobId is changing, also update the company
+
+    # -------------------------------------------------
+    # RBAC: Only HR / Manager / SuperAdmin can assign recruiter
+    # -------------------------------------------------
+    if "assignedRecruiterId" in update_data:
+        if not (
+            current_user.role in ["HR", "Manager", "SuperAdmin", "Admin"]
+            or current_user.canManageUsers
+        ):
+            raise HTTPException(
+                status_code=403,
+                detail="You are not authorized to assign recruiter"
+            )
+
+    # -------------------------------------------------
+    # STRICT MULTI-TENANCY CHECK (Job must belong to same company)
+    # -------------------------------------------------
     if "jobId" in update_data and update_data["jobId"]:
-        if PydanticObjectId.is_valid(update_data["jobId"]):
-            job = await Job.get(PydanticObjectId(update_data["jobId"]))
-            if job:
-                app.company = job.company
-                
+        if not PydanticObjectId.is_valid(update_data["jobId"]):
+            raise HTTPException(status_code=400, detail="Invalid jobId")
+
+        job = await Job.get(PydanticObjectId(update_data["jobId"]))
+        if not job:
+            raise HTTPException(status_code=404, detail="Job not found")
+
+        if job.company != app.company:
+            raise HTTPException(
+                status_code=400,
+                detail="Job does not belong to the same company"
+            )
+
+    # -------------------------------------------------
+    # Apply updates safely
+    # -------------------------------------------------
     for key, value in update_data.items():
         setattr(app, key, value)
-        
+
     await app.save()
     return app
 

@@ -2,6 +2,7 @@ from typing import List, Optional
 from datetime import datetime, timezone
 from pydantic import BaseModel, EmailStr, Field, ConfigDict
 
+
 from beanie import PydanticObjectId
 
 # User Schemas
@@ -141,6 +142,34 @@ class FeedbackResponse(FeedbackBase):
     
     model_config = ConfigDict(from_attributes=True)
 
+class InterviewSchedule(BaseModel):
+    id: PydanticObjectId = Field(default_factory=PydanticObjectId)
+
+    # Context
+    applicationId: str
+    candidateId: str
+
+    # Who created the schedule (HR / Recruiter)
+    createdById: str
+    createdByRole: str  # HR | Recruiter
+
+    # Who will take the interview
+    interviewerId: Optional[str] = None
+    interviewerName: Optional[str] = None
+
+    # Interview details
+    scheduledAt: datetime
+    mode: str  # In-Person | Video | Call
+    roundName: Optional[str] = None
+
+    # Lifecycle
+    status: str = "Scheduled"
+    # Scheduled | Completed | Cancelled | Rescheduled | No-Show
+
+    createdAt: datetime = Field(
+        default_factory=lambda: datetime.now(timezone.utc)
+    )
+
 class ApplicationResponse(ApplicationBase):
     id: PydanticObjectId
     stage: str
@@ -149,9 +178,9 @@ class ApplicationResponse(ApplicationBase):
     rejectionReason: Optional[str] = None
     assignedRecruiterId: Optional[str] = None
     onboardingTasks: List[OnboardingTask] = []
+    interviewSchedules: List[InterviewSchedule] = []  
 
     model_config = ConfigDict(from_attributes=True)
-
 
 class ApplicationUpdate(BaseModel):
     jobId: Optional[str] = None
@@ -191,32 +220,4 @@ class CandidateInteraction(BaseModel):
     candidateUpdate: Optional[str] = None # Candidate feedback: Available / Delayed / Not Interested
     note: Optional[str] = None          # Candidate feedback: Available / Delayed / Not Interested
     timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-    scheduledAt: Optional[datetime] = None 
-
-class InterviewSchedule(BaseModel):
-    id: PydanticObjectId = Field(default_factory=PydanticObjectId)
-
-    # Context
-    applicationId: str
-    candidateId: str
-
-    # Who created the schedule (HR / Recruiter)
-    createdById: str
-    createdByRole: str  # HR | Recruiter
-
-    # Who will take the interview
-    interviewerId: Optional[str] = None
-    interviewerName: Optional[str] = None
-
-    # Interview details
-    scheduledAt: datetime
-    mode: str  # In-Person | Video | Call
-    roundName: Optional[str] = None
-
-    # Lifecycle
-    status: str = "Scheduled"
-    # Scheduled | Completed | Cancelled | Rescheduled | No-Show
-
-    createdAt: datetime = Field(
-        default_factory=lambda: datetime.now(timezone.utc)
-    )
+    scheduledAt: Optional[datetime] = None

@@ -251,7 +251,6 @@ export function KanbanBoard({ user, navigateTo }: KanbanBoardProps) {
     loadData();
   }, [user.id]);
 
-
   const handleDrop = async (candidateId: string, newStage: CandidateStage) => {
     // Optimistic UI update
     setCandidates((prev) =>

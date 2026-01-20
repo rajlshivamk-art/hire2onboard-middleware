@@ -59,7 +59,10 @@ async def get_jobs(
 
 # -------------------- GET SINGLE JOB --------------------
 @router.get("/{job_id}", response_model=JobResponse)
-async def get_job(job_id: str):
+async def get_job(
+    job_id: str,
+    current_user: User = Depends(get_current_user_optional)
+):
     if not PydanticObjectId.is_valid(job_id):
         raise HTTPException(status_code=404, detail="Job not found")
 
@@ -67,8 +70,15 @@ async def get_job(job_id: str):
     if not job:
         raise HTTPException(status_code=404, detail="Job not found")
 
-    return job
+    # 🔐 Enforce tenant isolation
+    if current_user and current_user.email != "administrator":
+        if current_user.company and job.company != current_user.company:
+            raise HTTPException(
+                status_code=403,
+                detail="Not authorized to view this job"
+            )
 
+    return job
 
 # -------------------- CREATE JOB --------------------
 @router.post("/", response_model=JobResponse, status_code=status.HTTP_201_CREATED)
