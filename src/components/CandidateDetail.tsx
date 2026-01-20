@@ -23,6 +23,8 @@ import { CandidateInteractions } from "./CandidateInteractions";
 import { InterviewScheduler } from "./InterviewScheduler";
 import { RejectionModal } from "./RejectionModal";
 import { OfferModal } from "./OfferModal";
+import toast from "react-hot-toast";
+
 
 interface CandidateDetailProps {
   user: User;
@@ -50,6 +52,10 @@ export function CandidateDetail({
   const [isEditingJob, setIsEditingJob] = useState(false);
   const [newJobId, setNewJobId] = useState("");
   const [editingFeedback, setEditingFeedback] = useState<any>(null);
+  const [recruiters, setRecruiters] = useState<User[]>([]);
+  const [selectedRecruiterId, setSelectedRecruiterId] = useState<string>("");
+  const [assigningRecruiter, setAssigningRecruiter] = useState(false);
+
 
 
   const fetchCandidate = async () => {
@@ -66,6 +72,21 @@ export function CandidateDetail({
   useEffect(() => {
     fetchCandidate();
   }, [candidateId]);
+
+  useEffect(() => {
+    const fetchRecruiters = async () => {
+      try {
+        const users = await api.users.getAll();
+        setRecruiters(users.filter(u => u.role === "Recruiter"));
+      } catch (err) {
+        console.error("Failed to load recruiters", err);
+      }
+    };
+
+    fetchRecruiters();
+  }, []);
+
+
 
   useEffect(() => {
     // Fetch all jobs for the reassignment dropdown
@@ -273,6 +294,31 @@ export function CandidateDetail({
     }
   };
 
+  const handleAssignRecruiter = async () => {
+    if (!selectedRecruiterId || assigningRecruiter) return;
+
+    try {
+      setAssigningRecruiter(true);
+
+      await api.applications.update(candidate.id, {
+        assignedRecruiterId: selectedRecruiterId,
+      });
+
+      setCandidate({
+        ...candidate,
+        assignedRecruiterId: selectedRecruiterId,
+      });
+
+      toast.success("Recruiter assigned successfully");
+    } catch (err: any) {
+      console.error(err);
+      toast.error(
+        err?.response?.data?.detail || "Failed to assign recruiter"
+      );
+    } finally {
+      setAssigningRecruiter(false);
+    }
+  };
 
 
   const nextStage = getNextStage(candidate.stage);
@@ -476,6 +522,39 @@ export function CandidateDetail({
                   </p>
                 </div>
               </div>
+
+              {/* Recruiter Assignment */}
+              {(user.role === "Admin" || user.role === "HR") && (
+                <div className="mt-4">
+                  <p className="text-sm text-gray-600 mb-1">Assigned Recruiter</p>
+
+                  <div className="flex gap-2 items-center">
+                    <select
+                      value={selectedRecruiterId || candidate.assignedRecruiterId || ""}
+                      onChange={(e) => setSelectedRecruiterId(e.target.value)}
+                      className="border rounded px-2 py-1 text-sm w-full"
+                    >
+                      <option value="">Select recruiter</option>
+                      {recruiters.map(r => (
+                        <option key={r.id} value={r.id}>
+                          {r.name}
+                        </option>
+                      ))}
+                    </select>
+
+                    <button
+                      onClick={handleAssignRecruiter}
+                      disabled={assigningRecruiter}
+                      className={`px-3 py-1 rounded text-white text-sm ${assigningRecruiter
+                        ? "bg-gray-400 cursor-not-allowed"
+                        : "bg-blue-600 hover:bg-blue-700"
+                        }`}
+                    >
+                      Assign
+                    </button>
+                  </div>
+                </div>
+              )}
 
               {/* Referral Information */}
               {candidate.referredBy && (
