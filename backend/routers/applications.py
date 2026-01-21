@@ -16,7 +16,7 @@ router = APIRouter(
     tags=["applications"]
 )
 
-@router.get("/", response_model=List[ApplicationResponse])
+""" @router.get("/", response_model=List[ApplicationResponse])
 async def get_applications(userId: Optional[str] = None, current_user: User = Depends(get_current_user)):
     # Base query: Filter by company if user has one
     query = Application.find(Application.company == current_user.company) if current_user.company else Application.find_all()
@@ -34,7 +34,39 @@ async def get_applications(userId: Optional[str] = None, current_user: User = De
         # Default behavior for Recruiter: see only assigned
         query = query.find(Application.assignedRecruiterId == str(current_user.id))
 
+    return await query.sort("-appliedDate").to_list() """
+@router.get("/", response_model=List[ApplicationResponse])
+async def get_applications(
+    userId: Optional[str] = None,
+    current_user: User = Depends(get_current_user)
+):
+    # Company isolation (UNCHANGED)
+    query = (
+        Application.find(Application.company == current_user.company)
+        if current_user.company
+        else Application.find_all()
+    )
+
+    if userId:
+        if PydanticObjectId.is_valid(userId):
+            if current_user.role == "Recruiter" and str(current_user.id) != userId:
+                raise HTTPException(
+                    status_code=403,
+                    detail="Cannot view other recruiter's applications"
+                )
+            query = query.find(Application.assignedRecruiterId == userId)
+
+    elif current_user.role == "Recruiter":
+        query = query.find(Application.assignedRecruiterId == str(current_user.id))
+
+    elif current_user.role == "Tech Interviewer":
+        query = query.find(
+        Application.interviewSchedules.interviewerId == str(current_user.id)
+    )
+
+
     return await query.sort("-appliedDate").to_list()
+
 
 @router.post("/", response_model=ApplicationResponse, status_code=status.HTTP_201_CREATED)
 async def submit_application(application: ApplicationCreate, background_tasks: BackgroundTasks):
