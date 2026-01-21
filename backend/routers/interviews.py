@@ -85,3 +85,39 @@ async def update_interview_status(
             return interview
 
     raise HTTPException(status_code=404, detail="Interview not found")
+
+@router.patch(
+    "/{applicationId}/{interviewId}/assign-interviewer",
+    response_model=InterviewSchedule
+)
+async def assign_interviewer(
+    applicationId: str,
+    interviewId: str,
+    interviewerId: str,
+    current_user: User = Depends(get_current_user)
+):
+    if current_user.role not in ["Recruiter", "Manager", "Admin", "HR"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+
+    app = await Application.get(PydanticObjectId(applicationId))
+    if not app:
+        raise HTTPException(status_code=404, detail="Application not found")
+
+    if app.company != current_user.company:
+        raise HTTPException(status_code=403, detail="Cross-company access denied")
+
+    interviewer = await User.get(PydanticObjectId(interviewerId))
+    if not interviewer or interviewer.role not in ["Tech Interviewer", "Interviewer"]:
+        raise HTTPException(status_code=400, detail="Invalid interviewer")
+
+    for interview in app.interviewSchedules:
+        if str(interview.id) == interviewId:
+            interview.interviewerId = interviewerId
+            interview.interviewerName = interviewer.name
+            interview.assignedBy = str(current_user.id)
+            interview.assignedAt = datetime.utcnow()
+
+            await app.save()
+            return interview
+
+    raise HTTPException(status_code=404, detail="Interview not found")

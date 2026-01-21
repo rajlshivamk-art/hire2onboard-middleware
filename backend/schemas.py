@@ -157,6 +157,11 @@ class InterviewSchedule(BaseModel):
     interviewerId: Optional[str] = None
     interviewerName: Optional[str] = None
 
+    # Audit
+    assignedBy: Optional[str] = None
+    assignedAt: Optional[datetime] = None
+
+
     # Interview details
     scheduledAt: datetime
     mode: str  # In-Person | Video | Call

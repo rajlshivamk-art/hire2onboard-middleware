@@ -329,6 +329,17 @@ export const api = {
             );
             return response.data;
         },
+        assignInterviewer: (
+            applicationId: string,
+            interviewId: string,
+            interviewerId: string
+        ) =>
+            apiClient.patch(
+                `/interviews/${applicationId}/${interviewId}/assign-interviewer`,
+                null,
+                { params: { interviewerId } }
+            ),
+
     },
 
     interactions: {

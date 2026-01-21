@@ -56,8 +56,6 @@ export function CandidateDetail({
   const [selectedRecruiterId, setSelectedRecruiterId] = useState<string>("");
   const [assigningRecruiter, setAssigningRecruiter] = useState(false);
 
-
-
   const fetchCandidate = async () => {
     try {
       const data = await api.applications.getById(candidateId);
@@ -85,7 +83,6 @@ export function CandidateDetail({
 
     fetchRecruiters();
   }, []);
-
 
 
   useEffect(() => {
@@ -319,7 +316,6 @@ export function CandidateDetail({
       setAssigningRecruiter(false);
     }
   };
-
 
   const nextStage = getNextStage(candidate.stage);
 
@@ -911,6 +907,7 @@ export function CandidateDetail({
             applicationId={candidate.id}
             currentUser={user}
           />
+
 
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 sticky top-8">
             <h3 className="text-gray-900 mb-4">Actions</h3>

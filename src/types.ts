@@ -102,6 +102,8 @@ export interface OnboardingTask {
 
 export interface InterviewSchedule {
   id: string;
+  interviewerId?: string;
+  interviewerName?: string;
   applicationId: string;
   scheduledAt: string;
   roundName?: string;
