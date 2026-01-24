@@ -91,7 +91,7 @@ export const api = {
                 user: User;
             }>('/auth/login', { email, password });
 
-            setAccessToken(response.data.access_token); // 🔴 THIS WAS MISSING
+            setAccessToken(response.data.access_token);
             return response.data;
         },
         logout: async () => {
@@ -406,4 +406,61 @@ export const api = {
             await apiClient.delete(`/users/${id}`);
         },
     },
+    // lib/api.ts
+
+    reports: {
+        recruiterPerformance: async (params?: {
+            recruiterId?: string;
+            dateRange?: "today" | "weekly" | "monthly";
+            startDate?: string;
+            endDate?: string;
+        }) => {
+            const response = await apiClient.get("/applications/reports/recruiter-performance", {
+                params,
+            });
+            return response.data;
+        },
+
+        exportRecruiterPerformance: async (params?: {
+            recruiterId?: string;
+            dateRange?: "today" | "weekly" | "monthly";
+            startDate?: string;
+            endDate?: string;
+        }) => {
+            const response = await apiClient.get(
+                "/applications/reports/recruiter-performance/export",
+                {
+                    params,
+                    responseType: "blob", // 🔥 important for Excel
+                }
+            );
+            return response.data;
+        },
+    },
+    getRecruiterPerformance: (params?: {
+        recruiterId?: string;
+        dateRange?: "today" | "weekly" | "monthly";
+        startDate?: string;
+        endDate?: string;
+    }) =>
+        apiClient.get<RecruiterReportResponse>(
+            "/reports/recruiter-performance",
+            { params }
+        ),
+
+    exportRecruiterPerformance: (params?: {
+        recruiterId?: string;
+        dateRange?: "today" | "weekly" | "monthly";
+        startDate?: string;
+        endDate?: string;
+    }) =>
+        apiClient.get(
+            "/reports/recruiter-performance/export",
+            {
+                params,
+                responseType: "blob",
+            }
+        ),
+
 };
+

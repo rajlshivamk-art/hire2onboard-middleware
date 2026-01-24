@@ -22,6 +22,8 @@ type UserFormValues = z.infer<typeof userSchema>;
 
 export function AdminSettings() {
 
+  type EditableUserRole = "HR" | "Tech Interviewer" | "Manager" | "Recruiter";
+
 
   const [users, setUsers] = useState<User[]>([]);
   const [companies, setCompanies] = useState<string[]>([]); // Companies list
@@ -89,7 +91,7 @@ export function AdminSettings() {
     resolver: zodResolver(userSchema),
   });
 
-  const getRolePermissions = (role: UserRole) => {
+  const getRolePermissions = (role: EditableUserRole) => {
     switch (role) {
       case 'HR':
         return { canViewSalary: true, canMoveCandidate: true, canEditJob: true, canManageUsers: true };
@@ -109,7 +111,7 @@ export function AdminSettings() {
   const editRole = watchEdit('role');
 
   useEffect(() => {
-    const permissions = getRolePermissions(addRole as UserRole);
+    const permissions = getRolePermissions(addRole);
     setValueAdd('canViewSalary', permissions.canViewSalary);
     setValueAdd('canMoveCandidate', permissions.canMoveCandidate);
     setValueAdd('canEditJob', permissions.canEditJob);
@@ -118,7 +120,7 @@ export function AdminSettings() {
 
   useEffect(() => {
     if (editingId) {
-      const permissions = getRolePermissions(editRole as UserRole);
+      const permissions = getRolePermissions(addRole);
       setValueEdit('canViewSalary', permissions.canViewSalary);
       setValueEdit('canMoveCandidate', permissions.canMoveCandidate);
       setValueEdit('canEditJob', permissions.canEditJob);
@@ -126,20 +128,27 @@ export function AdminSettings() {
     }
   }, [editRole, editingId, setValueEdit]);
 
+  const isEditableRole = (role: UserRole): role is EditableUserRole => {
+    return role !== "SuperAdmin" && role !== "Admin";
+  };
+
   const startEdit = (userId: string) => {
     const userToEdit = users.find(u => u.id === userId);
-    if (userToEdit) {
-      setEditingId(userId);
-      resetEdit({
-        name: userToEdit.name,
-        email: userToEdit.email,
-        role: userToEdit.role,
-        canViewSalary: userToEdit.canViewSalary,
-        canMoveCandidate: userToEdit.canMoveCandidate,
-        canEditJob: userToEdit.canEditJob,
-        canManageUsers: userToEdit.canManageUsers || false,
-      });
-    }
+    if (!userToEdit) return;
+
+    if (!isEditableRole(userToEdit.role)) return;
+
+    setEditingId(userId);
+
+    resetEdit({
+      name: userToEdit.name,
+      email: userToEdit.email,
+      role: userToEdit.role,
+      canViewSalary: userToEdit.canViewSalary,
+      canMoveCandidate: userToEdit.canMoveCandidate,
+      canEditJob: userToEdit.canEditJob,
+      canManageUsers: userToEdit.canManageUsers ?? false,
+    });
   };
 
   const onSaveEdit = async (data: UserFormValues) => {

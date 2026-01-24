@@ -13,6 +13,7 @@ import { PublicJobBoard } from "./components/PublicJobBoard";
 import { ApplicationForm } from "./components/ApplicationForm";
 import { CandidateList } from "./components/CandidateList";
 import { ForgotPasswordPage } from "./components/ForgotPasswordPage";
+import { RecruiterPerformanceReport } from "./components/RecruiterPerformance";
 import { Toaster } from 'react-hot-toast';
 import { User } from "./types";
 import { api } from "./lib/api";
@@ -293,6 +294,15 @@ export default function App() {
             >
               Onboarding
             </button>
+            <button
+              onClick={() => navigateTo("recruiter-report")}
+              className={`w-full text-left px-4 py-2.5 rounded-xl transition-all duration-200 ${currentScreen === "recruiter-report"
+                ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-500/30"
+                : "text-gray-700 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 hover:text-blue-600"
+                }`}
+            >
+              Recruiter Report
+            </button>
             {(currentUser.role === "HR" || currentUser.canManageUsers) && (
               <button
                 onClick={() => navigateTo("admin")}
@@ -323,6 +333,9 @@ export default function App() {
               user={currentUser}
               navigateTo={navigateTo}
             />
+          )}
+          {currentScreen === "recruiter-report" && (
+            <RecruiterPerformanceReport />
           )}
           {currentScreen === "jobs" && (
             <JobManagement

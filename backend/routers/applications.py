@@ -1,7 +1,7 @@
-from fastapi import APIRouter, HTTPException, status, UploadFile, File, BackgroundTasks, Depends # Added Depends
+from fastapi import APIRouter, HTTPException, status, UploadFile, File, BackgroundTasks, Depends, Query # Added Depends
 from fastapi.responses import StreamingResponse
 from typing import List, Optional
-from datetime import datetime
+from datetime import datetime, timedelta, timezone, time
 from beanie import PydanticObjectId
 from ..models import Application, Feedback, OnboardingTask, User, Job
 from ..schemas import ApplicationCreate, ApplicationUpdate, FeedbackCreate, ApplicationResponse, FeedbackResponse, StageUpdate, TaskCreate, OfferCreate, TaskStatusUpdate, CandidateInteraction
@@ -10,31 +10,18 @@ from ..utils.email import send_email
 from .auth import get_current_user # Imported get_current_user
 from ..services.erp_service import ERPService # Added ERPService
 from fastapi import Form, Body
+import traceback
+import pandas as pd
+import io
+from zoneinfo import ZoneInfo 
+from openpyxl.utils import get_column_letter
+from openpyxl.styles import Font, Alignment, PatternFill, Border, Side
 
 router = APIRouter(
     prefix="/api/applications",
     tags=["applications"]
 )
 
-""" @router.get("/", response_model=List[ApplicationResponse])
-async def get_applications(userId: Optional[str] = None, current_user: User = Depends(get_current_user)):
-    # Base query: Filter by company if user has one
-    query = Application.find(Application.company == current_user.company) if current_user.company else Application.find_all()
-    
-    if userId:
-        # Check user role (admin checking on recruiter, or recruiter checking themselves)
-        if PydanticObjectId.is_valid(userId):
-            # If requesting user is "Recruiter", force their ID only (security)
-            if current_user.role == "Recruiter" and str(current_user.id) != userId:
-                 raise HTTPException(status_code=403, detail="Cannot view other recruiter's applications")
-            
-            # If user wants to filter by a specific recruiterId
-            query = query.find(Application.assignedRecruiterId == userId)
-    elif current_user.role == "Recruiter":
-        # Default behavior for Recruiter: see only assigned
-        query = query.find(Application.assignedRecruiterId == str(current_user.id))
-
-    return await query.sort("-appliedDate").to_list() """
 @router.get("/", response_model=List[ApplicationResponse])
 async def get_applications(
     userId: Optional[str] = None,
@@ -66,7 +53,6 @@ async def get_applications(
 
 
     return await query.sort("-appliedDate").to_list()
-
 
 @router.post("/", response_model=ApplicationResponse, status_code=status.HTTP_201_CREATED)
 async def submit_application(application: ApplicationCreate, background_tasks: BackgroundTasks):
@@ -171,8 +157,6 @@ async def submit_feedback(applicationId: str, feedback: FeedbackCreate, backgrou
     # ---------------------------
     
     return new_feedback
-
-
 
 @router.put("/{applicationId}/feedback/{feedbackId}", response_model=FeedbackResponse)
 async def update_feedback(applicationId: str, feedbackId: str, feedback: FeedbackCreate):
@@ -657,3 +641,362 @@ async def get_candidate_interactions(
         raise HTTPException(status_code=403, detail="Not authorized")
 
     return app.interactions
+
+def recruiter_report_rbac(current_user: User = Depends(get_current_user)):
+    allowed_roles = {"Manager", "Admin", "HR"}
+    if current_user.role not in allowed_roles:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not authorized to access recruiter performance reports"
+        )
+    return current_user
+
+
+BUSINESS_TZ = ZoneInfo("Asia/Kolkata")
+
+
+def get_date_range(range_type: str, tz: timezone):
+    today = datetime.now(tz).date()
+
+    if range_type == "today":
+        start_local = datetime.combine(today, time.min, tz)
+        end_local = datetime.combine(today, time.max, tz)
+
+    elif range_type == "weekly":
+        start_local = datetime.combine(today - timedelta(days=6), time.min, tz)
+        end_local = datetime.combine(today, time.max, tz)
+
+    elif range_type == "monthly":
+        start_local = datetime.combine(today.replace(day=1), time.min, tz)
+        end_local = datetime.combine(today, time.max, tz)
+
+    else:
+        return None, None
+
+    return (
+        start_local.astimezone(timezone.utc),
+        end_local.astimezone(timezone.utc)
+    )
+
+
+@router.get("/reports/recruiter-performance")
+async def recruiter_performance_report(
+    recruiter_id: Optional[PydanticObjectId] = Query(None),
+    date_range: Optional[str] = Query(None, pattern="^(today|weekly|monthly)$"),
+    start_date: Optional[datetime] = Query(None),
+    end_date: Optional[datetime] = Query(None),
+    current_user: User = Depends(recruiter_report_rbac),
+):
+    match_stage = {
+        "company": current_user.company
+    }
+
+    if recruiter_id:
+        match_stage["assignedRecruiterId"] = str(recruiter_id)
+
+    if date_range:
+        start, end = get_date_range(date_range, BUSINESS_TZ)
+        match_stage["appliedDate"] = {"$gte": start, "$lte": end}
+
+    if start_date and end_date:
+        match_stage["appliedDate"] = {"$gte": start_date, "$lte": end_date}
+
+    # =========================
+    # KPI PIPELINE
+    # =========================
+    kpi_pipeline = [
+        {"$match": match_stage},
+        {
+            "$group": {
+                "_id": None,
+                "totalLineups": {"$sum": 1},
+                "selected": {
+                    "$sum": {"$cond": [{"$eq": ["$stage", "Hired"]}, 1, 0]}
+                },
+                "rejected": {
+                    "$sum": {"$cond": [{"$eq": ["$stage", "Rejected"]}, 1, 0]}
+                }
+            }
+        },
+        {
+            "$project": {
+                "_id": 0,
+                "totalLineups": 1,
+                "selected": 1,
+                "rejected": 1,
+                "selectionRate": {
+                    "$cond": [
+                        {"$eq": ["$totalLineups", 0]},
+                        0,
+                        {
+                            "$round": [
+                                {
+                                    "$multiply": [
+                                        {"$divide": ["$selected", "$totalLineups"]},
+                                        100
+                                    ]
+                                },
+                                2
+                            ]
+                        }
+                    ]
+                }
+            }
+        }
+    ]
+
+    # =========================
+    # RECRUITER-WISE PIPELINE
+    # =========================
+    pipeline = [
+        {"$match": match_stage},
+        {
+            "$group": {
+                "_id": "$assignedRecruiterId",
+                "totalLineups": {"$sum": 1},
+                "selected": {
+                    "$sum": {"$cond": [{"$eq": ["$stage", "Hired"]}, 1, 0]}
+                },
+                "rejected": {
+                    "$sum": {"$cond": [{"$eq": ["$stage", "Rejected"]}, 1, 0]}
+                }
+            }
+        },
+        {
+            "$addFields": {
+                "recruiterObjectId": {"$toObjectId": "$_id"}
+            }
+        },
+        {
+            "$lookup": {
+                "from": "users",
+                "localField": "recruiterObjectId",
+                "foreignField": "_id",
+                "as": "recruiter"
+            }
+        },
+        {"$unwind": "$recruiter"},
+        {
+            "$project": {
+                "recruiterId": "$_id",
+                "recruiterName": "$recruiter.name",
+                "totalLineups": 1,
+                "selected": 1,
+                "rejected": 1,
+                "selectionRate": {
+                    "$cond": [
+                        {"$eq": ["$totalLineups", 0]},
+                        0,
+                        {
+                            "$round": [
+                                {
+                                    "$multiply": [
+                                        {"$divide": ["$selected", "$totalLineups"]},
+                                        100
+                                    ]
+                                },
+                                2
+                            ]
+                        }
+                    ]
+                }
+            }
+        },
+        {"$sort": {"recruiterName": 1}}
+    ]
+
+    try:
+        collection = Application.get_pymongo_collection()
+
+        kpi_cursor = collection.aggregate(kpi_pipeline)
+        kpi_data = await kpi_cursor.to_list(length=1)
+        kpis = kpi_data[0] if kpi_data else {
+            "totalLineups": 0,
+            "selected": 0,
+            "rejected": 0,
+            "selectionRate": 0
+        }
+
+        cursor = collection.aggregate(pipeline)
+        rows = await cursor.to_list(length=None)
+
+    except Exception:
+        traceback.print_exc()
+        raise HTTPException(
+            status_code=500,
+            detail="Failed to generate recruiter performance report"
+        )
+
+    return {
+        "kpis": kpis,
+        "rows": rows,
+        "meta": {
+            "company": current_user.company,
+            "filters": {
+                "recruiterId": recruiter_id,
+                "dateRange": date_range,
+                "startDate": start_date,
+                "endDate": end_date
+            }
+        }
+    }
+
+
+@router.get("/reports/recruiter-performance/export")
+async def recruiter_performance_export(
+    recruiter_id: Optional[PydanticObjectId] = Query(None),
+    date_range: Optional[str] = Query(None, pattern="^(today|weekly|monthly)$"),
+    start_date: Optional[datetime] = Query(None),
+    end_date: Optional[datetime] = Query(None),
+    current_user: User = Depends(recruiter_report_rbac),
+):
+    try:
+        match_stage = {"company": current_user.company}
+
+        if recruiter_id:
+            match_stage["assignedRecruiterId"] = str(recruiter_id)
+
+        if date_range:
+            start, end = get_date_range(date_range, BUSINESS_TZ)
+            match_stage["appliedDate"] = {"$gte": start, "$lte": end}
+
+        if start_date and end_date:
+            match_stage["appliedDate"] = {"$gte": start_date, "$lte": end_date}
+
+        kpi_pipeline = [
+            {"$match": match_stage},
+            {
+                "$group": {
+                    "_id": None,
+                    "totalLineups": {"$sum": 1},
+                    "selected": {"$sum": {"$cond": [{"$eq": ["$stage", "Hired"]}, 1, 0]}},
+                    "rejected": {"$sum": {"$cond": [{"$eq": ["$stage", "Rejected"]}, 1, 0]}},
+                }
+            },
+            {
+                "$project": {
+                    "_id": 0,
+                    "totalLineups": 1,
+                    "selected": 1,
+                    "rejected": 1,
+                    "selectionRate": {
+                        "$cond": [
+                            {"$eq": ["$totalLineups", 0]},
+                            0,
+                            {"$round": [{"$multiply": [{"$divide": ["$selected", "$totalLineups"]}, 100]}, 2]},
+                        ]
+                    }
+                }
+            }
+        ]
+
+        pipeline = [
+            {"$match": match_stage},
+            {
+                "$group": {
+                    "_id": "$assignedRecruiterId",
+                    "totalLineups": {"$sum": 1},
+                    "selected": {"$sum": {"$cond": [{"$eq": ["$stage", "Hired"]}, 1, 0]}},
+                    "rejected": {"$sum": {"$cond": [{"$eq": ["$stage", "Rejected"]}, 1, 0]}},
+                }
+            },
+            {"$addFields": {"recruiterObjectId": {"$toObjectId": "$_id"}}},
+            {
+                "$lookup": {
+                    "from": "users",
+                    "localField": "recruiterObjectId",
+                    "foreignField": "_id",
+                    "as": "recruiter"
+                }
+            },
+            {"$unwind": "$recruiter"},
+            {
+                "$project": {
+                    "recruiterId": "$_id",
+                    "recruiterName": "$recruiter.name",
+                    "totalLineups": 1,
+                    "selected": 1,
+                    "rejected": 1,
+                    "selectionRate": {
+                        "$cond": [
+                            {"$eq": ["$totalLineups", 0]},
+                            0,
+                            {"$round": [{"$multiply": [{"$divide": ["$selected", "$totalLineups"]}, 100]}, 2]}
+                        ]
+                    }
+                }
+            },
+            {"$sort": {"recruiterName": 1}}
+        ]
+
+        collection = Application.get_pymongo_collection()
+
+        kpi_cursor = collection.aggregate(kpi_pipeline)
+        kpi_data = await kpi_cursor.to_list(length=1)
+        kpis = kpi_data[0] if kpi_data else {
+            "totalLineups": 0,
+            "selected": 0,
+            "rejected": 0,
+            "selectionRate": 0
+        }
+
+        cursor = collection.aggregate(pipeline)
+        rows = await cursor.to_list(length=None)
+
+        df_rows = pd.DataFrame(rows)
+        df_kpis = pd.DataFrame([kpis])
+
+        output = io.BytesIO()
+        with pd.ExcelWriter(output, engine="openpyxl") as writer:
+            df_kpis.to_excel(writer, sheet_name="KPIs", index=False, startrow=4)
+            df_rows.to_excel(writer, sheet_name="Recruiter Performance", index=False, startrow=4)
+
+            wb = writer.book
+
+            kpi_ws = wb["KPIs"]
+            kpi_ws.merge_cells("A1:D1")
+            kpi_ws["A1"] = "Recruiter Performance Report"
+            kpi_ws["A1"].font = Font(size=16, bold=True)
+            kpi_ws["A1"].alignment = Alignment(horizontal="center")
+
+            kpi_ws.merge_cells("A2:D2")
+            kpi_ws["A2"] = f"Company: {current_user.company} | Filters: {date_range or 'N/A'}"
+            kpi_ws["A2"].alignment = Alignment(horizontal="center")
+
+            for cell in kpi_ws[4]:
+                cell.font = Font(bold=True)
+                cell.fill = PatternFill("solid", fgColor="FFFF00")
+                cell.alignment = Alignment(horizontal="center")
+
+            for col in range(1, kpi_ws.max_column + 1):
+                kpi_ws.column_dimensions[get_column_letter(col)].width = 22
+
+            perf_ws = wb["Recruiter Performance"]
+            perf_ws.merge_cells("A1:E1")
+            perf_ws["A1"] = "Recruiter Performance Report"
+            perf_ws["A1"].font = Font(size=16, bold=True)
+            perf_ws["A1"].alignment = Alignment(horizontal="center")
+
+            perf_ws.merge_cells("A2:E2")
+            perf_ws["A2"] = f"Company: {current_user.company} | Filters: {date_range or 'N/A'}"
+            perf_ws["A2"].alignment = Alignment(horizontal="center")
+
+            for cell in perf_ws[4]:
+                cell.font = Font(bold=True)
+                cell.fill = PatternFill("solid", fgColor="FFFF00")
+                cell.alignment = Alignment(horizontal="center")
+
+            for col in range(1, perf_ws.max_column + 1):
+                perf_ws.column_dimensions[get_column_letter(col)].width = 24
+
+        output.seek(0)
+
+        return StreamingResponse(
+            output,
+            media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            headers={"Content-Disposition": 'attachment; filename="recruiter_report.xlsx"'}
+        )
+
+    except Exception:
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail="Failed to export report")

@@ -159,3 +159,33 @@ export type Application = {
   interactions: any[];
   interviewSchedules: InterviewSchedule[];
 }
+
+export interface RecruiterKPIs {
+  totalLineups: number;
+  selected: number;
+  rejected: number;
+  selectionRate: number;
+}
+
+export interface RecruiterRow {
+  recruiterId: string;
+  recruiterName: string;
+  totalLineups: number;
+  selected: number;
+  rejected: number;
+  selectionRate: number;
+}
+
+export interface RecruiterReportResponse {
+  kpis: RecruiterKPIs;
+  rows: RecruiterRow[];
+  meta: {
+    company: string;
+    filters: {
+      recruiterId?: string | null;
+      dateRange?: "today" | "weekly" | "monthly" | null;
+      startDate?: string | null;
+      endDate?: string | null;
+    };
+  };
+}
