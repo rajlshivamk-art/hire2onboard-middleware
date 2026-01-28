@@ -3,6 +3,7 @@ import { X } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
+import toast from 'react-hot-toast';
 import { api } from '../lib/api';
 
 const candidateSchema = z.object({
@@ -16,14 +17,18 @@ const candidateSchema = z.object({
     skills: z.string().min(1, "At least one skill is required"),
     resumeUrl: z.string().optional(),
     source: z.string().min(1, "Source is required"),
+    otherSource: z.string().optional(),
     referredBy: z.string().optional(),
 }).refine(data => {
     if (data.source === 'Referral' && (!data.referredBy || data.referredBy.length < 2)) {
         return false;
     }
+    if (data.source === 'Other' && (!data.otherSource || data.otherSource.length < 2)) {
+        return false;
+    }
     return true;
 }, {
-    message: "Referral name is required",
+    message: "Referral/Other source name is required",
     path: ["referredBy"]
 });
 
@@ -35,33 +40,43 @@ interface AddCandidateModalProps {
 }
 
 export function AddCandidateModal({ onClose, onSuccess }: AddCandidateModalProps) {
-
-
     const [jobs, setJobs] = useState<any[]>([]);
 
-    useEffect(() => {
-        api.jobs.getAll().then(setJobs).catch(console.error);
-    }, []);
-
-    const {
-        register,
-        handleSubmit,
-        watch,
-        formState: { errors, isSubmitting },
-    } = useForm<CandidateFormValues>({
+    const { register, handleSubmit, watch, setValue, formState: { errors, isSubmitting } } = useForm<CandidateFormValues>({
         resolver: zodResolver(candidateSchema),
         defaultValues: {
-            resumeUrl: '#',
+            resumeUrl: '',
             source: 'Walk-in'
         }
     });
 
     const watchSource = watch('source');
+    const watchResume = watch('resumeUrl');
 
+    useEffect(() => {
+        api.jobs.getAll().then(setJobs).catch(err => {
+            console.error(err);
+            toast.error('Failed to load jobs');
+        });
+    }, []);
 
+    const handleResumeUpload = async (file: File) => {
+        if (!file) return;
 
-    // Calculate Match Score Logic
+        if (file.size < 200 * 1024 || file.size > 2 * 1024 * 1024) {
+            toast.error("Resume size must be between 200KB and 2MB");
+            return;
+        }
 
+        try {
+            const uploadedResume = await api.applications.uploadResume(file);
+            setValue('resumeUrl', uploadedResume.url);
+            toast.success("Resume uploaded successfully!");
+        } catch (err) {
+            console.error(err);
+            toast.error("Failed to upload resume");
+        }
+    };
 
     const onSubmit = async (data: CandidateFormValues) => {
         try {
@@ -75,25 +90,21 @@ export function AddCandidateModal({ onClose, onSuccess }: AddCandidateModalProps
                 expectedSalary: data.expectedSalary,
                 currentSalary: data.currentSalary,
                 yearsOfExperience: data.yearsOfExperience,
-
                 resumeUrl: data.resumeUrl || '#',
-                source: data.source, // Uses selected source
+                source: data.source === 'Other' ? data.otherSource : data.source,
                 referredBy: data.source === 'Referral' ? data.referredBy : undefined,
                 skills: skillsArray,
-                stage: 'Applied', // Applied > Screening
+                stage: 'Applied',
                 appliedDate: new Date().toISOString()
             };
 
             await api.applications.submit(newCandidate);
 
-            // If score is high (>= 80), auto-move to Screening? 
-            // For now, adhering to workflow: stays in Applied until HR moves.
-
-            alert(`Candidate added successfully!`);
+            toast.success('Candidate added successfully!');
             onSuccess();
         } catch (error) {
             console.error('Failed to add candidate:', error);
-            alert('Failed to add candidate');
+            toast.error('Failed to add candidate');
         }
     };
 
@@ -135,6 +146,7 @@ export function AddCandidateModal({ onClose, onSuccess }: AddCandidateModalProps
                             />
                             {errors.name && <p className="text-red-600 text-sm mt-1">{errors.name.message}</p>}
                         </div>
+
                         <div>
                             <label className="block text-gray-700 mb-2">Email *</label>
                             <input
@@ -144,6 +156,7 @@ export function AddCandidateModal({ onClose, onSuccess }: AddCandidateModalProps
                             />
                             {errors.email && <p className="text-red-600 text-sm mt-1">{errors.email.message}</p>}
                         </div>
+
                         <div>
                             <label className="block text-gray-700 mb-2">Source *</label>
                             <select
@@ -162,7 +175,7 @@ export function AddCandidateModal({ onClose, onSuccess }: AddCandidateModalProps
                         </div>
 
                         {watchSource === 'Referral' && (
-                            <div className="animate-in fade-in slide-in-from-top-2 duration-200">
+                            <div>
                                 <label className="block text-gray-700 mb-2">Referral Name *</label>
                                 <input
                                     {...register('referredBy')}
@@ -172,6 +185,7 @@ export function AddCandidateModal({ onClose, onSuccess }: AddCandidateModalProps
                                 {errors.referredBy && <p className="text-red-600 text-sm mt-1">{errors.referredBy.message}</p>}
                             </div>
                         )}
+
                         <div>
                             <label className="block text-gray-700 mb-2">Phone *</label>
                             <input
@@ -181,6 +195,7 @@ export function AddCandidateModal({ onClose, onSuccess }: AddCandidateModalProps
                             />
                             {errors.phone && <p className="text-red-600 text-sm mt-1">{errors.phone.message}</p>}
                         </div>
+
                         <div>
                             <label className="block text-gray-700 mb-2">Experience (Years) *</label>
                             <input
@@ -193,19 +208,30 @@ export function AddCandidateModal({ onClose, onSuccess }: AddCandidateModalProps
                         </div>
                     </div>
 
-                    {/* Skills & Match Score */}
+                    {/* Resume Upload */}
+                    <div>
+                        <label className="block text-gray-700 mb-2">Resume *</label>
+                        <input
+                            type="file"
+                            accept=".pdf,.doc,.docx"
+                            onChange={(e) => e.target.files?.[0] && handleResumeUpload(e.target.files[0])}
+                            className="w-full border px-4 py-2 rounded-lg"
+                        />
+                        {watchResume && (
+                            <p className="text-sm text-green-600 mt-1">Uploaded: {watchResume}</p>
+                        )}
+                    </div>
+
+                    {/* Skills */}
                     <div className="bg-blue-50 p-4 rounded-lg border border-blue-100">
-                        <div className="flex justify-between items-start mb-2">
-                            <label className="block text-blue-900 font-medium">Key Skills (Comma separated) *</label>
-                        </div>
+                        <label className="block text-blue-900 font-medium mb-2">Key Skills (Comma separated) *</label>
                         <textarea
                             {...register('skills')}
                             className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 ${errors.skills ? 'border-red-500' : 'border-blue-200'}`}
-                            placeholder="e.g. React, Node.js, TypeScript, Python"
+                            placeholder="e.g. React, Node.js, TypeScript"
                             rows={3}
                         />
                         {errors.skills && <p className="text-red-600 text-sm mt-1">{errors.skills.message}</p>}
-
                     </div>
 
                     {/* Salary */}

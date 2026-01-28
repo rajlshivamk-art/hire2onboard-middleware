@@ -56,6 +56,7 @@ export function ApplicationForm({
     portfolio: "",
     yearsOfExperience: "",
     referredBy: "",
+    skills: "",
   });
 
   const [uploadStatus, setUploadStatus] = useState<'idle' | 'uploading' | 'success' | 'error'>('idle');
@@ -172,6 +173,10 @@ export function ApplicationForm({
       newErrors.referredBy = "Referrer's name is required";
     }
 
+    if (!formData.skills.trim()) {
+      newErrors.skills = "At least one skill is required";
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -187,6 +192,12 @@ export function ApplicationForm({
     setLoading(true);
     setError(null);
 
+    const skillsArray = formData.skills
+      .split(",")
+      .map(s => s.trim())
+      .filter(Boolean);
+
+
     // Create application object
     const application = {
       id: "c" + Math.random().toString(36).substr(2, 9),
@@ -194,6 +205,7 @@ export function ApplicationForm({
       email: formData.email,
       phone: formData.phone,
       resumeUrl: formData.resumeUrl || "#", // Use the uploaded URL
+      skills: skillsArray,
 
 
       jobId: jobId,
@@ -408,6 +420,35 @@ export function ApplicationForm({
                   {errors.yearsOfExperience && <p className="text-red-600 font-medium text-sm mt-1">{errors.yearsOfExperience}</p>}
                 </div>
               </div>
+            </div>
+
+            {/* Skills */}
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+              <h2 className="text-gray-900 mb-4">Key Skills *</h2>
+
+              <textarea
+                value={formData.skills}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    skills: e.target.value,
+                  })
+                }
+                className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.skills ? "border-red-500" : "border-blue-300"
+                  }`}
+                rows={3}
+                placeholder="e.g. React, Node.js, SQL"
+              />
+
+              {errors.skills && (
+                <p className="text-red-600 font-medium text-sm mt-1">
+                  {errors.skills}
+                </p>
+              )}
+
+              <p className="text-sm text-blue-700 mt-2">
+                Separate skills using commas
+              </p>
             </div>
 
             {/* Salary Information */}
