@@ -16,15 +16,15 @@ import {
   Trash2,
   Linkedin,
 } from "lucide-react";
-import { User, Candidate, CandidateStage, Job } from "../types";
+import { User, Candidate, CandidateStage, Job, Application } from "../types";
 import { api } from "../lib/api";
 import { InterviewFeedbackModal } from "./InterviewFeedbackModal";
 import { CandidateInteractions } from "./CandidateInteractions";
 import { InterviewScheduler } from "./InterviewScheduler";
 import { RejectionModal } from "./RejectionModal";
 import { OfferModal } from "./OfferModal";
+import { EvaluationPanel } from "./EvaluationPanel";
 import toast from "react-hot-toast";
-
 
 interface CandidateDetailProps {
   user: User;
@@ -906,6 +906,15 @@ export function CandidateDetail({
           <InterviewScheduler
             applicationId={candidate.id}
             currentUser={user}
+          />
+
+          <EvaluationPanel
+            user={user}
+            applicationId={candidate.id}
+            stage={candidate.stage}
+            evaluationScores={candidate.evaluationScores ?? []}
+            cumulativeScore={candidate.cumulativeScore ?? undefined}
+            onRefresh={fetchCandidate}
           />
 
 

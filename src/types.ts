@@ -27,6 +27,21 @@ export type CandidateStage =
   | 'Hold'
   | 'Archived';
 
+export interface EvaluationScore {
+  roundName: string;
+  roundId: string;
+
+  technical?: number;
+  communication?: number;
+  problemSolving?: number;
+  cultureFit?: number;
+
+  overall?: number;
+
+  reviewerId: string;
+  reviewerRole: string;
+  createdAt: string;
+}
 export interface Candidate {
   id: string;
   name: string;
@@ -52,6 +67,8 @@ export interface Candidate {
   source?: string;
   skills?: string[];
   interviewSchedules?: InterviewSchedule[];
+  evaluationScores?: EvaluationScore[];
+  cumulativeScore: number | null;
 }
 
 export interface Feedback {
@@ -158,6 +175,8 @@ export type Application = {
   company?: string;
   interactions: any[];
   interviewSchedules: InterviewSchedule[];
+  evaluationScores?: EvaluationScore[];
+  cumulativeScore: number | null;
 }
 
 export interface RecruiterKPIs {

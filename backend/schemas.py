@@ -1,8 +1,6 @@
 from typing import List, Optional
 from datetime import datetime, timezone
 from pydantic import BaseModel, EmailStr, Field, ConfigDict
-
-
 from beanie import PydanticObjectId
 
 # User Schemas
@@ -175,10 +173,29 @@ class InterviewSchedule(BaseModel):
         default_factory=lambda: datetime.now(timezone.utc)
     )
 
+class EvaluationScore(BaseModel):
+    roundName: str
+    roundId: str
+
+    technical: Optional[int] = None
+    communication: Optional[int] = None
+    problemSolving: Optional[int] = None
+    cultureFit: Optional[int] = None
+    overall: Optional[int] = None
+
+    reviewerId: str
+    reviewerRole: str
+
+    createdAt: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
 class ApplicationResponse(ApplicationBase):
     id: PydanticObjectId
     stage: str
     appliedDate: datetime
+
+    evaluationScores: List[EvaluationScore] = []
+    cumulativeScore: Optional[float] = None
+
     feedback: List[FeedbackResponse] = []
     rejectionReason: Optional[str] = None
     assignedRecruiterId: Optional[str] = None

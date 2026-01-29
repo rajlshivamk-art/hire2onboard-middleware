@@ -1,12 +1,5 @@
 import axios from 'axios';
-import {
-    Job,
-    Candidate,
-    User,
-    Feedback,
-    Application,
-    InterviewSchedule,
-} from '../types';
+import { Job, Candidate, User, Feedback, Application, InterviewSchedule, RecruiterReportResponse } from '../types';
 import { getAccessToken, setAccessToken } from '../types';
 
 // Create axios instance
@@ -187,6 +180,35 @@ export const api = {
 
         deleteFeedback: async (applicationId: string, feedbackId: string) => {
             await apiClient.delete(`/applications/${applicationId}/feedback/${feedbackId}`);
+        },
+
+        // Evaluation endpoints
+        addEvaluationScore: async (
+            applicationId: string,
+            data: {
+                roundName: string;
+                roundId: string;
+                technical?: number;
+                communication?: number;
+                problemSolving?: number;
+                cultureFit?: number;
+                overall?: number;
+                reviewerId: string;
+                reviewerRole: string;
+            }
+        ) => {
+            const response = await apiClient.post(
+                `/applications/${applicationId}/evaluation`,
+                data
+            );
+            return response.data;
+        },
+
+        getEvaluationScore: async (applicationId: string) => {
+            const response = await apiClient.get(
+                `/applications/${applicationId}/evaluation`
+            );
+            return response.data;
         },
 
         updateStage: async (applicationId: string, stage: string, reason?: string) => {
