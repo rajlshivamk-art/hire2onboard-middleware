@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
 import { api } from "../lib/api";
 import toast from "react-hot-toast";
+import { SmoothSelect } from "./ui/smooth-select";
+
+/* ===================== TYPES ===================== */
 
 type KPI = {
     totalLineups: number;
@@ -32,17 +35,23 @@ type RecruiterReportResponse = {
     };
 };
 
+/* ===================== HELPERS ===================== */
+
 const toISTDateString = (date: Date) => {
     const istOffset = 5.5 * 60 * 60 * 1000;
-    return new Date(date.getTime() + istOffset).toISOString().slice(0, 10);
+    return new Date(date.getTime() + istOffset)
+        .toISOString()
+        .slice(0, 10);
 };
+
+/* ===================== COMPONENT ===================== */
 
 export const RecruiterPerformanceReport = () => {
     const [data, setData] = useState<RecruiterReportResponse | null>(null);
     const [loading, setLoading] = useState(false);
 
     /* UI filter state */
-    const [recruiterId, setRecruiterId] = useState("");
+    const [recruiterId, setRecruiterId] = useState<string | undefined>(undefined);
     const [dateRange, setDateRange] = useState<
         "today" | "weekly" | "monthly" | ""
     >("");
@@ -54,7 +63,8 @@ export const RecruiterPerformanceReport = () => {
         return new Date(startDate) <= new Date(endDate);
     };
 
-    /* Auto-fill dates when preset selected */
+    /* ===================== DATE PRESETS ===================== */
+
     useEffect(() => {
         const today = new Date();
 
@@ -88,17 +98,37 @@ export const RecruiterPerformanceReport = () => {
         }
     }, [dateRange]);
 
-    /* Single source of truth for filters */
-    const buildParams = () => {
+    /* ===================== PARAM BUILDERS ===================== */
+
+    // Used for TABLE (never filtered by recruiter)
+    const buildBaseParams = () => {
         const params: any = {};
-        if (recruiterId) params.recruiterId = recruiterId;
-        if (dateRange) params.dateRange = dateRange;
+
         if (startDate && endDate) {
             params.startDate = startDate;
             params.endDate = endDate;
+            return params;
         }
+
+        if (dateRange) {
+            params.dateRange = dateRange;
+        }
+
         return params;
     };
+
+    // Used for KPI (can be filtered by recruiter)
+    const buildKpiParams = () => {
+        const params = buildBaseParams();
+
+        if (recruiterId) {
+            params.recruiterId = recruiterId;
+        }
+
+        return params;
+    };
+
+    /* ===================== DATA FETCH ===================== */
 
     const fetchReport = async () => {
         if (!isValidDateRange()) {
@@ -108,8 +138,22 @@ export const RecruiterPerformanceReport = () => {
 
         try {
             setLoading(true);
-            const res = await api.reports.recruiterPerformance(buildParams());
-            setData(res.data ?? res);
+
+            /**
+             * OPTION A — Comparison Mode
+             * 1. Rows → unfiltered
+             * 2. KPIs → recruiter filtered
+             */
+            const [rowsRes, kpiRes] = await Promise.all([
+                api.reports.recruiterPerformance(buildBaseParams()),
+                api.reports.recruiterPerformance(buildKpiParams()),
+            ]);
+
+            setData({
+                rows: rowsRes.data?.rows ?? rowsRes.rows ?? [],
+                kpis: kpiRes.data?.kpis ?? kpiRes.kpis,
+                meta: kpiRes.data?.meta ?? kpiRes.meta,
+            });
         } catch {
             toast.error("Failed to load recruiter performance report");
         } finally {
@@ -117,14 +161,17 @@ export const RecruiterPerformanceReport = () => {
         }
     };
 
+    /* ===================== EXPORT ===================== */
+
     const exportExcel = async () => {
         try {
             const res = await api.reports.exportRecruiterPerformance(
-                buildParams()
+                buildKpiParams()
             );
 
             const blob = new Blob([res.data ?? res], {
-                type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                type:
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             });
 
             const url = window.URL.createObjectURL(blob);
@@ -138,103 +185,109 @@ export const RecruiterPerformanceReport = () => {
         }
     };
 
+    /* ===================== RESET ===================== */
+
     const resetFilters = () => {
-        setRecruiterId("");
+        setRecruiterId(undefined);
         setDateRange("");
         setStartDate("");
         setEndDate("");
         fetchReport();
     };
 
-    /* Initial load */
     useEffect(() => {
         fetchReport();
     }, []);
 
+    /* ===================== UI ===================== */
+
     return (
-        <div className="p-6 space-y-6 relative">
+        <div className="p-6 space-y-6 relative bg-white rounded-2xl shadow-md">
             {/* Header */}
-            <div className="flex items-center justify-between">
-                <h2 className="text-xl font-semibold">
-                    Recruiter Performance Report
-                </h2>
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div>
+                    <h2 className="text-xl font-semibold">
+                        Recruiter Performance Report
+                    </h2>
+                    <p className="text-sm text-gray-500 mt-1">
+                        Track recruiter performance with clean KPI cards and easy
+                        filters.
+                    </p>
+                </div>
 
                 <button
                     onClick={exportExcel}
                     disabled={!data || loading}
-                    className="px-4 py-2 rounded-md bg-blue-600 text-white text-sm disabled:opacity-50"
+                    className="px-4 py-2 rounded-xl bg-blue-600 text-white text-sm shadow-sm transition hover:bg-blue-700 disabled:opacity-50"
                 >
                     Export Excel
                 </button>
             </div>
 
             {/* Filters */}
-            <div className="flex gap-4 flex-wrap">
-                <select
+            <div className="flex gap-4 flex-wrap items-center">
+                <SmoothSelect
                     value={recruiterId}
-                    onChange={(e) => setRecruiterId(e.target.value)}
-                    className="border rounded-md px-3 py-2 text-sm"
-                >
-                    <option value="">All Recruiters</option>
-                    {data?.rows.map((r) => (
-                        <option key={r.recruiterId} value={r.recruiterId}>
-                            {r.recruiterName}
-                        </option>
-                    ))}
-                </select>
+                    onChange={setRecruiterId}
+                    placeholder="All Recruiters"
+                    options={
+                        data?.rows.map((r) => ({
+                            label: r.recruiterName,
+                            value: r.recruiterId,
+                        })) ?? []
+                    }
+                />
 
-                <select
+                <SmoothSelect
                     value={dateRange}
-                    onChange={(e) => setDateRange(e.target.value as any)}
-                    className="border rounded-md px-3 py-2 text-sm"
-                >
-                    <option value="">Custom</option>
-                    <option value="today">Today</option>
-                    <option value="weekly">Last 7 Days</option>
-                    <option value="monthly">This Month</option>
-                </select>
+                    onChange={(v) => setDateRange(v as any)}
+                    placeholder="Custom"
+                    options={[
+                        { label: "Today", value: "today" },
+                        { label: "Last 7 Days", value: "weekly" },
+                        { label: "This Month", value: "monthly" },
+                    ]}
+                />
 
                 <input
                     type="date"
                     value={startDate}
                     onChange={(e) => setStartDate(e.target.value)}
-                    className="border rounded-md px-3 py-2 text-sm"
+                    className="border rounded-xl px-3 py-2 text-sm"
                 />
 
                 <input
                     type="date"
                     value={endDate}
                     onChange={(e) => setEndDate(e.target.value)}
-                    className="border rounded-md px-3 py-2 text-sm"
+                    className="border rounded-xl px-3 py-2 text-sm"
                 />
 
                 <button
                     onClick={fetchReport}
-                    className="px-4 py-2 bg-gray-900 text-white rounded-md text-sm"
+                    className="px-4 py-2 rounded-xl bg-blue-600 text-white text-sm shadow-sm transition hover:bg-blue-700"
                 >
                     Apply
                 </button>
 
                 <button
                     onClick={resetFilters}
-                    className="px-4 py-2 bg-gray-200 rounded-md text-sm"
+                    className="px-4 py-2 rounded-xl bg-gray-200 text-sm shadow-sm transition hover:bg-gray-300"
                 >
                     Reset
                 </button>
             </div>
 
-            {/* Smooth loading overlay */}
             {loading && (
-                <div className="absolute inset-0 bg-white/60 backdrop-blur-sm flex items-center justify-center rounded-md">
+                <div className="absolute inset-0 bg-white/60 backdrop-blur-sm flex items-center justify-center rounded-2xl">
                     <div className="text-sm text-gray-600 animate-pulse">
                         Loading report…
                     </div>
                 </div>
             )}
 
-            {/* KPIs */}
             {data && (
-                <div className="grid grid-cols-4 gap-4">
+                <div className="flex gap-4 items-stretch">
                     <KpiCard label="Total Lineups" value={data.kpis.totalLineups} />
                     <KpiCard label="Selected" value={data.kpis.selected} />
                     <KpiCard label="Rejected" value={data.kpis.rejected} />
@@ -245,35 +298,39 @@ export const RecruiterPerformanceReport = () => {
                 </div>
             )}
 
-            {/* Table */}
             {data && (
-                <div className="overflow-x-auto border rounded-md">
+                <div className="overflow-x-auto border rounded-2xl">
                     <table className="w-full text-sm">
-                        <thead className="bg-gray-100">
+                        <thead className="bg-gray-50">
                             <tr>
-                                <th className="px-4 py-3 text-left">Recruiter</th>
-                                <th className="px-4 py-3 text-center">Lineups</th>
-                                <th className="px-4 py-3 text-center">Selected</th>
-                                <th className="px-4 py-3 text-center">Rejected</th>
+                                <th className="px-4 py-3 text-left">
+                                    Recruiter
+                                </th>
+                                <th className="px-4 py-3 text-center">
+                                    Lineups
+                                </th>
+                                <th className="px-4 py-3 text-center">
+                                    Selected
+                                </th>
+                                <th className="px-4 py-3 text-center">
+                                    Rejected
+                                </th>
                                 <th className="px-4 py-3 text-center">
                                     Selection %
                                 </th>
                             </tr>
                         </thead>
                         <tbody>
-                            {data.rows.length === 0 && (
-                                <tr>
-                                    <td
-                                        colSpan={5}
-                                        className="text-center py-6 text-gray-500"
-                                    >
-                                        No data available
-                                    </td>
-                                </tr>
-                            )}
-
                             {data.rows.map((row) => (
-                                <tr key={row.recruiterId} className="border-t">
+                                <tr
+                                    key={row.recruiterId}
+                                    className={`border-t transition ${recruiterId === row.recruiterId
+                                            ? "bg-blue-50 ring-1 ring-blue-200"
+                                            : recruiterId
+                                                ? "opacity-50"
+                                                : ""
+                                        }`}
+                                >
                                     <td className="px-4 py-3">
                                         {row.recruiterName}
                                     </td>
@@ -299,9 +356,17 @@ export const RecruiterPerformanceReport = () => {
     );
 };
 
-const KpiCard = ({ label, value }: { label: string; value: string | number }) => (
-    <div className="border rounded-md p-4 bg-white">
+/* ===================== KPI CARD ===================== */
+
+const KpiCard = ({
+    label,
+    value,
+}: {
+    label: string;
+    value: string | number;
+}) => (
+    <div className="flex-1 border rounded-2xl p-4 bg-white shadow-sm">
         <p className="text-xs text-gray-500">{label}</p>
-        <p className="text-xl font-semibold mt-1">{value}</p>
+        <p className="text-2xl font-semibold mt-1">{value}</p>
     </div>
 );

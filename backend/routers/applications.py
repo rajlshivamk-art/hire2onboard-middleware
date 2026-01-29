@@ -4,7 +4,7 @@ from typing import List, Optional
 from datetime import datetime, timedelta, timezone, time
 from beanie import PydanticObjectId
 from ..models import Application, Feedback, OnboardingTask, User, Job
-from ..schemas import ApplicationCreate, ApplicationUpdate, FeedbackCreate, ApplicationResponse, FeedbackResponse, StageUpdate, TaskCreate, OfferCreate, TaskStatusUpdate, CandidateInteraction
+from ..schemas import ApplicationCreate, ApplicationUpdate, FeedbackCreate, ApplicationResponse, FeedbackResponse, StageUpdate, TaskCreate, OfferCreate, TaskStatusUpdate, CandidateInteraction, UserResponse, EvaluationScore
 from ..utils.files import upload_file_from_stream, get_file_stream
 from ..utils.email import send_email
 from .auth import get_current_user # Imported get_current_user
@@ -651,9 +651,7 @@ def recruiter_report_rbac(current_user: User = Depends(get_current_user)):
         )
     return current_user
 
-
 BUSINESS_TZ = ZoneInfo("Asia/Kolkata")
-
 
 def get_date_range(range_type: str, tz: timezone):
     today = datetime.now(tz).date()
@@ -678,15 +676,15 @@ def get_date_range(range_type: str, tz: timezone):
         end_local.astimezone(timezone.utc)
     )
 
-
 @router.get("/reports/recruiter-performance")
 async def recruiter_performance_report(
-    recruiter_id: Optional[PydanticObjectId] = Query(None),
-    date_range: Optional[str] = Query(None, pattern="^(today|weekly|monthly)$"),
-    start_date: Optional[datetime] = Query(None),
-    end_date: Optional[datetime] = Query(None),
+    recruiter_id: Optional[PydanticObjectId] = Query(None, alias="recruiterId"),
+    date_range: Optional[str] = Query(None, alias="dateRange", pattern="^(today|weekly|monthly)$"),
+    start_date: Optional[datetime] = Query(None, alias="startDate"),
+    end_date: Optional[datetime] = Query(None, alias="endDate"),
     current_user: User = Depends(recruiter_report_rbac),
 ):
+    
     match_stage = {
         "company": current_user.company
     }
@@ -694,12 +692,17 @@ async def recruiter_performance_report(
     if recruiter_id:
         match_stage["assignedRecruiterId"] = str(recruiter_id)
 
-    if date_range:
-        start, end = get_date_range(date_range, BUSINESS_TZ)
-        match_stage["appliedDate"] = {"$gte": start, "$lte": end}
-
     if start_date and end_date:
-        match_stage["appliedDate"] = {"$gte": start_date, "$lte": end_date}
+        match_stage["appliedDate"] = {
+            "$gte": start_date,
+            "$lte": end_date
+            }
+    elif date_range:
+        start, end = get_date_range(date_range, BUSINESS_TZ)
+        match_stage["appliedDate"] = {
+            "$gte": start,
+            "$lte": end
+            }    
 
     # =========================
     # KPI PIPELINE
@@ -819,6 +822,7 @@ async def recruiter_performance_report(
 
         cursor = collection.aggregate(pipeline)
         rows = await cursor.to_list(length=None)
+        rows = rows or [] 
 
     except Exception:
         traceback.print_exc()
@@ -833,7 +837,7 @@ async def recruiter_performance_report(
         "meta": {
             "company": current_user.company,
             "filters": {
-                "recruiterId": recruiter_id,
+                "recruiterId": str(recruiter_id) if recruiter_id else None,
                 "dateRange": date_range,
                 "startDate": start_date,
                 "endDate": end_date
@@ -841,13 +845,12 @@ async def recruiter_performance_report(
         }
     }
 
-
 @router.get("/reports/recruiter-performance/export")
 async def recruiter_performance_export(
-    recruiter_id: Optional[PydanticObjectId] = Query(None),
-    date_range: Optional[str] = Query(None, pattern="^(today|weekly|monthly)$"),
-    start_date: Optional[datetime] = Query(None),
-    end_date: Optional[datetime] = Query(None),
+    recruiter_id: Optional[PydanticObjectId] = Query(None, alias="recruiterId"),
+    date_range: Optional[str] = Query(None, alias="dateRange", pattern="^(today|weekly|monthly)$"),
+    start_date: Optional[datetime] = Query(None, alias="startDate"),
+    end_date: Optional[datetime] = Query(None, alias="endDate"),
     current_user: User = Depends(recruiter_report_rbac),
 ):
     try:
@@ -856,12 +859,17 @@ async def recruiter_performance_export(
         if recruiter_id:
             match_stage["assignedRecruiterId"] = str(recruiter_id)
 
-        if date_range:
-            start, end = get_date_range(date_range, BUSINESS_TZ)
-            match_stage["appliedDate"] = {"$gte": start, "$lte": end}
-
         if start_date and end_date:
-            match_stage["appliedDate"] = {"$gte": start_date, "$lte": end_date}
+            match_stage["appliedDate"] = {
+                "$gte": start_date,
+                "$lte": end_date
+            }
+        elif date_range:
+            start, end = get_date_range(date_range, BUSINESS_TZ)
+            match_stage["appliedDate"] = {
+                "$gte": start,
+                "$lte": end
+            }  
 
         kpi_pipeline = [
             {"$match": match_stage},
@@ -942,6 +950,7 @@ async def recruiter_performance_export(
 
         cursor = collection.aggregate(pipeline)
         rows = await cursor.to_list(length=None)
+        rows = rows or [] 
 
         df_rows = pd.DataFrame(rows)
         df_kpis = pd.DataFrame([kpis])
@@ -1000,3 +1009,93 @@ async def recruiter_performance_export(
     except Exception:
         traceback.print_exc()
         raise HTTPException(status_code=500, detail="Failed to export report")
+    
+def recruiter_list_rbac(current_user: User = Depends(get_current_user)):
+    allowed_roles = {"Manager", "Admin", "HR"}
+    if current_user.role not in allowed_roles:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not authorized to access recruiter list"
+        )
+    return current_user
+
+@router.get("/users", response_model=List[UserResponse])
+async def get_recruiters(
+    role: Optional[str] = Query(None),
+    current_user: User = Depends(recruiter_list_rbac)
+):
+    if role != "Recruiter":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Only role=Recruiter is supported for this endpoint"
+        )
+
+    recruiters = await User.find({"company": current_user.company, "role": "Recruiter"}).to_list()
+    return recruiters
+
+@router.post("/{applicationId}/evaluation")
+async def add_evaluation_score(
+    applicationId: str,
+    score: EvaluationScore,
+    current_user: User = Depends(get_current_user)
+):
+    # RBAC
+    if current_user.role not in ["HR", "Manager", "SuperAdmin", "Admin", "Tech Interviewer", "Recruiter"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+
+    app = await Application.get(PydanticObjectId(applicationId))
+    if not app:
+        raise HTTPException(404, "Application not found")
+
+    # Company isolation
+    if app.company and current_user.company and app.company != current_user.company:
+        raise HTTPException(status_code=403, detail="Cross-company access denied")
+
+    # **Validate roundId**
+    if not score.roundId:
+        raise HTTPException(status_code=400, detail="roundId is required")
+
+    # Prevent duplicate round entry by same reviewer
+    for s in app.evaluationScores:
+        if s.roundId == score.roundId and s.reviewerId == score.reviewerId:
+            raise HTTPException(
+                status_code=400,
+                detail="You already submitted evaluation for this round"
+            )
+
+    # --- ROUND LOGIC: Ensure 2 decimals ---
+    score.technical = round(score.technical, 2) if score.technical is not None else None
+    score.communication = round(score.communication, 2) if score.communication is not None else None
+    score.problemSolving = round(score.problemSolving, 2) if score.problemSolving is not None else None
+    score.cultureFit = round(score.cultureFit, 2) if score.cultureFit is not None else None
+
+    # Calculate overall from fields if not provided
+    if score.overall is None:
+        fields = [v for v in [score.technical, score.communication, score.problemSolving, score.cultureFit] if v is not None]
+        score.overall = round(sum(fields) / len(fields), 2) if fields else None
+    else:
+        score.overall = round(score.overall, 2)
+
+    app.evaluationScores.append(score)
+
+    # Cumulative logic (Industry standard) - rounded to 2 decimals
+    valid_scores = [s.overall for s in app.evaluationScores if s.overall is not None]
+    app.cumulativeScore = round(sum(valid_scores) / len(valid_scores), 2) if valid_scores else None
+
+    await app.save()
+    return {"message": "Score added", "cumulativeScore": app.cumulativeScore}
+
+@router.get("/{applicationId}/evaluation")
+async def get_evaluation(applicationId: str, current_user: User = Depends(get_current_user)):
+    app = await Application.get(PydanticObjectId(applicationId))
+    if not app:
+        raise HTTPException(404, "Application not found")
+
+    # Company isolation
+    if app.company and current_user.company and app.company != current_user.company:
+        raise HTTPException(status_code=403, detail="Cross-company access denied")
+
+    return {
+        "rounds": app.evaluationScores,
+        "cumulativeScore": app.cumulativeScore
+    }
