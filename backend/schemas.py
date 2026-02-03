@@ -2,6 +2,7 @@ from typing import List, Optional
 from datetime import datetime, timezone
 from pydantic import BaseModel, EmailStr, Field, ConfigDict
 from beanie import PydanticObjectId
+from datetime import date
 
 # User Schemas
 class UserBase(BaseModel):
@@ -106,6 +107,14 @@ class FeedbackBase(BaseModel):
 class FeedbackCreate(FeedbackBase):
     pass
 
+class OnboardingDocument(BaseModel):
+    type: str
+    fileId: str
+    fileHash: str
+    originalName: str
+    mimeType: str
+    uploadedAt: datetime
+
 class ApplicationBase(BaseModel):
     jobId: str
     name: str
@@ -122,6 +131,10 @@ class ApplicationBase(BaseModel):
     currentSalary: Optional[float] = None
     expectedSalary: Optional[float] = None
     offeredSalary: Optional[float] = None
+    dob: Optional[date] = None
+    documents: List[OnboardingDocument] = []
+    uploadTokenHash: Optional[str] = None
+    uploadTokenExpiry: Optional[datetime] = None
 
 class ApplicationCreate(ApplicationBase):
     pass
@@ -177,11 +190,11 @@ class EvaluationScore(BaseModel):
     roundName: str
     roundId: str
 
-    technical: Optional[int] = None
-    communication: Optional[int] = None
-    problemSolving: Optional[int] = None
-    cultureFit: Optional[int] = None
-    overall: Optional[int] = None
+    technical: Optional[float] = Field(None, ge=0, le=5)
+    communication: Optional[float] = Field(None, ge=0, le=5)
+    problemSolving: Optional[float] = Field(None, ge=0, le=5)
+    cultureFit: Optional[float] = Field(None, ge=0, le=5)
+    overall: Optional[float] = Field(None, ge=0, le=5)
 
     reviewerId: str
     reviewerRole: str
@@ -192,6 +205,8 @@ class ApplicationResponse(ApplicationBase):
     id: PydanticObjectId
     stage: str
     appliedDate: datetime
+
+    skills: list[str] = []
 
     evaluationScores: List[EvaluationScore] = []
     cumulativeScore: Optional[float] = None

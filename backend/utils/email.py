@@ -113,7 +113,50 @@ async def send_email(
                 <p>Best Regards,<br><strong>HR Team<br>Indian Wellness</strong></p>
             </body>
         </html>
-        """
+        """,
+
+        "candidate_document_upload": """
+<html>
+    <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+        <h2>Upload Required Onboarding Documents</h2>
+
+        <p>Dear {data[name]},</p>
+
+        <p>
+            Congratulations! As part of your onboarding process, please upload
+            the required documents using the secure link below.
+        </p>
+
+        <p style="margin: 20px 0;">
+            <a href="{data[upload_link]}"
+               style="
+                   background-color: #4CAF50;
+                   color: white;
+                   padding: 12px 20px;
+                   text-decoration: none;
+                   border-radius: 5px;
+                   display: inline-block;
+               ">
+               Upload Documents
+            </a>
+        </p>
+
+        <p>
+            ⏳ <strong>This link will expire on:</strong><br/>
+            {data[expires_at]}
+        </p>
+
+        <p>
+            If the link expires, you can request a new one from the HR team.
+        </p>
+
+        <p>
+            Best Regards,<br/>
+            <strong>HR Team<br/>Indian Wellness</strong>
+        </p>
+    </body>
+</html>
+"""
     }
 
     if template_name not in templates:

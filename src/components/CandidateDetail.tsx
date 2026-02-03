@@ -505,6 +505,27 @@ export function CandidateDetail({
                 </div>
               </div>
 
+              {candidate.skills && candidate.skills.length > 0 && (
+                <div className="flex items-start gap-3">
+                  <FileText className="w-5 h-5 text-gray-400 mt-0.5" />
+                  <div className="flex-1">
+                    <p className="text-gray-600 text-sm">Skills</p>
+
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {candidate.skills.map((skill, index) => (
+                        <span
+                          key={index}
+                          className="px-2 py-1 text-xs rounded-full bg-blue-50 text-blue-700 border border-blue-200"
+                        >
+                          {skill}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+
               <div className="flex items-start gap-3">
                 <Calendar className="w-5 h-5 text-gray-400 mt-0.5" />
                 <div className="flex-1">
@@ -975,7 +996,7 @@ export function CandidateDetail({
                   onClick={async () => {
                     if (confirm("Send email to candidate requesting pending documents?")) {
                       try {
-                        const res = await api.applications.sendOnboardingReminder(candidate.id);
+                        const res = await api.onboarding.sendUploadLink(candidate.id);
                         alert(res.message);
                       } catch (err) {
                         console.error(err);

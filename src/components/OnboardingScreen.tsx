@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { CheckCircle2, User as UserIcon, Calendar, Trash2, Plus, Briefcase } from 'lucide-react';
-import { User, Candidate } from '../types';
+import { User, Candidate, CandidateDocument } from '../types';
 import { api } from '../lib/api';
+import toast from "react-hot-toast";
 
 interface OnboardingScreenProps {
   user: User;
@@ -61,15 +62,56 @@ export function OnboardingScreen({ user, navigateTo }: OnboardingScreenProps) {
     }
   };
 
+  const handleViewDocument = async (candidateId: string, docType: string) => {
+    try {
+      // Fetch the file using centralized api
+      const blob = await api.onboarding.getDocument(candidateId, docType);
+
+      // Create URL and open in new tab
+      const fileURL = URL.createObjectURL(blob);
+      window.open(fileURL, "_blank");
+
+      toast.success("Document opened successfully");
+    } catch (error: any) {
+      console.error("Failed to fetch document:", error);
+
+      if (error.response?.status === 401) {
+        toast.error("You are not authenticated. Please login again.");
+      } else {
+        toast.error("Failed to open document");
+      }
+    }
+  };
+
+
+
+
   const handleMarkAsHired = async (candidateId: string) => {
     try {
       await api.applications.updateStage(candidateId, 'Hired');
+
+      toast.success("Candidate marked as hired 🎉");
+
       const data = await api.applications.getAll();
       setCandidates(data);
-    } catch (error) {
-      console.error('Failed to mark as hired:', error);
+    } catch (error: any) {
+      const detail = error?.response?.data?.detail;
+
+      if (detail?.missingDocuments?.length) {
+        const missing = detail.missingDocuments
+          .map((d: string) => d.replace(/_/g, " ").toLowerCase())
+          .join(", ");
+
+        toast.error(
+          `Missing mandatory documents: ${missing}`,
+          { duration: 6000 }
+        );
+      } else {
+        toast.error("Failed to mark candidate as hired");
+      }
     }
   };
+
 
   return (
     <div className="p-8">
@@ -113,8 +155,8 @@ export function OnboardingScreen({ user, navigateTo }: OnboardingScreenProps) {
             const handleSendReminder = async () => {
               if (!confirm(`Send document request email to ${candidate.name}?`)) return;
               try {
-                await api.applications.sendOnboardingReminder(candidate.id);
-                alert(`Email sent to ${candidate.name}`);
+                await api.onboarding.sendUploadLink(candidate.id);
+                toast.success("Onboarding document link sent to candidate email");
               } catch (error) {
                 console.error("Failed to send email:", error);
                 alert("Failed to send email");
@@ -273,6 +315,44 @@ export function OnboardingScreen({ user, navigateTo }: OnboardingScreenProps) {
                     </button>
                   </div>
                 </div>
+
+                <div className="mt-6 pb-4">
+                  <h4 className="text-sm font-medium text-gray-700 mb-3 px-4">
+                    Uploaded Documents
+                  </h4>
+
+                  {candidate.documents?.length ? (
+                    <div className="flex flex-wrap gap-2 px-4">
+                      {candidate.documents.map((doc: CandidateDocument) => (
+                        <button
+                          key={doc.type}
+                          onClick={() => handleViewDocument(candidate.id, doc.type)}
+                          className="
+            inline-flex items-center gap-2
+            px-3 py-1.5
+            text-sm text-gray-800
+            rounded-full
+            border border-gray-200
+            bg-gray-50
+            shadow-sm
+            hover:bg-gray-100
+            hover:border-gray-300
+            transition
+            cursor-pointer
+          "
+                        >
+                          <CheckCircle2 className="w-4 h-4 text-green-600 shrink-0" />
+                          <span className="capitalize whitespace-nowrap">
+                            {doc.type.replace(/_/g, " ").toLowerCase()}
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-gray-500 text-sm px-4">No documents uploaded yet.</p>
+                  )}
+                </div>
+
 
                 {progress === 100 && (
                   <div className="mt-6 bg-green-50 border border-green-200 rounded-lg p-4 flex flex-col sm:flex-row items-center justify-between gap-4 mx-6 mb-6">

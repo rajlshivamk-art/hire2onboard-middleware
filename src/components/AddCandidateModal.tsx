@@ -19,6 +19,7 @@ const candidateSchema = z.object({
     source: z.string().min(1, "Source is required"),
     otherSource: z.string().optional(),
     referredBy: z.string().optional(),
+    dob: z.string().optional(),
 }).refine(data => {
     if (data.source === 'Referral' && (!data.referredBy || data.referredBy.length < 2)) {
         return false;
@@ -94,6 +95,9 @@ export function AddCandidateModal({ onClose, onSuccess }: AddCandidateModalProps
                 source: data.source === 'Other' ? data.otherSource : data.source,
                 referredBy: data.source === 'Referral' ? data.referredBy : undefined,
                 skills: skillsArray,
+
+                dob: data.dob ? data.dob : undefined,
+
                 stage: 'Applied',
                 appliedDate: new Date().toISOString()
             };
@@ -146,6 +150,16 @@ export function AddCandidateModal({ onClose, onSuccess }: AddCandidateModalProps
                             />
                             {errors.name && <p className="text-red-600 text-sm mt-1">{errors.name.message}</p>}
                         </div>
+
+                        <div>
+                            <label className="block text-gray-700 mb-2">Date of Birth</label>
+                            <input
+                                type="date"
+                                {...register('dob')}
+                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                            />
+                        </div>
+
 
                         <div>
                             <label className="block text-gray-700 mb-2">Email *</label>

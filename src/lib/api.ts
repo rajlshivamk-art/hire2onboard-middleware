@@ -76,6 +76,48 @@ apiClient.interceptors.response.use(
     }
 );
 
+// api.ts
+export const onboarding = {
+    sendUploadLink: async (applicationId: string) => {
+        const res = await apiClient.post(
+            `/applications/${applicationId}/onboarding/upload-link`
+        );
+        return res.data;
+    },
+
+    uploadDocument: async (
+        token: string,
+        documentType: string,
+        file: File
+    ) => {
+        const formData = new FormData();
+        formData.append("token", token);
+        formData.append("documentType", documentType);
+        formData.append("file", file);
+
+        const res = await apiClient.post(
+            "/applications/onboarding/upload",
+            formData,
+            {
+                headers: {
+                    "Content-Type": "multipart/form-data",
+                },
+            }
+        );
+
+        return res.data;
+    },
+
+    getDocument: async (applicationId: string, documentType: string) => {
+        const res = await apiClient.get(
+            `/applications/${applicationId}/onboarding/document/${documentType}`,
+            { responseType: "blob" } // important for files
+        );
+        return res.data; // returns Blob
+    },
+};
+
+
 export const api = {
     auth: {
         login: async (email: string, password: string) => {
@@ -113,7 +155,7 @@ export const api = {
             return access_token;
         },
     },
-
+    onboarding,
     jobs: {
         getAll: async () => {
             const response = await apiClient.get<Job[]>('/jobs/');
@@ -304,12 +346,19 @@ export const api = {
             return response.data;
         },
 
-        sendOnboardingReminder: async (applicationId: string) => {
-            const response = await apiClient.post(
-                `/applications/${applicationId}/onboarding/remind`
+        /* uploadOnboardingDocument: async (formData: FormData) => {
+            const res = await apiClient.post(
+                "/applications/onboarding/upload",
+                formData,
+                {
+                    headers: {
+                        "Content-Type": "multipart/form-data",
+                    },
+                }
             );
-            return response.data;
-        },
+            return res.data;
+        }, */
+
     },
 
     interviews: {

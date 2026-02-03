@@ -91,14 +91,24 @@ export function CandidateList({ user, navigateTo, filter, initialStage = 'all' }
         }
 
         // 6. Search Filter
+        // 6. Search Filter (name, email, phone, DOB)
         if (searchTerm) {
             const term = searchTerm.toLowerCase();
-            filtered = filtered.filter(c =>
-                c.name.toLowerCase().includes(term) ||
-                c.email.toLowerCase().includes(term) ||
-                c.phone.includes(term)
-            );
+
+            filtered = filtered.filter(c => {
+                const dobString = c.dob
+                    ? new Date(c.dob).toISOString().slice(0, 10) // yyyy-mm-dd
+                    : '';
+
+                return (
+                    c.name.toLowerCase().includes(term) ||
+                    c.email.toLowerCase().includes(term) ||
+                    c.phone.includes(term) ||
+                    dobString.includes(term)
+                );
+            });
         }
+
 
         return filtered;
     }, [candidates, filter, selectedJobId, selectedStage, selectedSource, startDate, endDate, searchTerm]);

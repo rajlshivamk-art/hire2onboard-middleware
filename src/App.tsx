@@ -17,9 +17,11 @@ import { RecruiterPerformanceReport } from "./components/RecruiterPerformance";
 import { Toaster } from 'react-hot-toast';
 import { User } from "./types";
 import { api } from "./lib/api";
+import { OnboardingUploadPage } from "./components/DocsUpload";
 
 const urlParams = new URLSearchParams(window.location.search);
 const resetToken = urlParams.get('token');
+const uploadToken = urlParams.get("uploadToken");
 
 export default function App() {
   const [currentUser, setCurrentUser] = useState<User | null>(() => {
@@ -44,6 +46,12 @@ export default function App() {
     // If reset token exists in URL, show reset password screen
     if (resetToken) {
       setCurrentScreen("reset-password");
+      return;
+    }
+
+    if (uploadToken) {
+      setCurrentScreen("onboarding-upload");
+      return;
     }
 
     const params = new URLSearchParams(window.location.search);
@@ -154,6 +162,12 @@ export default function App() {
   if (currentScreen === "forgot-password") {
     return <ForgotPasswordPage onBack={() => setCurrentScreen("login")} />;
   }
+  // -------------------------
+  // ONBOARDING UPLOAD (public)
+  // -------------------------
+  if (currentScreen === "onboarding-upload" && uploadToken) {
+    return <OnboardingUploadPage uploadToken={uploadToken} />;
+  }
 
   // -------------------------
   // LOGIN
@@ -167,6 +181,7 @@ export default function App() {
       />
     );
   }
+
 
   return (
     <>

@@ -47,6 +47,7 @@ export interface Candidate {
   name: string;
   email: string;
   phone: string;
+  dob?: string;
   resumeUrl: string;
   photoUrl?: string;
   jobId: string;

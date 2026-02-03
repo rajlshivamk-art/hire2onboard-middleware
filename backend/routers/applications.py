@@ -4,8 +4,8 @@ from typing import List, Optional
 from datetime import datetime, timedelta, timezone, time
 from beanie import PydanticObjectId
 from ..models import Application, Feedback, OnboardingTask, User, Job
-from ..schemas import ApplicationCreate, ApplicationUpdate, FeedbackCreate, ApplicationResponse, FeedbackResponse, StageUpdate, TaskCreate, OfferCreate, TaskStatusUpdate, CandidateInteraction, UserResponse, EvaluationScore
-from ..utils.files import upload_file_from_stream, get_file_stream
+from ..schemas import ApplicationCreate, ApplicationUpdate, FeedbackCreate, ApplicationResponse, FeedbackResponse, StageUpdate, TaskCreate, OfferCreate, TaskStatusUpdate, CandidateInteraction, UserResponse, EvaluationScore, OnboardingDocument
+from ..utils.files import upload_file_from_stream, get_file_stream, get_gridfs
 from ..utils.email import send_email
 from .auth import get_current_user # Imported get_current_user
 from ..services.erp_service import ERPService # Added ERPService
@@ -13,9 +13,14 @@ from fastapi import Form, Body
 import traceback
 import pandas as pd
 import io
+from io import BytesIO
+import hashlib
+import secrets
+from bson import ObjectId
 from zoneinfo import ZoneInfo 
 from openpyxl.utils import get_column_letter
 from openpyxl.styles import Font, Alignment, PatternFill, Border, Side
+from backend.config import settings
 
 router = APIRouter(
     prefix="/api/applications",
@@ -220,6 +225,44 @@ async def update_application_stage(applicationId: str, update: StageUpdate, back
     app.stage = update.stage
     if update.reason:
         app.rejectionReason = update.reason
+    
+    if update.stage == "Hired":
+        years = app.yearsOfExperience or 0
+        
+        if years < 1:
+            required_docs = {
+            "AADHAR",
+            "PAN",
+            "EDU_10TH",
+            "EDU_12TH",
+            "EDU_GRADUATION",
+            "OFFER_ACCEPTANCE"
+        }
+            
+        else:
+            required_docs = {
+            "AADHAR",
+            "PAN",
+            "EDU_10TH",
+            "EDU_12TH",
+            "EDU_GRADUATION",
+            "EXPERIENCE",
+            "OFFER_ACCEPTANCE"
+        }
+            
+        uploaded_docs = {doc.type for doc in getattr(app, "documents", [])}
+        missing = required_docs - uploaded_docs
+        
+        if missing:
+            raise HTTPException(
+            status_code=400,
+            detail={
+                "message": "Mandatory onboarding documents missing",
+                "missingDocuments": list(missing),
+                "candidateCategory": "FRESHER" if years < 1 else "EXPERIENCED"
+            }
+        )
+
     
     # Auto-generate onboarding tasks
     if update.stage == "Onboarding" and not app.onboardingTasks:
@@ -1033,29 +1076,31 @@ async def get_recruiters(
     recruiters = await User.find({"company": current_user.company, "role": "Recruiter"}).to_list()
     return recruiters
 
+
 @router.post("/{applicationId}/evaluation")
 async def add_evaluation_score(
     applicationId: str,
     score: EvaluationScore,
     current_user: User = Depends(get_current_user)
 ):
-    # RBAC
+    # ----------------- RBAC -----------------
     if current_user.role not in ["HR", "Manager", "SuperAdmin", "Admin", "Tech Interviewer", "Recruiter"]:
         raise HTTPException(status_code=403, detail="Not authorized")
 
+    # ----------------- Fetch Application -----------------
     app = await Application.get(PydanticObjectId(applicationId))
     if not app:
         raise HTTPException(404, "Application not found")
 
-    # Company isolation
+    # ----------------- Company Isolation -----------------
     if app.company and current_user.company and app.company != current_user.company:
         raise HTTPException(status_code=403, detail="Cross-company access denied")
 
-    # **Validate roundId**
+    # ----------------- Validate Round -----------------
     if not score.roundId:
         raise HTTPException(status_code=400, detail="roundId is required")
 
-    # Prevent duplicate round entry by same reviewer
+    # ----------------- Prevent Duplicate Submission -----------------
     for s in app.evaluationScores:
         if s.roundId == score.roundId and s.reviewerId == score.reviewerId:
             raise HTTPException(
@@ -1063,27 +1108,37 @@ async def add_evaluation_score(
                 detail="You already submitted evaluation for this round"
             )
 
-    # --- ROUND LOGIC: Ensure 2 decimals ---
-    score.technical = round(score.technical, 2) if score.technical is not None else None
-    score.communication = round(score.communication, 2) if score.communication is not None else None
-    score.problemSolving = round(score.problemSolving, 2) if score.problemSolving is not None else None
-    score.cultureFit = round(score.cultureFit, 2) if score.cultureFit is not None else None
-
-    # Calculate overall from fields if not provided
+    # ----------------- Calculate Overall -----------------
     if score.overall is None:
         fields = [v for v in [score.technical, score.communication, score.problemSolving, score.cultureFit] if v is not None]
         score.overall = round(sum(fields) / len(fields), 2) if fields else None
     else:
         score.overall = round(score.overall, 2)
 
+    # ----------------- Append Score -----------------
     app.evaluationScores.append(score)
 
-    # Cumulative logic (Industry standard) - rounded to 2 decimals
-    valid_scores = [s.overall for s in app.evaluationScores if s.overall is not None]
-    app.cumulativeScore = round(sum(valid_scores) / len(valid_scores), 2) if valid_scores else None
+    # ----------------- Cumulative Score Logic -----------------
+    # 1. Group all evaluations by roundId
+    round_map = {}
+    for s in app.evaluationScores:
+        if s.overall is not None:
+            round_map.setdefault(s.roundId, []).append(s.overall)
 
+    # 2. Calculate average per round
+    round_averages = [round(sum(scores) / len(scores), 2) for scores in round_map.values()]
+
+    # 3. Average across all rounds to get cumulative
+    app.cumulativeScore = round(sum(round_averages) / len(round_averages), 2) if round_averages else None
+
+    # ----------------- Save to DB -----------------
     await app.save()
-    return {"message": "Score added", "cumulativeScore": app.cumulativeScore}
+
+    # ----------------- Return Response -----------------
+    return {
+        "message": "Score added",
+        "cumulativeScore": app.cumulativeScore
+    }
 
 @router.get("/{applicationId}/evaluation")
 async def get_evaluation(applicationId: str, current_user: User = Depends(get_current_user)):
@@ -1099,3 +1154,147 @@ async def get_evaluation(applicationId: str, current_user: User = Depends(get_cu
         "rounds": app.evaluationScores,
         "cumulativeScore": app.cumulativeScore
     }
+
+@router.post("/{applicationId}/onboarding/upload-link")
+async def generate_onboarding_upload_link(
+    applicationId: str,
+    background_tasks: BackgroundTasks
+):
+    if not PydanticObjectId.is_valid(applicationId):
+        raise HTTPException(status_code=404, detail="Application not found")
+
+    app = await Application.get(PydanticObjectId(applicationId))
+    if not app:
+        raise HTTPException(status_code=404, detail="Application not found")
+
+    # Generate token
+    raw_token = secrets.token_urlsafe(32)
+    token_hash = hashlib.sha256(raw_token.encode()).hexdigest()
+
+    # Store hash + expiry (48h)
+    app.uploadTokenHash = token_hash
+    app.uploadTokenExpiry = datetime.utcnow() + timedelta(hours=48)
+
+    await app.save()
+    is_experienced = bool(app.yearsOfExperience and app.yearsOfExperience > 0)
+
+    upload_url = (
+    f"{settings.FRONTEND_URL}/onboarding/upload"
+    f"?uploadToken={raw_token}&isExperienced={str(is_experienced).lower()}"
+)
+
+    # Send email
+    expires_at = datetime.utcnow() + timedelta(hours=48)
+
+    background_tasks.add_task(
+        send_email,
+        recipients=[app.email],
+        subject="Upload Required Documents",
+        template_name="candidate_document_upload",
+        context={
+            "name": app.name,
+            "upload_link": upload_url,              # matches template
+            "expires_at": expires_at.strftime("%d %b %Y, %I:%M %p")  # matches template
+    }
+)
+    return {
+        "message": "Upload link generated and emailed to candidate",
+        "expiresAt": app.uploadTokenExpiry
+    }
+
+@router.post("/onboarding/upload")
+async def upload_onboarding_document(
+    token: str = Form(...),
+    documentType: str = Form(...),
+    file: UploadFile = File(...)
+):
+    # Validate token
+    token_hash = hashlib.sha256(token.encode()).hexdigest()
+
+    application = await Application.find_one({
+        "uploadTokenHash": token_hash,
+        "uploadTokenExpiry": {"$gt": datetime.utcnow()}
+    })
+
+    if not application:
+        raise HTTPException(status_code=401, detail="Invalid or expired upload link")
+
+    if not file:
+        raise HTTPException(status_code=400, detail="File is required")
+
+    file_bytes = await file.read()
+    if not file_bytes:
+        raise HTTPException(status_code=400, detail="Empty file")
+
+    # Hash file
+    file_hash = hashlib.sha256(file_bytes).hexdigest()
+
+    # Upload to GridFS
+    file_id = await upload_file_from_stream(
+        filename=file.filename,
+        source_stream=BytesIO(file_bytes),
+        content_type=file.content_type
+    )
+
+    # Replace document by type
+    application.documents = [
+        doc for doc in application.documents if doc.type != documentType
+    ]
+
+    application.documents.append(
+        {
+            "type": documentType,
+            "fileId": file_id,
+            "fileHash": file_hash,
+            "originalName": file.filename,
+            "mimeType": file.content_type,
+            "uploadedAt": datetime.utcnow()
+        }
+    )
+
+    await application.save()
+
+    return {
+        "message": "Document uploaded successfully",
+        "documentType": documentType
+    }
+
+@router.get("/{applicationId}/onboarding/document/{documentType}")
+async def get_onboarding_document(
+    applicationId: str,
+    documentType: str,
+    current_user: User = Depends(get_current_user)
+):
+    # Fetch application
+    app = await Application.get(PydanticObjectId(applicationId))
+    if not app:
+        raise HTTPException(status_code=404, detail="Application not found")
+
+    # Authorization
+    if app.company != current_user.company:
+        raise HTTPException(status_code=403, detail="Not authorized")
+
+    # Find document
+    document: Optional[OnboardingDocument] = next(
+        (doc for doc in app.documents if doc.type == documentType),
+        None
+    )
+    if not document:
+        raise HTTPException(status_code=404, detail="Document not found")
+
+    # Get GridFS bucket
+    fs = await get_gridfs()  # ✅ this returns the bucket
+    if not fs:
+        raise HTTPException(status_code=500, detail="GridFS not initialized")
+
+    # Open download stream
+    grid_out = await fs.open_download_stream(PydanticObjectId(document.fileId))
+    if not grid_out:
+        raise HTTPException(status_code=404, detail="File missing in storage")
+
+    # Stream file to client
+    return StreamingResponse(
+        io.BytesIO(await grid_out.read()),
+        media_type=document.mimeType or "application/octet-stream",
+        headers={"Content-Disposition": f"attachment; filename={document.originalName}"}
+    )
