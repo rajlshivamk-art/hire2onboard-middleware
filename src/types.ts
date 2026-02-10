@@ -42,6 +42,14 @@ export interface EvaluationScore {
   reviewerRole: string;
   createdAt: string;
 }
+export interface CandidateDocument {
+  type: string;          // e.g., "AADHAR", "PAN"
+  fileId: string;        // GridFS id
+  originalName: string;
+  mimeType: string;
+  uploadedAt: string;    // ISO date
+}
+
 export interface Candidate {
   id: string;
   name: string;
@@ -70,6 +78,7 @@ export interface Candidate {
   interviewSchedules?: InterviewSchedule[];
   evaluationScores?: EvaluationScore[];
   cumulativeScore: number | null;
+  documents?: CandidateDocument[];
 }
 
 export interface Feedback {

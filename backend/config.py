@@ -13,6 +13,7 @@ class Settings(BaseSettings):
     TEMPLATE_FOLDER: str | None = None
     
     FRONTEND_URL: str = "http://localhost:3000"
+    BASE_URL: str = "https://hrms-recruitment-portal.onrender.com"
     # ERP Settings
     ERP_USER: str = "administrator"
     ERP_PASSWORD: str = "admin@1231"
@@ -27,9 +28,9 @@ class Settings(BaseSettings):
     MAIL_FROM: str = "kunal.s@indianwellness.org"
     MAIL_SERVER: str = "smtp.hostinger.com"
     MAIL_FROM_NAME: str = "Indian Wellness"
-    MAIL_STARTTLS: bool = False
-    MAIL_SSL_TLS: bool = True
-    MAIL_PORT: int = 465
+    MAIL_STARTTLS: bool = True
+    MAIL_SSL_TLS: bool = False
+    MAIL_PORT: int = 587
     USE_CREDENTIALS: bool = True
     VALIDATE_CERTS: bool = True
     

@@ -3,6 +3,7 @@ from datetime import datetime
 from beanie import Document, PydanticObjectId
 from pydantic import EmailStr, Field
 from .schemas import UserBase, JobBase, FeedbackBase, ApplicationBase, CandidateInteraction, InterviewSchedule, EvaluationScore
+from uuid import uuid4
 
 class User(Document, UserBase):
     id: Optional[PydanticObjectId] = None
@@ -69,7 +70,8 @@ class Application(Document, ApplicationBase):
             "stage",
             [("appliedDate", -1)],
             "source",
-            "company" # Index company
+            "company",
+            "dob"
         ]
 
 class RefreshToken(Document):
@@ -84,3 +86,26 @@ class RefreshToken(Document):
             "user_id",
             [("expires_at", 1)]  # optional TTL index for cleanup
         ]
+
+class EmailTracking(Document):
+    id: Optional[PydanticObjectId] = None
+
+    applicationId: str
+    candidateEmail: str
+
+    trackingId: str = Field(default_factory=lambda: str(uuid4()))
+
+    template: str
+    subject: str
+
+    sentAt: datetime = Field(default_factory=datetime.utcnow)
+
+    openedAt: Optional[datetime] = None
+    openCount: int = 0
+
+    clickedAt: Optional[datetime] = None
+    clickCount: int = 0
+
+    class Settings:
+        name = "email_tracking"
+        indexes = ["trackingId", "applicationId"]

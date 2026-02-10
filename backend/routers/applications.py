@@ -1,9 +1,9 @@
-from fastapi import APIRouter, HTTPException, status, UploadFile, File, BackgroundTasks, Depends, Query # Added Depends
+from fastapi import APIRouter, HTTPException, status, UploadFile, File, BackgroundTasks, Depends, Query, Response, Request # Added Depends
 from fastapi.responses import StreamingResponse
 from typing import List, Optional
 from datetime import datetime, timedelta, timezone, time
 from beanie import PydanticObjectId
-from ..models import Application, Feedback, OnboardingTask, User, Job
+from ..models import Application, Feedback, OnboardingTask, User, Job, EmailTracking
 from ..schemas import ApplicationCreate, ApplicationUpdate, FeedbackCreate, ApplicationResponse, FeedbackResponse, StageUpdate, TaskCreate, OfferCreate, TaskStatusUpdate, CandidateInteraction, UserResponse, EvaluationScore, OnboardingDocument
 from ..utils.files import upload_file_from_stream, get_file_stream, get_gridfs
 from ..utils.email import send_email
@@ -463,7 +463,7 @@ async def send_onboarding_reminder(applicationId: str, background_tasks: Backgro
         context={
             "name": app.name,
             "job_title": job_title,
-            "documents": pending_tasks
+            "documents": pending_tasks,
         }
     )
     
@@ -1076,31 +1076,29 @@ async def get_recruiters(
     recruiters = await User.find({"company": current_user.company, "role": "Recruiter"}).to_list()
     return recruiters
 
-
 @router.post("/{applicationId}/evaluation")
 async def add_evaluation_score(
     applicationId: str,
     score: EvaluationScore,
     current_user: User = Depends(get_current_user)
 ):
-    # ----------------- RBAC -----------------
+    # RBAC
     if current_user.role not in ["HR", "Manager", "SuperAdmin", "Admin", "Tech Interviewer", "Recruiter"]:
         raise HTTPException(status_code=403, detail="Not authorized")
 
-    # ----------------- Fetch Application -----------------
     app = await Application.get(PydanticObjectId(applicationId))
     if not app:
         raise HTTPException(404, "Application not found")
 
-    # ----------------- Company Isolation -----------------
+    # Company isolation
     if app.company and current_user.company and app.company != current_user.company:
         raise HTTPException(status_code=403, detail="Cross-company access denied")
 
-    # ----------------- Validate Round -----------------
+    # **Validate roundId**
     if not score.roundId:
         raise HTTPException(status_code=400, detail="roundId is required")
 
-    # ----------------- Prevent Duplicate Submission -----------------
+    # Prevent duplicate round entry by same reviewer
     for s in app.evaluationScores:
         if s.roundId == score.roundId and s.reviewerId == score.reviewerId:
             raise HTTPException(
@@ -1108,37 +1106,27 @@ async def add_evaluation_score(
                 detail="You already submitted evaluation for this round"
             )
 
-    # ----------------- Calculate Overall -----------------
+    # --- ROUND LOGIC: Ensure 2 decimals ---
+    score.technical = round(score.technical, 2) if score.technical is not None else None
+    score.communication = round(score.communication, 2) if score.communication is not None else None
+    score.problemSolving = round(score.problemSolving, 2) if score.problemSolving is not None else None
+    score.cultureFit = round(score.cultureFit, 2) if score.cultureFit is not None else None
+
+    # Calculate overall from fields if not provided
     if score.overall is None:
         fields = [v for v in [score.technical, score.communication, score.problemSolving, score.cultureFit] if v is not None]
         score.overall = round(sum(fields) / len(fields), 2) if fields else None
     else:
         score.overall = round(score.overall, 2)
 
-    # ----------------- Append Score -----------------
     app.evaluationScores.append(score)
 
-    # ----------------- Cumulative Score Logic -----------------
-    # 1. Group all evaluations by roundId
-    round_map = {}
-    for s in app.evaluationScores:
-        if s.overall is not None:
-            round_map.setdefault(s.roundId, []).append(s.overall)
+    # Cumulative logic (Industry standard) - rounded to 2 decimals
+    valid_scores = [s.overall for s in app.evaluationScores if s.overall is not None]
+    app.cumulativeScore = round(sum(valid_scores) / len(valid_scores), 2) if valid_scores else None
 
-    # 2. Calculate average per round
-    round_averages = [round(sum(scores) / len(scores), 2) for scores in round_map.values()]
-
-    # 3. Average across all rounds to get cumulative
-    app.cumulativeScore = round(sum(round_averages) / len(round_averages), 2) if round_averages else None
-
-    # ----------------- Save to DB -----------------
     await app.save()
-
-    # ----------------- Return Response -----------------
-    return {
-        "message": "Score added",
-        "cumulativeScore": app.cumulativeScore
-    }
+    return {"message": "Score added", "cumulativeScore": app.cumulativeScore}
 
 @router.get("/{applicationId}/evaluation")
 async def get_evaluation(applicationId: str, current_user: User = Depends(get_current_user)):
@@ -1194,7 +1182,8 @@ async def generate_onboarding_upload_link(
         context={
             "name": app.name,
             "upload_link": upload_url,              # matches template
-            "expires_at": expires_at.strftime("%d %b %Y, %I:%M %p")  # matches template
+            "expires_at": expires_at.strftime("%d %b %Y, %I:%M %p"),  # matches template
+            "application_id": applicationId, 
     }
 )
     return {
@@ -1298,3 +1287,56 @@ async def get_onboarding_document(
         media_type=document.mimeType or "application/octet-stream",
         headers={"Content-Disposition": f"attachment; filename={document.originalName}"}
     )
+
+@router.get("/email/track/{tracking_id}")
+async def track_email_open(tracking_id: str, request: Request):
+
+    tracking = await EmailTracking.find_one(
+        EmailTracking.trackingId == tracking_id
+    )
+
+    if tracking:
+
+        # -------------------------
+        # Increment open count
+        # -------------------------
+        tracking.openCount = (tracking.openCount or 0) + 1
+
+        if not tracking.openedAt:
+            tracking.openedAt = datetime.utcnow()
+
+        # -------------------------
+        # Capture useful metadata
+        # -------------------------
+        try:
+            tracking.lastOpenedAt = datetime.utcnow()
+            tracking.lastOpenIP = request.client.host if request.client else None
+            tracking.lastUserAgent = request.headers.get("user-agent")
+        except Exception:
+            pass
+
+        await tracking.save()
+
+    # -------------------------
+    # 1x1 Transparent GIF
+    # -------------------------
+    pixel = (
+        b'GIF89a\x01\x00\x01\x00\x80\x00\x00\x00\x00\x00'
+        b'\xff\xff\xff!\xf9\x04\x01\x00\x00\x00\x00,\x00'
+        b'\x00\x00\x00\x01\x00\x01\x00\x00\x02\x02D\x01\x00;'
+    )
+
+    response = Response(content=pixel, media_type="image/gif")
+
+    # -------------------------
+    # Anti-caching headers (very important)
+    # -------------------------
+    response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0"
+    response.headers["Pragma"] = "no-cache"
+    response.headers["Expires"] = "0"
+    response.headers["Surrogate-Control"] = "no-store"
+
+    # Helps with some proxies
+    response.headers["Content-Disposition"] = "inline; filename=track.gif"
+
+    return response
