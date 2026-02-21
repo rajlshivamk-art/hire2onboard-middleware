@@ -129,14 +129,17 @@ async def login(response: Response, user_credentials: UserLogin):
     await refresh_token_obj.insert()
 
     # Set refresh token cookie
+    is_production = settings.ENVIRONMENT == "production"
+    
     response.set_cookie(
-        key="refresh_token",
-        value=refresh_token_str,
-        httponly=True,
-        max_age=settings.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60,
-        samesite="lax",
-        secure=True if settings.ENVIRONMENT == "production" else False
-    )
+    key="refresh_token",
+    value=refresh_token_str,
+    httponly=True,
+    max_age=settings.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60,
+    samesite="none" if is_production else "lax",
+    secure=True if is_production else False
+)
+
 
     return {"access_token": access_token, "token_type": "bearer", "user": UserResponse.model_validate(user)}
 
