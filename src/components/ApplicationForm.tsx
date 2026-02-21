@@ -21,6 +21,17 @@ export function ApplicationForm({
   const [error, setError] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [previousEmployments, setPreviousEmployments] = useState<
+    {
+      companyName: string;
+      hrName: string;
+      hrEmail: string;
+      employmentStartDate: string;
+      employmentEndDate: string;
+      consentToContact: boolean;
+    }[]
+  >([]);
+
 
   useEffect(() => {
     const fetchJob = async () => {
@@ -123,10 +134,48 @@ export function ApplicationForm({
     }
   };
 
+  const handleEmploymentChange = (index: number, field: string, value: any) => {
+    const updated = [...previousEmployments];
+    updated[index] = { ...updated[index], [field]: value };
+    setPreviousEmployments(updated);
+  };
 
+  const addEmployment = () => {
+    setPreviousEmployments([
+      ...previousEmployments,
+      {
+        companyName: "",
+        hrName: "",
+        hrEmail: "",
+        employmentStartDate: "",
+        employmentEndDate: "",
+        consentToContact: false,
+      },
+    ]);
+  };
+
+  const removeEmployment = (index: number) => {
+    setPreviousEmployments(previousEmployments.filter((_, i) => i !== index));
+  };
 
 
   const validateForm = () => {
+
+    previousEmployments.forEach((emp, i) => {
+      if (!emp.companyName.trim()) {
+        newErrors[`previousEmployments.${i}.companyName`] = "Company Name is required";
+      }
+      if (!emp.employmentStartDate) {
+        newErrors[`previousEmployments.${i}.employmentStartDate`] = "Start Date is required";
+      }
+      if (emp.employmentEndDate && emp.employmentEndDate < emp.employmentStartDate) {
+        newErrors[`previousEmployments.${i}.employmentEndDate`] = "End Date cannot be before Start Date";
+      }
+      if (emp.hrEmail && !emp.consentToContact) {
+        newErrors[`previousEmployments.${i}.consentToContact`] = "Consent required if HR Email is provided";
+      }
+    });
+
     const newErrors: Record<string, string> = {};
 
     if (!formData.name.trim() || formData.name.length < 2) {
@@ -207,6 +256,14 @@ export function ApplicationForm({
       resumeUrl: formData.resumeUrl || "#", // Use the uploaded URL
       skills: skillsArray,
 
+      previousEmployments: previousEmployments.map(emp => ({
+        companyName: emp.companyName,
+        hrName: emp.hrName || undefined,
+        hrEmail: emp.hrEmail || undefined,
+        employmentStartDate: emp.employmentStartDate,
+        employmentEndDate: emp.employmentEndDate || undefined,
+        consentToContact: emp.hrEmail ? emp.consentToContact : false,
+      })),
 
       jobId: jobId,
       stage: "Applied" as const,
@@ -449,6 +506,76 @@ export function ApplicationForm({
               <p className="text-sm text-blue-700 mt-2">
                 Separate skills using commas
               </p>
+            </div>
+
+            {/* Previous Employment Section */}
+            <div className="bg-gray-50 border border-gray-200 rounded-lg p-6">
+              <h2 className="text-gray-900 mb-4">Previous Employment</h2>
+
+              {previousEmployments.map((emp, index) => (
+                <div key={index} className="border p-4 rounded-lg mb-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <input
+                      type="text"
+                      placeholder="Company Name *"
+                      value={emp.companyName}
+                      onChange={(e) => handleEmploymentChange(index, "companyName", e.target.value)}
+                      className="w-full px-3 py-2 border rounded"
+                    />
+                    <input
+                      type="text"
+                      placeholder="HR Name"
+                      value={emp.hrName}
+                      onChange={(e) => handleEmploymentChange(index, "hrName", e.target.value)}
+                      className="w-full px-3 py-2 border rounded"
+                    />
+                    <input
+                      type="email"
+                      placeholder="HR Email"
+                      value={emp.hrEmail}
+                      onChange={(e) => handleEmploymentChange(index, "hrEmail", e.target.value)}
+                      className="w-full px-3 py-2 border rounded"
+                    />
+                    <input
+                      type="date"
+                      placeholder="Start Date *"
+                      value={emp.employmentStartDate}
+                      onChange={(e) => handleEmploymentChange(index, "employmentStartDate", e.target.value)}
+                      className="w-full px-3 py-2 border rounded"
+                    />
+                    <input
+                      type="date"
+                      placeholder="End Date"
+                      value={emp.employmentEndDate}
+                      onChange={(e) => handleEmploymentChange(index, "employmentEndDate", e.target.value)}
+                      className="w-full px-3 py-2 border rounded"
+                    />
+                    <label className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        checked={emp.consentToContact}
+                        onChange={(e) => handleEmploymentChange(index, "consentToContact", e.target.checked)}
+                      />
+                      Consent to Contact HR
+                    </label>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => removeEmployment(index)}
+                    className="mt-2 text-red-600"
+                  >
+                    Remove
+                  </button>
+                </div>
+              ))}
+
+              <button
+                type="button"
+                onClick={addEmployment}
+                className="bg-blue-600 text-white px-4 py-2 rounded-lg"
+              >
+                + Add Previous Employment
+              </button>
             </div>
 
             {/* Salary Information */}

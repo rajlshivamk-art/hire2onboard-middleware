@@ -1,6 +1,6 @@
 from typing import List, Optional
 from datetime import datetime, timezone
-from pydantic import BaseModel, EmailStr, Field, ConfigDict
+from pydantic import BaseModel, EmailStr, Field, ConfigDict, field_validator
 from beanie import PydanticObjectId
 from datetime import date
 
@@ -52,11 +52,11 @@ class JobBase(BaseModel):
     location: str
     type: str # Full-time, Part-time, Contract
     description: str
-    requirements: List[str]
+    requirements: List[str] = Field(default_factory=list)
     salaryMin: float
     salaryMax: float
     openings: int
-    postingChannels: List[str] = []
+    postingChannels: List[str] = Field(default_factory=list)
     startDate: Optional[str] = None
     endDate: Optional[str] = None
     company: Optional[str] = None  # Added company field
@@ -87,7 +87,7 @@ class JobResponse(JobBase):
     
     model_config = ConfigDict(from_attributes=True)
 
-# Application & Feedback Schemas (Stubbed or full if needed)
+# Application & Feedback Schemas
 class FeedbackBase(BaseModel):
     reviewerId: str
     reviewerName: str
@@ -115,6 +115,30 @@ class OnboardingDocument(BaseModel):
     mimeType: str
     uploadedAt: datetime
 
+class PreviousEmployment(BaseModel):
+    companyName: str
+    hrName: Optional[str] = None
+    hrEmail: Optional[EmailStr] = None
+    employmentStartDate: date
+    employmentEndDate: Optional[date] = None
+    consentToContact: bool = False
+
+    # Validate end date after start date
+    @field_validator("employmentEndDate")
+    def validate_dates(cls, v, info):
+        start_date = info.data.get("employmentStartDate")
+        if v and start_date and v < start_date:
+            raise ValueError("employmentEndDate cannot be before employmentStartDate")
+        return v
+
+    # Validate consent if HR email is provided
+    @field_validator("consentToContact")
+    def validate_consent(cls, v, info):
+        hr_email = info.data.get("hrEmail")
+        if hr_email and not v:
+            raise ValueError("Consent is required if HR email is provided")
+        return v
+
 class ApplicationBase(BaseModel):
     jobId: str
     name: str
@@ -126,15 +150,16 @@ class ApplicationBase(BaseModel):
     linkedIn: Optional[str] = None
     portfolio: Optional[str] = None
     yearsOfExperience: Optional[int] = None
-    skills: List[str] = []
+    skills: List[str] = Field(default_factory=list)
     source: Optional[str] = None
     currentSalary: Optional[float] = None
     expectedSalary: Optional[float] = None
     offeredSalary: Optional[float] = None
     dob: Optional[date] = None
-    documents: List[OnboardingDocument] = []
+    documents: List[OnboardingDocument] = Field(default_factory=list)
     uploadTokenHash: Optional[str] = None
     uploadTokenExpiry: Optional[datetime] = None
+    previousEmployments: List[PreviousEmployment] = Field(default_factory=list)
 
 class ApplicationCreate(ApplicationBase):
     pass
@@ -155,68 +180,45 @@ class FeedbackResponse(FeedbackBase):
 
 class InterviewSchedule(BaseModel):
     id: PydanticObjectId = Field(default_factory=PydanticObjectId)
-
-    # Context
     applicationId: str
     candidateId: str
-
-    # Who created the schedule (HR / Recruiter)
     createdById: str
-    createdByRole: str  # HR | Recruiter
-
-    # Who will take the interview
+    createdByRole: str
     interviewerId: Optional[str] = None
     interviewerName: Optional[str] = None
-
-    # Audit
     assignedBy: Optional[str] = None
     assignedAt: Optional[datetime] = None
-
-
-    # Interview details
     scheduledAt: datetime
-    mode: str  # In-Person | Video | Call
+    mode: str
     roundName: Optional[str] = None
-
-    # Lifecycle
     status: str = "Scheduled"
-    # Scheduled | Completed | Cancelled | Rescheduled | No-Show
-
-    createdAt: datetime = Field(
-        default_factory=lambda: datetime.now(timezone.utc)
-    )
+    createdAt: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 class EvaluationScore(BaseModel):
     roundName: str
     roundId: str
-
     technical: Optional[float] = Field(None, ge=0, le=5)
     communication: Optional[float] = Field(None, ge=0, le=5)
     problemSolving: Optional[float] = Field(None, ge=0, le=5)
     cultureFit: Optional[float] = Field(None, ge=0, le=5)
     overall: Optional[float] = Field(None, ge=0, le=5)
-
     reviewerId: str
     reviewerRole: str
-
     createdAt: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 class ApplicationResponse(ApplicationBase):
     id: PydanticObjectId
     stage: str
     appliedDate: datetime
-
-    skills: list[str] = []
-
-    evaluationScores: List[EvaluationScore] = []
+    skills: List[str] = Field(default_factory=list)
+    evaluationScores: List[EvaluationScore] = Field(default_factory=list)
     cumulativeScore: Optional[float] = None
-
-    feedback: List[FeedbackResponse] = []
+    feedback: List[FeedbackResponse] = Field(default_factory=list)
     rejectionReason: Optional[str] = None
     assignedRecruiterId: Optional[str] = None
-    onboardingTasks: List[OnboardingTask] = []
-    interviewSchedules: List[InterviewSchedule] = []  
-
+    onboardingTasks: List[OnboardingTask] = Field(default_factory=list)
+    interviewSchedules: List[InterviewSchedule] = Field(default_factory=list)
+    
     model_config = ConfigDict(from_attributes=True)
 
 class ApplicationUpdate(BaseModel):
@@ -252,9 +254,17 @@ class ResetPasswordRequest(BaseModel):
 class CandidateInteraction(BaseModel):
     recruiterId: str
     recruiterName: str
-    method: str                         # Call / Email / Message
-    status: str                         # Pending / Completed / No Answer / Rescheduled
-    candidateUpdate: Optional[str] = None # Candidate feedback: Available / Delayed / Not Interested
-    note: Optional[str] = None          # Candidate feedback: Available / Delayed / Not Interested
+    method: str
+    status: str
+    candidateUpdate: Optional[str] = None
+    note: Optional[str] = None
     timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     scheduledAt: Optional[datetime] = None
+
+class EmailEvent(BaseModel):
+    type: str
+    timestamp: datetime
+    ip: Optional[str] = None
+    userAgent: Optional[str] = None
+    source: Optional[str] = None
+    confidence: Optional[str] = None
