@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException, status, UploadFile, File, BackgroundTasks, Depends, Query, Response, Request # Added Depends
-from fastapi.responses import StreamingResponse
+from fastapi.responses import StreamingResponse, RedirectResponse
 from typing import List, Optional
 from datetime import datetime, timedelta, timezone, time
 from beanie import PydanticObjectId
@@ -21,6 +21,7 @@ from zoneinfo import ZoneInfo
 from openpyxl.utils import get_column_letter
 from openpyxl.styles import Font, Alignment, PatternFill, Border, Side
 from backend.config import settings
+from urllib.parse import unquote, urlparse
 
 router = APIRouter(
     prefix="/api/applications",
@@ -95,7 +96,11 @@ async def submit_application(application: ApplicationCreate, background_tasks: B
             recipients=[app.email],
             subject=f"Application Received - {job_title}",
             template_name="candidate_application_confirmation",
-            context={"name": app.name, "job_title": job_title}
+            context={
+        "name": app.name,
+        "job_title": job_title,
+        "application_id": str(app.id)   # <<< THIS IS REQUIRED
+    }
         )
         
         # 2. Alert Recruiter
@@ -107,7 +112,7 @@ async def submit_application(application: ApplicationCreate, background_tasks: B
             context={
                 "name": app.name, 
                 "email": app.email,
-                "job_title": job_title
+                "job_title": job_title, 
             }
         )
         
@@ -326,6 +331,7 @@ async def update_application_stage(applicationId: str, update: StageUpdate, back
                     "job_title": job_title, 
                     "new_stage": update.stage,
                     "message": message,
+                    "application_id": str(app.id),  
                     "documents": [
                         "Valid ID Proof (Aadhar/PAN)",
                         "Educational Certificates",
@@ -387,7 +393,8 @@ async def send_offer_email(
             "job_title": job_title,
             "salary": salary,
             "start_date": startDate,
-            "additional_terms": additionalTerms or ""
+            "additional_terms": additionalTerms or "",
+            "application_id": str(app.id),  
         },
         attachments=attachments
     )
@@ -1288,6 +1295,80 @@ async def get_onboarding_document(
         headers={"Content-Disposition": f"attachment; filename={document.originalName}"}
     )
 
+# ==========================================================
+# Configuration
+# ==========================================================
+
+ALLOWED_REDIRECT_DOMAINS = [
+    "localhost",
+    "127.0.0.1",
+    "hrms-3nbj.onrender.com",
+]
+
+BOT_KEYWORDS = ["bot", "spider", "crawl", "preview", "scanner"]
+# ==========================================================
+# Utility Functions
+# ==========================================================
+
+def get_client_ip(request: Request) -> str:
+    """
+    Extract real client IP (supports proxy/load balancer setups).
+    """
+    forwarded = request.headers.get("x-forwarded-for")
+    if forwarded:
+        return forwarded.split(",")[0].strip()
+
+    if request.client:
+        return request.client.host
+
+    return ""
+
+
+def hash_ip(ip: str) -> str:
+    """
+    Hash IP for compliance (GDPR safe).
+    """
+    if not ip:
+        return ""
+    return hashlib.sha256(ip.encode()).hexdigest()
+
+
+def classify_source(user_agent: str):
+    """
+    Detect bots and proxy sources.
+    """
+    ua = user_agent.lower()
+
+    is_bot = any(keyword in ua for keyword in BOT_KEYWORDS)
+    is_gmail_proxy = "googleimageproxy" in ua
+
+    if is_bot:
+        return "bot", "low"
+
+    if is_gmail_proxy:
+        return "gmail_proxy", "medium"
+
+    return "direct", "high"
+
+def validate_redirect(url: str) -> bool:
+    if not url:
+        return False
+
+    parsed = urlparse(url)
+
+    # Allow relative paths like "/dashboard"
+    if not parsed.netloc:
+        return True
+
+    if parsed.hostname and parsed.hostname in ALLOWED_REDIRECT_DOMAINS:
+        return True
+
+    return False
+
+# ==========================================================
+# Email Open Tracking (Pixel)
+# ==========================================================
+
 @router.get("/email/track/{tracking_id}")
 async def track_email_open(tracking_id: str, request: Request):
 
@@ -1295,31 +1376,7 @@ async def track_email_open(tracking_id: str, request: Request):
         EmailTracking.trackingId == tracking_id
     )
 
-    if tracking:
-
-        # -------------------------
-        # Increment open count
-        # -------------------------
-        tracking.openCount = (tracking.openCount or 0) + 1
-
-        if not tracking.openedAt:
-            tracking.openedAt = datetime.utcnow()
-
-        # -------------------------
-        # Capture useful metadata
-        # -------------------------
-        try:
-            tracking.lastOpenedAt = datetime.utcnow()
-            tracking.lastOpenIP = request.client.host if request.client else None
-            tracking.lastUserAgent = request.headers.get("user-agent")
-        except Exception:
-            pass
-
-        await tracking.save()
-
-    # -------------------------
-    # 1x1 Transparent GIF
-    # -------------------------
+    # Always return pixel (even if not found)
     pixel = (
         b'GIF89a\x01\x00\x01\x00\x80\x00\x00\x00\x00\x00'
         b'\xff\xff\xff!\xf9\x04\x01\x00\x00\x00\x00,\x00'
@@ -1328,15 +1385,138 @@ async def track_email_open(tracking_id: str, request: Request):
 
     response = Response(content=pixel, media_type="image/gif")
 
-    # -------------------------
-    # Anti-caching headers (very important)
-    # -------------------------
+    # Anti-cache headers
     response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0"
     response.headers["Pragma"] = "no-cache"
     response.headers["Expires"] = "0"
     response.headers["Surrogate-Control"] = "no-store"
-
-    # Helps with some proxies
     response.headers["Content-Disposition"] = "inline; filename=track.gif"
 
+    if not tracking:
+        return response
+
+    now = datetime.utcnow()
+    user_agent = request.headers.get("user-agent", "")
+    raw_ip = get_client_ip(request)
+    ip_hash = hash_ip(raw_ip)
+
+    source, confidence = classify_source(user_agent)
+
+    # Prefetch detection (opened too quickly)
+    if tracking.sentAt:
+        diff_seconds = (now - tracking.sentAt).total_seconds()
+        if diff_seconds < 5:
+            confidence = "low"
+
+    # Prevent rapid duplicate hits
+    if tracking.lastOpenedAt:
+        if (now - tracking.lastOpenedAt).total_seconds() < 3:
+            return response
+
+    # Update counters
+    tracking.openCount += 1
+
+    if not tracking.openedAt:
+        tracking.openedAt = now
+
+    tracking.lastOpenedAt = now
+    tracking.lastOpenIP = ip_hash
+    tracking.lastUserAgent = user_agent
+    tracking.lastOpenSource = source
+    tracking.openConfidence = confidence
+
+    # Event log
+    tracking.events.append({
+        "type": "open",
+        "timestamp": now,
+        "ip": ip_hash,
+        "userAgent": user_agent,
+        "source": source,
+        "confidence": confidence,
+    })
+
+    await tracking.save()
+
     return response
+
+@router.head("/email/track/{tracking_id}")
+async def track_email_open_head(tracking_id: str):
+    """
+    Some email clients send HEAD before GET.
+    """
+    return Response(status_code=200)
+# ==========================================================
+# Email Click Tracking
+# ==========================================================
+
+@router.get("/email/click/{tracking_id}")
+async def track_email_click(
+    tracking_id: str,
+    request: Request,
+    redirect: str
+):
+    tracking = await EmailTracking.find_one(
+        EmailTracking.trackingId == tracking_id
+    )
+
+    if not tracking:
+        raise HTTPException(status_code=404, detail="Tracking not found")
+
+    decoded_redirect = unquote(redirect)
+
+    # --------------------------------------------------------
+    # Security: Prevent Open Redirect
+    # --------------------------------------------------------
+    if not validate_redirect(decoded_redirect):
+        raise HTTPException(status_code=400, detail="Invalid redirect URL")
+
+    now = datetime.utcnow()
+    user_agent = request.headers.get("user-agent", "")
+    raw_ip = get_client_ip(request)
+    ip_hash = hash_ip(raw_ip)
+
+    source, confidence = classify_source(user_agent)
+
+    # --------------------------------------------------------
+    # Prevent rapid duplicate clicks (2 sec protection)
+    # --------------------------------------------------------
+    if tracking.clickedAt:
+        if (now - tracking.clickedAt).total_seconds() < 2:
+            return RedirectResponse(url=decoded_redirect, status_code=302)
+
+    # --------------------------------------------------------
+    # CLICK LOGIC
+    # --------------------------------------------------------
+    tracking.clickCount += 1
+
+    if not tracking.clickedAt:
+        tracking.clickedAt = now
+
+    # --------------------------------------------------------
+    # CLICK IMPLIES OPEN (Enterprise logic)
+    # --------------------------------------------------------
+    if not tracking.openedAt:
+        tracking.openedAt = now
+        tracking.lastOpenedAt = now
+        tracking.openCount = 1
+        tracking.openConfidence = "high"
+
+    tracking.lastOpenIP = ip_hash
+    tracking.lastUserAgent = user_agent
+    tracking.lastOpenSource = source
+
+    # --------------------------------------------------------
+    # Event Logging
+    # --------------------------------------------------------
+    tracking.events.append({
+        "type": "click",
+        "timestamp": now,
+        "ip": ip_hash,
+        "userAgent": user_agent,
+        "source": source,
+        "confidence": confidence,
+    })
+
+    await tracking.save()
+
+    return RedirectResponse(url=decoded_redirect, status_code=302)

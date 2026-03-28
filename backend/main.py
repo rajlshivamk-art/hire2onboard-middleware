@@ -6,7 +6,7 @@ from beanie import init_beanie
 
 from backend.config import settings
 from backend.models import User, Job, Application, Feedback, OnboardingTask, RefreshToken, EmailTracking
-from backend.routers import auth, jobs, applications, users, interviews
+from backend.routers import auth, jobs, applications, users, interviews, ghosting, applications_bulk
 from backend.db_initializer import initialize_db
 from backend.utils.files import init_gridfs
 
@@ -54,6 +54,8 @@ app.include_router(jobs.router)
 app.include_router(applications.router)
 app.include_router(users.router)
 app.include_router(interviews.router)
+app.include_router(ghosting.router)
+app.include_router(applications_bulk.router)
 
 @app.get("/")
 async def root():

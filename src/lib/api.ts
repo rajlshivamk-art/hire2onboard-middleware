@@ -346,18 +346,24 @@ export const api = {
             return response.data;
         },
 
-        /* uploadOnboardingDocument: async (formData: FormData) => {
-            const res = await apiClient.post(
-                "/applications/onboarding/upload",
+        bulkUpload: async (jobId: string, file: File) => {
+            const formData = new FormData();
+            formData.append("file", file);
+
+            const response = await apiClient.post(
+                `/applications/bulk-upload`,
                 formData,
                 {
+                    params: { jobId },
                     headers: {
                         "Content-Type": "multipart/form-data",
                     },
                 }
             );
-            return res.data;
-        }, */
+
+            return response.data;
+        },
+
 
     },
 

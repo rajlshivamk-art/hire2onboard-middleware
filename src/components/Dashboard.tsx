@@ -1,7 +1,8 @@
-import { useState, useEffect, useRef } from 'react';
-import { Users, Briefcase, Calendar, Clock, TrendingUp, AlertCircle, UserCheck, Star, Plus } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Users, Briefcase, Calendar, Clock, TrendingUp, AlertCircle, UserCheck, Plus } from 'lucide-react';
 import { User, Candidate } from '../types';
 import { AddCandidateModal } from './AddCandidateModal';
+import { BulkUploadApplications } from "./BulkUploadApplications";
 import { api } from '../lib/api';
 import toast from 'react-hot-toast';
 
@@ -53,6 +54,8 @@ export function Dashboard({ user, navigateTo }: DashboardProps) {
   const [dateFilter, setDateFilter] = useState('all');
   const [customStartDate, setCustomStartDate] = useState('');
   const [customEndDate, setCustomEndDate] = useState('');
+  const [showBulkUpload, setShowBulkUpload] = useState(false);
+
 
   const fetchData = async () => {
     try {
@@ -579,10 +582,26 @@ export function Dashboard({ user, navigateTo }: DashboardProps) {
                 <Plus className="w-5 h-5" />
                 Add Walk-in Candidate
               </button>
+              <button
+                onClick={() => setShowBulkUpload(true)}
+                className="bg-white/20 text-white px-6 py-3 rounded-lg hover:bg-white/30 transition-colors"
+              >
+                Bulk Upload Candidates
+              </button>
+
             </div>
           </div>
         )
       }
+      {showBulkUpload && (
+        <BulkUploadApplications
+          jobs={jobs}
+          onSuccess={() => {
+            setShowBulkUpload(false);
+            refreshData();
+          }}
+        />
+      )}
 
       {
         showAddCandidateModal && (

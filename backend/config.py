@@ -13,7 +13,7 @@ class Settings(BaseSettings):
     TEMPLATE_FOLDER: str | None = None
     
     FRONTEND_URL: str = "http://localhost:3000"
-    BASE_URL: str = "https://hrms-recruitment-portal.onrender.com"
+    BASE_URL: str = "http://127.0.0.1:8000"
     # ERP Settings
     ERP_USER: str = "administrator"
     ERP_PASSWORD: str = "admin@1231"

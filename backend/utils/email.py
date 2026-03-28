@@ -5,12 +5,15 @@ from pydantic import EmailStr
 from backend.config import settings
 from backend.models import EmailTracking
 from datetime import datetime
+from urllib.parse import quote
 import uuid
+import re
 
 
 # ============================================================
-# Mail Configuration (PRODUCTION SAFE)
+# Mail Configuration
 # ============================================================
+
 conf = ConnectionConfig(
     MAIL_USERNAME=settings.MAIL_USERNAME,
     MAIL_PASSWORD=settings.MAIL_PASSWORD,
@@ -26,14 +29,15 @@ conf = ConnectionConfig(
 
 
 # ============================================================
-# Base HTML Layout (Professional & Branded)
+# Base Layout
 # ============================================================
+
 BASE_TEMPLATE = """
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 </head>
 <body style="margin:0; padding:0; background-color:#f4f6f8; font-family:Arial, sans-serif; color:#333;">
 
@@ -41,29 +45,25 @@ BASE_TEMPLATE = """
 <tr>
 <td align="center" style="padding:24px 0;">
 
-<table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff; border-radius:8px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.05);">
+<table width="600" cellpadding="0" cellspacing="0"
+       style="background:#ffffff; border-radius:8px; overflow:hidden;">
 
-<!-- Header -->
 <tr>
 <td style="padding:20px 24px; border-bottom:1px solid #eee;">
-<img src="{logo_url}" alt="Indian Wellness" width="140" style="display:block;" />
+<img src="{logo_url}" alt="Indian Wellness" width="140" />
 </td>
 </tr>
 
-<!-- Content -->
 <tr>
 <td style="padding:28px 24px;">
 {content}
 </td>
 </tr>
 
-<!-- Footer -->
 <tr>
 <td style="padding:16px 24px; font-size:12px; color:#777; border-top:1px solid #eee;">
-<p style="margin:0;">
 This is an automated message from <strong>Indian Wellness</strong>.<br/>
 Please do not reply to this email.
-</p>
 </td>
 </tr>
 
@@ -81,71 +81,48 @@ Please do not reply to this email.
 
 
 # ============================================================
-# Professional Email Contents
+# Templates
 # ============================================================
+
+DEFAULT_CTA_TEMPLATES = [
+    "candidate_application_confirmation",
+    "candidate_stage_update",
+    "candidate_offer_letter",
+]
+
+
 TEMPLATES = {
 
     "candidate_application_confirmation": """
-    <h2 style="margin-top:0;">Application Received</h2>
+    <h2>Application Received</h2>
     <p>Dear <strong>{name}</strong>,</p>
-    <p>
-        Thank you for applying for the position of
-        <strong>{job_title}</strong> at Indian Wellness.
-    </p>
-    <p>
-        Our recruitment team is reviewing your profile.  
-        If shortlisted, we will reach out to you with the next steps.
-    </p>
-    <p style="margin-top:24px;">
-        Warm regards,<br/>
-        <strong>Indian Wellness Recruitment Team</strong>
-    </p>
-    """,
-
-    "recruiter_new_application_alert": """
-    <h2 style="margin-top:0;">New Candidate Application</h2>
-    <p>
-        A new candidate <strong>{name}</strong> has applied for
-        <strong>{job_title}</strong>.
-    </p>
-    <p>
-        Please review the application in the ATS.
-    </p>
+    <p>Thank you for applying for the position of <strong>{job_title}</strong>.</p>
     """,
 
     "candidate_stage_update": """
-    <h2 style="margin-top:0;">Application Status Update</h2>
+    <h2>Application Status Update</h2>
     <p>Dear <strong>{name}</strong>,</p>
     <p>{message}</p>
-    <p style="margin-top:24px;">
-        Best regards,<br/>
-        <strong>Indian Wellness Recruitment Team</strong>
-    </p>
     """,
 
     "candidate_offer_letter": """
-    <h2 style="margin-top:0;">Offer of Employment</h2>
+    <h2>Offer of Employment</h2>
     <p>Dear <strong>{name}</strong>,</p>
-    <p>
-        We are pleased to offer you the position of
-        <strong>{job_title}</strong> at Indian Wellness.
-    </p>
-    <p>
-        <strong>Proposed Salary:</strong> ₹{salary:,}<br/>
-        <strong>Joining Date:</strong> {start_date}
-    </p>
-    <p>
-        Our HR team will contact you shortly with further details.
-    </p>
+    <p>We are pleased to offer you the position of <strong>{job_title}</strong>.</p>
+    <p><strong>Salary:</strong> ₹{salary:,}</p>
+    <p><strong>Joining Date:</strong> {start_date}</p>
+    """,
+
+    "recruiter_new_application_alert": """
+    <h2>New Candidate Application</h2>
+    <p>A new candidate <strong>{name}</strong> has applied for
+    <strong>{job_title}</strong>.</p>
+    <p>Please review the application in the ATS.</p>
     """,
 
     "candidate_document_upload": """
-    <h2 style="margin-top:0;">Upload Required Documents</h2>
+    <h2>Upload Required Documents</h2>
     <p>Dear <strong>{name}</strong>,</p>
-    <p>
-        To proceed with your onboarding, please upload the required documents
-        using the secure link below.
-    </p>
 
     <p style="margin:24px 0;">
         <a href="{upload_link}"
@@ -155,21 +132,39 @@ TEMPLATES = {
         </a>
     </p>
 
-    <p style="color:#555;">
-        <strong>Link Expiry:</strong> {expires_at}
-    </p>
-
-    <p style="margin-top:24px;">
-        Regards,<br/>
-        <strong>Indian Wellness HR Team</strong>
-    </p>
+    <p><strong>Link Expiry:</strong> {expires_at}</p>
     """
 }
 
 
 # ============================================================
-# Send Email (PRODUCTION READY)
+# Link Tracking Wrapper
 # ============================================================
+
+def wrap_links_with_tracking(html: str, tracking_id: str) -> str:
+    pattern = r'href="(.*?)"'
+
+    def replacer(match):
+        original_url = match.group(1)
+
+        if original_url.startswith(("mailto:", "tel:")):
+            return match.group(0)
+
+        encoded = quote(original_url, safe="")
+        tracked = (
+            f"{settings.BASE_URL}/api/applications/email/click/"
+            f"{tracking_id}?redirect={encoded}"
+        )
+
+        return f'href="{tracked}"'
+
+    return re.sub(pattern, replacer, html)
+
+
+# ============================================================
+# Send Email (PRODUCTION SAFE)
+# ============================================================
+
 async def send_email(
     recipients: List[EmailStr],
     subject: str,
@@ -177,19 +172,17 @@ async def send_email(
     context: Dict[str, Any],
     attachments: Optional[List[UploadFile]] = None,
 ):
+
     if template_name not in TEMPLATES:
-        raise ValueError(f"Email template '{template_name}' not found")
+        raise ValueError(f"Template '{template_name}' not found")
 
-    # --------------------------------------------------------
-    # Render content
-    # --------------------------------------------------------
-    content_html = TEMPLATES[template_name].format(**context)
-
-    # --------------------------------------------------------
-    # Tracking (Best-effort, Safe)
-    # --------------------------------------------------------
-    tracking_pixel = ""
     application_id = context.get("application_id") or context.get("applicationId")
+    tracking_id = None
+    tracking_pixel = ""
+
+    # --------------------------------------------------------
+    # Create Tracking Record
+    # --------------------------------------------------------
 
     if application_id:
         tracking_id = str(uuid.uuid4())
@@ -201,7 +194,48 @@ async def send_email(
             template=template_name,
             subject=subject,
             sentAt=datetime.utcnow(),
+            clickCount=0,
+            openCount=0,
+            events=[]
         ).insert()
+
+    # --------------------------------------------------------
+    # Render Template
+    # --------------------------------------------------------
+
+    content_html = TEMPLATES[template_name].format(**context)
+
+    # --------------------------------------------------------
+    # Inject Default CTA Button
+    # --------------------------------------------------------
+
+    if tracking_id and template_name in DEFAULT_CTA_TEMPLATES:
+        frontend_link = f"{settings.FRONTEND_URL}/application/{application_id}"
+        encoded = quote(frontend_link, safe="")
+
+        tracked_link = (
+            f"{settings.BASE_URL}/api/applications/email/click/"
+            f"{tracking_id}?redirect={encoded}"
+        )
+
+        cta_button = f"""
+        <p style="margin:24px 0;">
+            <a href="{tracked_link}"
+               style="background:#111; color:#fff; padding:12px 20px;
+                      text-decoration:none; border-radius:6px; display:inline-block;">
+                View Details
+            </a>
+        </p>
+        """
+
+        content_html += cta_button
+
+    # --------------------------------------------------------
+    # Wrap ALL Links
+    # --------------------------------------------------------
+
+    if tracking_id:
+        content_html = wrap_links_with_tracking(content_html, tracking_id)
 
         tracking_pixel = f"""
         <img src="{settings.BASE_URL}/api/applications/email/track/{tracking_id}?r={uuid.uuid4()}"
@@ -211,6 +245,7 @@ async def send_email(
     # --------------------------------------------------------
     # Final HTML
     # --------------------------------------------------------
+
     html_body = BASE_TEMPLATE.format(
         logo_url="https://dummyimage.com/200x50/ffffff/000000&text=Indian+Wellness",
         content=content_html,
@@ -220,6 +255,7 @@ async def send_email(
     # --------------------------------------------------------
     # Send
     # --------------------------------------------------------
+
     message = MessageSchema(
         subject=subject,
         recipients=recipients,

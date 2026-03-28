@@ -1,8 +1,8 @@
 from typing import List, Optional
 from datetime import datetime
 from beanie import Document, PydanticObjectId
-from pydantic import EmailStr, Field
-from .schemas import UserBase, JobBase, FeedbackBase, ApplicationBase, CandidateInteraction, InterviewSchedule, EvaluationScore
+from pydantic import EmailStr, Field, BaseModel
+from .schemas import UserBase, JobBase, FeedbackBase, ApplicationBase, CandidateInteraction, InterviewSchedule, EvaluationScore, EmailEvent
 from uuid import uuid4
 
 class User(Document, UserBase):
@@ -106,6 +106,14 @@ class EmailTracking(Document):
     clickedAt: Optional[datetime] = None
     clickCount: int = 0
 
+    events: List[EmailEvent] = Field(default_factory=list)
+
+    lastOpenedAt: Optional[datetime] = None
+    lastOpenIP: Optional[str] = None
+    lastUserAgent: Optional[str] = None
+    lastOpenSource: Optional[str] = None
+    openConfidence: Optional[str] = None
+
     class Settings:
         name = "email_tracking"
-        indexes = ["trackingId", "applicationId"]
+        indexes = ["trackingId", "applicationId", "candidateEmail"]
