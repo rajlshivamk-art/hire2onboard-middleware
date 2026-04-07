@@ -147,11 +147,11 @@ export function InterviewScheduler({ applicationId, currentUser }: Props) {
     // ----------------------
     const statusBadge = (status: InterviewStatus) => {
         const map: Record<InterviewStatus, string> = {
-            Scheduled: "bg-blue-100 text-blue-700",
-            Completed: "bg-green-100 text-green-700",
-            Cancelled: "bg-red-100 text-red-700",
-            "No-Show": "bg-orange-100 text-orange-700",
-            Rescheduled: "bg-purple-100 text-purple-700",
+            Scheduled: "bg-blue-500/20 text-blue-300 border border-blue-500/30",
+            Completed: "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30",
+            Cancelled: "bg-red-500/20 text-red-300 border border-red-500/30",
+            "No-Show": "bg-orange-500/20 text-orange-300 border border-orange-500/30",
+            Rescheduled: "bg-purple-500/20 text-purple-300 border border-purple-500/30",
         };
 
         return (
@@ -164,8 +164,8 @@ export function InterviewScheduler({ applicationId, currentUser }: Props) {
     };
 
     return (
-        <div className="bg-white rounded-xl border p-4 space-y-5">
-            <h3 className="font-semibold text-gray-800">Interviews</h3>
+        <div className="glass-card p-4 space-y-5">
+            <h3 className="font-semibold text-white">Interviews</h3>
 
             {/* Schedule Section */}
             <div className="grid grid-cols-1 gap-3 md:grid-cols-4 md:items-end">
@@ -173,7 +173,7 @@ export function InterviewScheduler({ applicationId, currentUser }: Props) {
                     type="datetime-local"
                     value={form.scheduledAt}
                     onChange={(e) => setForm({ ...form, scheduledAt: e.target.value })}
-                    className="border rounded-lg px-3 py-2 text-sm w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="glass-input text-sm w-full"
                 />
 
                 <input
@@ -181,13 +181,13 @@ export function InterviewScheduler({ applicationId, currentUser }: Props) {
                     placeholder="Round (e.g. Round 1)"
                     value={form.round}
                     onChange={(e) => setForm({ ...form, round: e.target.value })}
-                    className="border rounded-lg px-3 py-2 text-sm w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="glass-input text-sm w-full"
                 />
 
                 <select
                     value={form.mode}
                     onChange={(e) => setForm({ ...form, mode: e.target.value })}
-                    className="border rounded-lg px-3 py-2 text-sm w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="glass-input text-sm w-full"
                 >
                     <option>Online</option>
                     <option>In-Person</option>
@@ -197,7 +197,7 @@ export function InterviewScheduler({ applicationId, currentUser }: Props) {
                 <button
                     disabled={actionLoading === "create"}
                     onClick={scheduleInterview}
-                    className="bg-blue-600 text-white rounded-lg px-4 py-2 text-sm font-medium hover:bg-blue-700 disabled:opacity-50 w-full md:w-auto"
+                    className="bg-cyan-500 text-white rounded-lg px-4 py-2 text-sm font-medium hover:bg-cyan-400 disabled:opacity-50 w-full md:w-auto"
                 >
                     Schedule
                 </button>
@@ -205,23 +205,23 @@ export function InterviewScheduler({ applicationId, currentUser }: Props) {
 
             {/* Interviews List */}
             {loading ? (
-                <p className="text-sm text-gray-500">Loading interviews…</p>
+                <p className="text-sm text-white/50">Loading interviews…</p>
             ) : interviews.length === 0 ? (
-                <p className="text-sm text-gray-500">No interviews scheduled</p>
+                <p className="text-sm text-white/50">No interviews scheduled</p>
             ) : (
                 <div className="space-y-3">
                     {interviews.map((i) => (
                         <div
                             key={i.id}
-                            className="border rounded-xl p-4 flex flex-col gap-4 md:flex-row md:items-center"
+                            className="border border-white/10 rounded-xl p-4 flex flex-col gap-4 md:flex-row md:items-center"
                         >
                             <div className="flex-1 space-y-2 text-sm">
-                                <div className="flex items-center gap-2 text-gray-700">
+                                <div className="flex items-center gap-2 text-white/70">
                                     <Calendar className="w-4 h-4" />
                                     {i.scheduledAt.replace("T", " ")}
                                 </div>
 
-                                <div className="flex items-center gap-2 text-gray-700">
+                                <div className="flex items-center gap-2 text-white/70">
                                     <User className="w-4 h-4" />
                                     {i.roundName} · {i.mode}
                                 </div>
@@ -234,7 +234,7 @@ export function InterviewScheduler({ applicationId, currentUser }: Props) {
                                 <select
                                     value={i.interviewerId || ""}
                                     onChange={(e) => assignInterviewer(i.id, e.target.value)}
-                                    className="border rounded-lg px-3 py-2 text-sm w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    className="glass-input text-sm w-full"
                                     disabled={assigningInterviewerId === i.id}
                                 >
                                     <option value="">Assign Tech Interviewer</option>
@@ -246,7 +246,7 @@ export function InterviewScheduler({ applicationId, currentUser }: Props) {
                                 </select>
 
                                 {assigningInterviewerId === i.id && (
-                                    <p className="text-xs text-gray-500 mt-1">Saving…</p>
+                                    <p className="text-xs text-white/50 mt-1">Saving…</p>
                                 )}
                             </div>
 
@@ -255,7 +255,7 @@ export function InterviewScheduler({ applicationId, currentUser }: Props) {
                                     <button
                                         disabled={actionLoading === i.id}
                                         onClick={() => updateStatus(i.id, "Completed")}
-                                        className="h-9 w-full md:w-28 flex items-center justify-center gap-1 rounded-lg border border-green-500 text-green-600 text-sm font-medium hover:bg-green-50 disabled:opacity-50"
+                                        className="h-9 w-full md:w-28 flex items-center justify-center gap-1 rounded-lg border border-emerald-500/30 text-emerald-300 text-sm font-medium hover:bg-emerald-500/20 disabled:opacity-50"
                                     >
                                         <CheckCircle className="w-4 h-4" />
                                         Done
@@ -264,7 +264,7 @@ export function InterviewScheduler({ applicationId, currentUser }: Props) {
                                     <button
                                         disabled={actionLoading === i.id}
                                         onClick={() => updateStatus(i.id, "No-Show")}
-                                        className="h-9 w-full md:w-28 flex items-center justify-center gap-1 rounded-lg border border-orange-500 text-orange-600 text-sm font-medium hover:bg-orange-50 disabled:opacity-50"
+                                        className="h-9 w-full md:w-28 flex items-center justify-center gap-1 rounded-lg border border-orange-500/30 text-orange-300 text-sm font-medium hover:bg-orange-500/20 disabled:opacity-50"
                                     >
                                         <AlertTriangle className="w-4 h-4" />
                                         No-Show
@@ -273,7 +273,7 @@ export function InterviewScheduler({ applicationId, currentUser }: Props) {
                                     <button
                                         disabled={actionLoading === i.id}
                                         onClick={() => updateStatus(i.id, "Cancelled")}
-                                        className="h-9 w-full md:w-28 flex items-center justify-center gap-1 rounded-lg border border-red-500 text-red-600 text-sm font-medium hover:bg-red-50 disabled:opacity-50"
+                                        className="h-9 w-full md:w-28 flex items-center justify-center gap-1 rounded-lg border border-red-500/30 text-red-300 text-sm font-medium hover:bg-red-500/20 disabled:opacity-50"
                                     >
                                         <XCircle className="w-4 h-4" />
                                         Cancel

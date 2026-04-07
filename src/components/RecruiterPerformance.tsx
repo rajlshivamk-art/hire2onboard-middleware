@@ -202,30 +202,29 @@ export const RecruiterPerformanceReport = () => {
     /* ===================== UI ===================== */
 
     return (
-        <div className="p-6 space-y-6 relative bg-white rounded-2xl shadow-md">
+        <div className="p-6 space-y-6 relative bg-slate-950 rounded-[34px] border border-white/10 shadow-2xl">
             {/* Header */}
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div>
-                    <h2 className="text-xl font-semibold">
+                    <h2 className="text-2xl font-semibold text-white">
                         Recruiter Performance Report
                     </h2>
-                    <p className="text-sm text-gray-500 mt-1">
-                        Track recruiter performance with clean KPI cards and easy
-                        filters.
+                    <p className="text-sm text-white/70 mt-1 max-w-2xl">
+                        Track recruiter performance with clean KPI cards and easy filters.
                     </p>
                 </div>
 
                 <button
                     onClick={exportExcel}
                     disabled={!data || loading}
-                    className="px-4 py-2 rounded-xl bg-blue-600 text-white text-sm shadow-sm transition hover:bg-blue-700 disabled:opacity-50"
+                    className="px-4 py-2 rounded-2xl bg-cyan-500 text-slate-950 text-sm shadow-sm shadow-cyan-500/20 transition hover:bg-cyan-400 disabled:opacity-50"
                 >
                     Export Excel
                 </button>
             </div>
 
             {/* Filters */}
-            <div className="flex gap-4 flex-wrap items-center">
+            <div className="glass-card border border-white/10 rounded-[28px] p-4 flex flex-wrap gap-4 items-center">
                 <SmoothSelect
                     value={recruiterId}
                     onChange={setRecruiterId}
@@ -253,41 +252,41 @@ export const RecruiterPerformanceReport = () => {
                     type="date"
                     value={startDate}
                     onChange={(e) => setStartDate(e.target.value)}
-                    className="border rounded-xl px-3 py-2 text-sm"
+                    className="glass-input rounded-2xl px-3 py-2 text-sm text-white/90 bg-transparent"
                 />
 
                 <input
                     type="date"
                     value={endDate}
                     onChange={(e) => setEndDate(e.target.value)}
-                    className="border rounded-xl px-3 py-2 text-sm"
+                    className="glass-input rounded-2xl px-3 py-2 text-sm text-white/90 bg-transparent"
                 />
 
                 <button
                     onClick={fetchReport}
-                    className="px-4 py-2 rounded-xl bg-blue-600 text-white text-sm shadow-sm transition hover:bg-blue-700"
+                    className="px-4 py-2 rounded-2xl bg-cyan-500 text-slate-950 text-sm shadow-sm shadow-cyan-500/20 transition hover:bg-cyan-400"
                 >
                     Apply
                 </button>
 
                 <button
                     onClick={resetFilters}
-                    className="px-4 py-2 rounded-xl bg-gray-200 text-sm shadow-sm transition hover:bg-gray-300"
+                    className="px-4 py-2 rounded-2xl bg-white/10 text-white/80 text-sm shadow-sm transition hover:bg-white/20"
                 >
                     Reset
                 </button>
             </div>
 
             {loading && (
-                <div className="absolute inset-0 bg-white/60 backdrop-blur-sm flex items-center justify-center rounded-2xl">
-                    <div className="text-sm text-gray-600 animate-pulse">
+                <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center rounded-[34px]">
+                    <div className="text-sm text-white/80 animate-pulse">
                         Loading report…
                     </div>
                 </div>
             )}
 
             {data && (
-                <div className="flex gap-4 items-stretch">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <KpiCard label="Total Lineups" value={data.kpis.totalLineups} />
                     <KpiCard label="Selected" value={data.kpis.selected} />
                     <KpiCard label="Rejected" value={data.kpis.rejected} />
@@ -299,9 +298,9 @@ export const RecruiterPerformanceReport = () => {
             )}
 
             {data && (
-                <div className="overflow-x-auto border rounded-2xl">
-                    <table className="w-full text-sm">
-                        <thead className="bg-gray-50">
+                <div className="overflow-x-auto border border-white/10 rounded-[28px] bg-slate-950/40">
+                    <table className="w-full text-sm text-white/80">
+                        <thead className="bg-white/5 text-white/70">
                             <tr>
                                 <th className="px-4 py-3 text-left">
                                     Recruiter
@@ -324,26 +323,26 @@ export const RecruiterPerformanceReport = () => {
                             {data.rows.map((row) => (
                                 <tr
                                     key={row.recruiterId}
-                                    className={`border-t transition ${recruiterId === row.recruiterId
-                                            ? "bg-blue-50 ring-1 ring-blue-200"
+                                    className={`border-t border-white/10 transition ${recruiterId === row.recruiterId
+                                            ? "bg-white/10"
                                             : recruiterId
-                                                ? "opacity-50"
-                                                : ""
+                                                ? "opacity-70"
+                                                : "hover:bg-white/5"
                                         }`}
                                 >
-                                    <td className="px-4 py-3">
+                                    <td className="px-4 py-3 text-white/90">
                                         {row.recruiterName}
                                     </td>
-                                    <td className="text-center px-4 py-3">
+                                    <td className="text-center px-4 py-3 text-white/80">
                                         {row.totalLineups}
                                     </td>
-                                    <td className="text-center px-4 py-3 text-green-600">
+                                    <td className="text-center px-4 py-3 text-emerald-300">
                                         {row.selected}
                                     </td>
-                                    <td className="text-center px-4 py-3 text-red-600">
+                                    <td className="text-center px-4 py-3 text-rose-300">
                                         {row.rejected}
                                     </td>
-                                    <td className="text-center px-4 py-3">
+                                    <td className="text-center px-4 py-3 text-white/80">
                                         {row.selectionRate}%
                                     </td>
                                 </tr>
@@ -365,8 +364,8 @@ const KpiCard = ({
     label: string;
     value: string | number;
 }) => (
-    <div className="flex-1 border rounded-2xl p-4 bg-white shadow-sm">
-        <p className="text-xs text-gray-500">{label}</p>
-        <p className="text-2xl font-semibold mt-1">{value}</p>
+    <div className="glass-card rounded-[28px] border border-white/10 p-6 shadow-2xl">
+        <p className="text-xs text-white/60">{label}</p>
+        <p className="text-3xl font-semibold mt-3 text-white">{value}</p>
     </div>
 );

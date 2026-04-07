@@ -171,11 +171,11 @@ export function AddCandidateModal({ onClose, onSuccess }: AddCandidateModalProps
     };
 
     return (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-                <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between z-10">
-                    <h2 className="text-xl font-semibold text-gray-900">Add Walk-in Candidate</h2>
-                    <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <div className="glass-card rounded-xl border border-white/10 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+                <div className="sticky top-0 glass border-b border-white/10 px-6 py-4 flex items-center justify-between z-10">
+                    <h2 className="text-xl font-semibold text-white/90">Add Walk-in Candidate</h2>
+                    <button onClick={onClose} className="text-white/40 hover:text-white/80">
                         <X className="w-6 h-6" />
                     </button>
                 </div>
@@ -183,10 +183,10 @@ export function AddCandidateModal({ onClose, onSuccess }: AddCandidateModalProps
                 <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-6">
                     {/* Job Selection */}
                     <div>
-                        <label className="block text-gray-700 mb-2 font-medium">Select Job Role *</label>
+                        <label className="block text-white/70 mb-2 font-medium">Select Job Role *</label>
                         <select
                             {...register('jobId')}
-                            className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 ${errors.jobId ? 'border-red-500' : 'border-gray-300'}`}
+                            className={`w-full px-4 py-3  ${errors.jobId ? 'border-red-500' : 'glass-input text-white/80'}`}
                         >
                             <option value="">Select a job...</option>
                             {jobs.filter(j => j.status === 'Open' || j.status === 'Active').map(job => (
@@ -199,26 +199,26 @@ export function AddCandidateModal({ onClose, onSuccess }: AddCandidateModalProps
                     {/* Personal Info */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
-                            <label className="block text-gray-700 mb-2">Full Name *</label>
+                            <label className="block text-white/70 mb-2">Full Name *</label>
                             <input
                                 {...register('name')}
-                                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 ${errors.name ? 'border-red-500' : 'border-gray-300'}`}
+                                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 ${errors.name ? 'border-red-500' : 'glass-input text-white/80'}`}
                                 placeholder="Candidate Name"
                             />
                             {errors.name && <p className="text-red-600 text-sm mt-1">{errors.name.message}</p>}
                         </div>
 
                         <div>
-                            <label className="block text-gray-700 mb-2">Date of Birth</label>
+                            <label className="block text-white/70 mb-2">Date of Birth</label>
                             <input
                                 type="date"
                                 {...register('dob')}
-                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                                className="w-full px-4 py-3 border glass-input text-white/80 rounded-lg focus:ring-2 focus:ring-blue-500"
                             />
                         </div>
 
                         <div>
-                            <label className="block text-gray-700 mb-2">Email *</label>
+                            <label className="block text-white/70 mb-2">Email *</label>
                             <input
                                 {...register('email')}
                                 className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 ${errors.email ? 'border-red-500' : 'border-gray-300'}`}
@@ -228,25 +228,25 @@ export function AddCandidateModal({ onClose, onSuccess }: AddCandidateModalProps
                         </div>
 
                         <div>
-                            <label className="block text-gray-700 mb-2">Source *</label>
+                            <label className="block text-white/70 mb-2">Source *</label>
                             <select
                                 {...register('source')}
                                 className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 ${errors.source ? 'border-red-500' : 'border-gray-300'}`}
                             >
-                                <option value="Walk-in">Walk-in</option>
-                                <option value="LinkedIn">LinkedIn</option>
-                                <option value="Internshala">Internshala</option>
-                                <option value="Career Site">Career Site</option>
-                                <option value="Naukri">Naukri</option>
-                                <option value="Referral">Referral</option>
-                                <option value="Other">Other</option>
+                                <option className="bg-[#0d0840]" value="Walk-in">Walk-in</option>
+                                <option className="bg-[#0d0840]" value="LinkedIn">LinkedIn</option>
+                                <option className="bg-[#0d0840]" value="Internshala">Internshala</option>
+                                <option className="bg-[#0d0840]" value="Career Site">Career Site</option>
+                                <option className="bg-[#0d0840]" value="Naukri">Naukri</option>
+                                <option className="bg-[#0d0840]" value="Referral">Referral</option>
+                                <option className="bg-[#0d0840]" value="Other">Other</option>
                             </select>
                             {errors.source && <p className="text-red-600 text-sm mt-1">{errors.source.message}</p>}
                         </div>
 
                         {watchSource === 'Referral' && (
                             <div>
-                                <label className="block text-gray-700 mb-2">Referral Name *</label>
+                                <label className="block text-white/70 mb-2">Referral Name *</label>
                                 <input
                                     {...register('referredBy')}
                                     className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 ${errors.referredBy ? 'border-red-500' : 'border-gray-300'}`}
@@ -257,7 +257,7 @@ export function AddCandidateModal({ onClose, onSuccess }: AddCandidateModalProps
                         )}
 
                         <div>
-                            <label className="block text-gray-700 mb-2">Phone *</label>
+                            <label className="block text-white/70 mb-2">Phone *</label>
                             <input
                                 {...register('phone')}
                                 className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 ${errors.phone ? 'border-red-500' : 'border-gray-300'}`}
@@ -267,7 +267,7 @@ export function AddCandidateModal({ onClose, onSuccess }: AddCandidateModalProps
                         </div>
 
                         <div>
-                            <label className="block text-gray-700 mb-2">Experience (Years) *</label>
+                            <label className="block text-white/70 mb-2">Experience (Years) *</label>
                             <input
                                 type="number"
                                 step="0.1"
@@ -293,12 +293,12 @@ export function AddCandidateModal({ onClose, onSuccess }: AddCandidateModalProps
 
                     {/* Resume Upload */}
                     <div>
-                        <label className="block text-gray-700 mb-2">Resume *</label>
-                        <div className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${uploadStatus === 'success' ? 'border-green-500 bg-green-50' :
-                            uploadStatus === 'uploading' ? 'border-yellow-400 bg-yellow-50' :
-                                'border-gray-300 hover:border-blue-400'
+                        <label className="block text-white/70 mb-2">Resume *</label>
+                        <div className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${uploadStatus === 'success' ? 'border-green-500 bg-green-500/10' :
+                            uploadStatus === 'uploading' ? 'border-yellow-400 bg-yellow-500/10' :
+                                'border-white/20 hover:border-white/40'
                             }`}>
-                            <Upload className={`w-12 h-12 mx-auto mb-4 ${uploadStatus === 'success' ? 'text-green-500' : 'text-gray-400'
+                            <Upload className={`w-12 h-12 mx-auto mb-4 ${uploadStatus === 'success' ? 'text-green-300' : 'text-white/40'
                                 }`} />
                             <input
                                 type="file"
@@ -310,19 +310,19 @@ export function AddCandidateModal({ onClose, onSuccess }: AddCandidateModalProps
                             />
                             <label
                                 htmlFor="resume-upload"
-                                className={`cursor-pointer text-blue-600 hover:underline ${uploadStatus === 'uploading' ? 'opacity-50 cursor-not-allowed' : ''
+                                className={`cursor-pointer accent-indigo-500 hover:underline ${uploadStatus === 'uploading' ? 'opacity-90 cursor-not-allowed' : ''
                                     }`}
                             >
                                 {uploadStatus === 'uploading' ? 'Uploading...' : 'Click to upload'}
                             </label>
                             <div className="mt-2 text-sm space-y-1">
-                                <p className="text-gray-500">Required: PDF, DOC, or DOCX (50KB - 2MB)</p>
+                                <p className="text-white/50">Required: PDF, DOC, or DOCX (50KB - 2MB)</p>
                                 {uploadStatus === 'uploading' && (
                                     <p className="text-yellow-600 font-medium animate-pulse">
                                         Uploading... Please wait
                                     </p>
                                 )}
-                                {uploadStatus === 'success' && watchResume && (
+                                {uploadStatus === 'success' && watchResume && ( 
                                     <div className="text-green-700 font-medium">
                                         <p>✔ Upload Complete</p>
                                         <p className="text-xs text-green-600">{fileSizeInfo}</p>
@@ -333,11 +333,11 @@ export function AddCandidateModal({ onClose, onSuccess }: AddCandidateModalProps
                     </div>
 
                     {/* Skills */}
-                    <div className="bg-blue-50 p-4 rounded-lg border border-blue-100">
-                        <label className="block text-blue-900 font-medium mb-2">Key Skills (Comma separated) *</label>
+                    <div className="bg-blue-500/10 p-4 rounded-lg border border-blue-500/30">
+                        <label className="block text-blue-300 font-medium mb-2">Key Skills (Comma separated) *</label>
                         <textarea
                             {...register('skills')}
-                            className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 ${errors.skills ? 'border-red-500' : 'border-blue-200'}`}
+                            className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 ${errors.skills ? 'border-red-500' : 'glass-input'}`}
                             placeholder="e.g. React, Node.js, TypeScript"
                             rows={3}
                         />
@@ -346,11 +346,11 @@ export function AddCandidateModal({ onClose, onSuccess }: AddCandidateModalProps
 
                     {/* Previous Employment Section - Only shown for experienced candidates */}
                     {showPreviousEmployment && (
-                        <div className="bg-gray-50 border border-gray-200 rounded-lg p-6">
-                            <h3 className="text-lg font-semibold text-gray-900 mb-4">Previous Employment Details</h3>
+                        <div className="glass border border-white/10 rounded-lg p-6">
+                            <h3 className="text-lg font-semibold text-white/90 mb-4">Previous Employment Details</h3>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-gray-700 mb-2">Previous Company *</label>
+                                    <label className="block text-white/70 mb-2">Previous Company *</label>
                                     <input
                                         {...register('previousCompany')}
                                         className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 ${errors.previousCompany ? 'border-red-500' : 'border-gray-300'}`}
@@ -359,7 +359,7 @@ export function AddCandidateModal({ onClose, onSuccess }: AddCandidateModalProps
                                     {errors.previousCompany && <p className="text-red-600 text-sm mt-1">{errors.previousCompany.message}</p>}
                                 </div>
                                 <div>
-                                    <label className="block text-gray-700 mb-2">HR Name</label>
+                                    <label className="block text-white/70 mb-2">HR Name</label>
                                     <input
                                         {...register('previousHrName')}
                                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
@@ -367,7 +367,7 @@ export function AddCandidateModal({ onClose, onSuccess }: AddCandidateModalProps
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-gray-700 mb-2">HR Email</label>
+                                    <label className="block text-white/70 mb-2">HR Email</label>
                                     <input
                                         type="email"
                                         {...register('previousHrEmail')}
@@ -377,7 +377,7 @@ export function AddCandidateModal({ onClose, onSuccess }: AddCandidateModalProps
                                     {errors.previousHrEmail && <p className="text-red-600 text-sm mt-1">{errors.previousHrEmail.message}</p>}
                                 </div>
                                 <div>
-                                    <label className="block text-gray-700 mb-2">Start Date *</label>
+                                    <label className="block text-white/70 mb-2">Start Date *</label>
                                     <input
                                         type="date"
                                         {...register('previousStartDate')}
@@ -386,7 +386,7 @@ export function AddCandidateModal({ onClose, onSuccess }: AddCandidateModalProps
                                     {errors.previousStartDate && <p className="text-red-600 text-sm mt-1">{errors.previousStartDate.message}</p>}
                                 </div>
                                 <div>
-                                    <label className="block text-gray-700 mb-2">End Date</label>
+                                    <label className="block text-white/70 mb-2">End Date</label>
                                     <input
                                         type="date"
                                         {...register('previousEndDate')}
@@ -398,14 +398,14 @@ export function AddCandidateModal({ onClose, onSuccess }: AddCandidateModalProps
                                         <input
                                             type="checkbox"
                                             {...register('consentToContact')}
-                                            className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+                                            className="w-4 h-4 accent-indigo-500 rounded focus:ring-blue-500"
                                         />
-                                        <span className="text-sm text-gray-700">Consent to Contact HR</span>
+                                        <span className="text-sm text-white/70">Consent to Contact HR</span>
                                     </label>
                                 </div>
                             </div>
                             {watch('previousHrEmail') && !watch('consentToContact') && (
-                                <p className="text-amber-600 text-sm mt-2">
+                                <p className="text-amber-300 text-sm mt-2">
                                     ⚠ Consent required if HR email is provided
                                 </p>
                             )}
@@ -415,16 +415,16 @@ export function AddCandidateModal({ onClose, onSuccess }: AddCandidateModalProps
                     {/* Salary */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
-                            <label className="block text-gray-700 mb-2">Current Salary</label>
+                            <label className="block text-white/70 mb-2">Current Salary</label>
                             <input
                                 type="number"
                                 {...register('currentSalary', { valueAsNumber: true })}
-                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                                className="w-full px-4 py-3 border glass-input rounded-lg focus:ring-2 focus:ring-blue-500"
                                 placeholder="Optional"
                             />
                         </div>
                         <div>
-                            <label className="block text-gray-700 mb-2">Expected Salary *</label>
+                            <label className="block text-white/70 mb-2">Expected Salary *</label>
                             <input
                                 type="number"
                                 {...register('expectedSalary', { valueAsNumber: true })}
@@ -435,18 +435,18 @@ export function AddCandidateModal({ onClose, onSuccess }: AddCandidateModalProps
                         </div>
                     </div>
 
-                    <div className="flex gap-4 pt-4 border-t border-gray-200">
+                    <div className="flex gap-4 pt-4 border-t border-white/10">
                         <button
                             type="submit"
                             disabled={isSubmitting || uploadStatus === 'uploading'}
-                            className="flex-1 bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+                            className="flex-1 btn-glass-primary transition-colors disabled:opacity-100"
                         >
                             {isSubmitting ? 'Adding...' : 'Add Walk-in Candidate'}
                         </button>
                         <button
                             type="button"
                             onClick={onClose}
-                            className="flex-1 bg-gray-100 text-gray-700 py-3 rounded-lg hover:bg-gray-200 transition-colors"
+                            className="flex-1 glass text-white/80 hover:bg-white/10 transition-colors"
                         >
                             Cancel
                         </button>

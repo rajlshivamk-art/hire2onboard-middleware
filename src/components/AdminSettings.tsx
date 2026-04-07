@@ -248,44 +248,44 @@ export function AdminSettings() {
   return (
     <div className="p-4 md:p-6 lg:p-8">
       <div className="mb-6 md:mb-8">
-        <h1 className="text-gray-900 mb-2">Admin Settings</h1>
-        <p className="text-gray-600">Manage user roles and permissions</p>
+        <h1 className="text-white/90 mb-2">Admin Settings</h1>
+        <p className="text-white/60">Manage user roles and permissions</p>
       </div>
 
       {/* Role Permissions Overview */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-6 md:mb-8">
         {/* HR Card */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div className="glass-card rounded-xl border border-white/10 p-6">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                <Shield className="w-5 h-5 text-blue-600" />
+              <div className="w-10 h-10 bg-blue-500/20 rounded-full flex items-center justify-center">
+                <Shield className="w-5 h-5 text-blue-300" />
               </div>
               <div>
-                <h3 className="text-gray-900">HR</h3>
-                <p className="text-blue-600 text-xs">
+                <h3 className="text-white/90">HR</h3>
+                <p className="text-blue-300 text-xs">
                   {users.filter(u => u.role === 'HR').length} user(s)
                 </p>
               </div>
             </div>
             <button
               onClick={() => setShowAddModal(true)}
-              className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+              className="p-2 text-blue-300 hover:bg-blue-500/20 rounded-lg transition-colors"
               title="Add HR User"
             >
               <UserPlus className="w-5 h-5" />
             </button>
           </div>
           <ul className="space-y-2 text-sm">
-            <li className="flex items-center gap-2 text-green-600">
+            <li className="flex items-center gap-2 text-green-300">
               <Eye className="w-4 h-4" />
               View Salary: Yes
             </li>
-            <li className="flex items-center gap-2 text-green-600">
+            <li className="flex items-center gap-2 text-green-300">
               <Users className="w-4 h-4" />
               Move Candidates: Yes
             </li>
-            <li className="flex items-center gap-2 text-green-600">
+            <li className="flex items-center gap-2 text-green-300">
               <Edit2 className="w-4 h-4" />
               Edit Jobs: Yes
             </li>
@@ -293,15 +293,15 @@ export function AdminSettings() {
         </div>
 
         {/* Tech Interviewer Card */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div className="glass-card rounded-xl border border-white/10 p-6">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
-                <Settings className="w-5 h-5 text-purple-600" />
+              <div className="w-10 h-10 bg-purple-500/20 rounded-full flex items-center justify-center">
+                <Settings className="w-5 h-5 text-purple-300" />
               </div>
               <div>
-                <h3 className="text-gray-900">Tech Interviewer</h3>
-                <p className="text-purple-600 text-xs">
+                <h3 className="text-white/90">Tech Interviewer</h3>
+                <p className="text-purple-300 text-xs">
                   {users.filter(u => u.role === 'Tech Interviewer').length} user(s)
                 </p>
               </div>
@@ -311,7 +311,7 @@ export function AdminSettings() {
                 resetAdd({ role: 'Tech Interviewer' });
                 setShowAddModal(true);
               }}
-              className="p-2 text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
+              className="p-2 text-purple-300 hover:bg-purple-500/20 rounded-lg transition-colors"
               title="Add Tech Interviewer"
             >
               <UserPlus className="w-5 h-5" />
@@ -334,15 +334,15 @@ export function AdminSettings() {
         </div>
 
         {/* Manager Card */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div className="glass-card rounded-xl border border-white/10 p-6">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
-                <Users className="w-5 h-5 text-green-600" />
+              <div className="w-10 h-10 bg-green-500/20 rounded-full flex items-center justify-center">
+                <Users className="w-5 h-5 text-green-300" />
               </div>
               <div>
-                <h3 className="text-gray-900">Manager</h3>
-                <p className="text-green-600 text-xs">
+                <h3 className="text-white/90">Manager</h3>
+                <p className="text-green-300 text-xs">
                   {users.filter(u => u.role === 'Manager').length} user(s)
                 </p>
               </div>
@@ -352,18 +352,18 @@ export function AdminSettings() {
                 resetAdd({ role: 'Manager' });
                 setShowAddModal(true);
               }}
-              className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+              className="p-2 text-green-300 hover:bg-green-500/20 rounded-lg transition-colors"
               title="Add Manager"
             >
               <UserPlus className="w-5 h-5" />
             </button>
           </div>
           <ul className="space-y-2 text-sm">
-            <li className="flex items-center gap-2 text-green-600">
+            <li className="flex items-center gap-2 text-green-300">
               <Eye className="w-4 h-4" />
               View Salary: Yes
             </li>
-            <li className="flex items-center gap-2 text-green-600">
+            <li className="flex items-center gap-2 text-green-300">
               <Users className="w-4 h-4" />
               Move Candidates: Yes
             </li>
@@ -376,11 +376,11 @@ export function AdminSettings() {
       </div>
 
       {/* User Management Table */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-        <div className="p-4 md:p-6 border-b border-gray-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="glass-card rounded-xl border border-white/10 overflow-hidden">
+        <div className="p-4 md:p-6 border-b border-white/10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h2 className="text-gray-900">User Management</h2>
-            <p className="text-gray-600 text-sm mt-1">Add or remove Tech Interviewers and Managers</p>
+            <h2 className="text-white/90">User Management</h2>
+            <p className="text-white/60 text-sm mt-1">Add or remove Tech Interviewers and Managers</p>
           </div>
           <button
             onClick={() => setShowAddModal(true)}
@@ -393,11 +393,11 @@ export function AdminSettings() {
 
         {/* Import Bar for Admin/HR */}
         {(currentUser.email === 'administrator' || currentUser.role === 'HR') && (
-          <div className="bg-blue-50 p-4 border-b border-blue-100 flex items-center justify-between gap-4">
+          <div className="glass p-4 border-b border-white/10 flex items-center justify-between gap-4">
             <div className="flex items-center gap-4 flex-1">
-              <span className="text-blue-800 font-medium text-sm">Import from ERP:</span>
+              <span className="text-white/80 font-medium text-sm">Import from ERP:</span>
               <select
-                className="px-3 py-2 border border-blue-200 rounded-lg text-sm bg-white"
+                className="glass-input text-white/90 px-3 py-2 rounded-lg text-sm bg-transparent"
                 onChange={(e) => handleFetchErpEmployees(e.target.value)}
                 value=""
               >
@@ -417,7 +417,7 @@ export function AdminSettings() {
                   alert('Failed to refresh cache');
                 }
               }}
-              className="text-sm text-blue-600 hover:text-blue-800 flex items-center gap-1 bg-white px-3 py-1.5 rounded border border-blue-200 shadow-sm hover:shadow"
+              className="text-sm text-white/80 hover:text-white/90 flex items-center gap-1 glass px-3 py-1.5 rounded-lg border border-white/10 shadow-sm hover:shadow"
               title="Force Refresh Data from ERP"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -430,34 +430,34 @@ export function AdminSettings() {
 
         <div className="overflow-x-auto">
           <table className="w-full min-w-[800px]">
-            <thead className="bg-gray-50 border-b border-gray-200">
+            <thead className="glass border-white/10 text-white/70">
               <tr>
-                <th className="px-4 md:px-6 py-3 text-left text-gray-700">Name</th>
-                <th className="px-4 md:px-6 py-3 text-left text-gray-700">Email</th>
-                <th className="px-4 md:px-6 py-3 text-left text-gray-700">Role</th>
-                <th className="px-4 md:px-6 py-3 text-left text-gray-700">View Salary</th>
-                <th className="px-4 md:px-6 py-3 text-left text-gray-700">Move Candidates</th>
-                <th className="px-4 md:px-6 py-3 text-left text-gray-700">Edit Jobs</th>
-                <th className="px-4 md:px-6 py-3 text-left text-gray-700">Manage Users</th>
-                <th className="px-4 md:px-6 py-3 text-left text-gray-700">Actions</th>
+                <th className="px-4 md:px-6 py-3 text-left text-white/60">Name</th>
+                <th className="px-4 md:px-6 py-3 text-left text-white/60">Email</th>
+                <th className="px-4 md:px-6 py-3 text-left text-white/60">Role</th>
+                <th className="px-4 md:px-6 py-3 text-left text-white/60">View Salary</th>
+                <th className="px-4 md:px-6 py-3 text-left text-white/60">Move Candidates</th>
+                <th className="px-4 md:px-6 py-3 text-left text-white/60">Edit Jobs</th>
+                <th className="px-4 md:px-6 py-3 text-left text-white/60">Manage Users</th>
+                <th className="px-4 md:px-6 py-3 text-left text-white/60">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200">
+            <tbody className="divide-y divide-white/10">
               {users.map((u) => (
-                <tr key={u.id} className="hover:bg-gray-50">
+                <tr key={u.id} className="hover:bg-white/5">
                   <td className="px-6 py-4">
                     {editingId === u.id ? (
                       <div>
                         <input
                           type="text"
                           {...registerEdit('name')}
-                          className={`px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errorsEdit.name ? 'border-red-500' : 'border-gray-300'
+                          className={`px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errorsEdit.name ? 'border-red-500' : 'glass-input'
                             }`}
                         />
                         {errorsEdit.name && <p className="text-xs text-red-600 mt-1">{errorsEdit.name.message}</p>}
                       </div>
                     ) : (
-                      <span className="text-gray-900">{u.name}</span>
+                      <span className="text-white/90">{u.name}</span>
                     )}
                   </td>
                   <td className="px-6 py-4">
@@ -466,20 +466,20 @@ export function AdminSettings() {
                         <input
                           type="email"
                           {...registerEdit('email')}
-                          className={`px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errorsEdit.email ? 'border-red-500' : 'border-gray-300'
+                          className={`px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errorsEdit.email ? 'border-red-500' : 'glass-input'
                             }`}
                         />
                         {errorsEdit.email && <p className="text-xs text-red-600 mt-1">{errorsEdit.email.message}</p>}
                       </div>
                     ) : (
-                      <span className="text-gray-600">{u.email}</span>
+                      <span className="text-white/60">{u.email}</span>
                     )}
                   </td>
                   <td className="px-6 py-4">
                     {editingId === u.id ? (
                       <select
                         {...registerEdit('role')}
-                        className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="px-3 py-2 border glass-input rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                       >
                         <option value="HR">HR</option>
                         <option value="Tech Interviewer">Tech Interviewer</option>
@@ -489,14 +489,14 @@ export function AdminSettings() {
                     ) : (
                       <span
                         className={`px-3 py-1 rounded-full text-sm ${u.email === 'administrator'
-                          ? 'bg-indigo-100 text-indigo-700 font-bold border border-indigo-200'
+                          ? 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30'
                           : u.role === 'HR'
-                            ? 'bg-blue-100 text-blue-700'
+                            ? 'bg-blue-500/20 text-blue-300 border border-blue-500/30'
                             : u.role === 'Tech Interviewer'
-                              ? 'bg-purple-100 text-purple-700'
+                              ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30'
                               : u.role === 'Manager'
-                                ? 'bg-green-100 text-green-700'
-                                : 'bg-orange-100 text-orange-700'
+                                ? 'bg-green-500/20 text-green-300 border border-green-500/30'
+                                : 'bg-orange-500/20 text-orange-300 border border-orange-500/30'
                           }`}
                       >
                         {u.email === 'administrator' ? 'Super HR' : u.role}
@@ -508,12 +508,12 @@ export function AdminSettings() {
                       <input
                         type="checkbox"
                         {...registerEdit('canViewSalary')}
-                        className="w-5 h-5 text-blue-600 rounded"
+                        className="w-5 h-5 accent-indigo-500 rounded"
                       />
                     ) : u.canViewSalary ? (
-                      <span className="text-green-600">✓</span>
+                      <span className="text-green-300">✓</span>
                     ) : (
-                      <span className="text-red-600">✗</span>
+                      <span className="text-red-300">✗</span>
                     )}
                   </td>
                   <td className="px-6 py-4">
@@ -521,12 +521,12 @@ export function AdminSettings() {
                       <input
                         type="checkbox"
                         {...registerEdit('canMoveCandidate')}
-                        className="w-5 h-5 text-blue-600 rounded"
+                        className="w-5 h-5 accent-indigo-500 rounded"
                       />
                     ) : u.canMoveCandidate ? (
-                      <span className="text-green-600">✓</span>
+                      <span className="text-green-300">✓</span>
                     ) : (
-                      <span className="text-red-600">✗</span>
+                      <span className="text-red-300">✗</span>
                     )}
                   </td>
                   <td className="px-6 py-4">
@@ -534,12 +534,12 @@ export function AdminSettings() {
                       <input
                         type="checkbox"
                         {...registerEdit('canEditJob')}
-                        className="w-5 h-5 text-blue-600 rounded"
+                        className="w-5 h-5 accent-indigo-500 rounded"
                       />
                     ) : u.canEditJob ? (
-                      <span className="text-green-600">✓</span>
+                      <span className="text-green-300">✓</span>
                     ) : (
-                      <span className="text-red-600">✗</span>
+                      <span className="text-red-300">✗</span>
                     )}
                   </td>
                   <td className="px-6 py-4">
@@ -547,12 +547,12 @@ export function AdminSettings() {
                       <input
                         type="checkbox"
                         {...registerEdit('canManageUsers')}
-                        className="w-5 h-5 text-blue-600 rounded"
+                        className="w-5 h-5 accent-indigo-500 rounded"
                       />
                     ) : u.canManageUsers ? (
-                      <span className="text-green-600">✓</span>
+                      <span className="text-green-300">✓</span>
                     ) : (
-                      <span className="text-red-600">✗</span>
+                      <span className="text-red-300">✗</span>
                     )}
                   </td>
                   <td className="px-6 py-4">
@@ -560,14 +560,14 @@ export function AdminSettings() {
                       <div className="flex gap-2">
                         <button
                           onClick={handleSubmitEdit(onSaveEdit)}
-                          className="p-2 text-green-600 hover:bg-green-50 rounded-lg"
+                          className="p-2 text-green-300 hover:bg-green-500/20 rounded-lg"
                           title="Save"
                         >
                           <Save className="w-5 h-5" />
                         </button>
                         <button
                           onClick={cancelEdit}
-                          className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg"
+                          className="p-2 text-white/60 hover:bg-white/10 rounded-lg"
                           title="Cancel"
                         >
                           <X className="w-5 h-5" />
@@ -577,14 +577,14 @@ export function AdminSettings() {
                       <div className="flex gap-2">
                         <button
                           onClick={() => startEdit(u.id)}
-                          className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg"
+                          className="p-2 text-white/70 hover:bg-blue-500/20 rounded-lg"
                           title="Edit"
                         >
                           <Edit2 className="w-5 h-5" />
                         </button>
                         <button
                           onClick={() => removeUser(u.id)}
-                          className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
+                          className="p-2 text-red-300 hover:bg-red-500/20 rounded-lg"
                           title="Remove User"
                         >
                           <Trash2 className="w-5 h-5" />
@@ -599,22 +599,22 @@ export function AdminSettings() {
         </div>
       </div>
 
-      <div className="mt-6 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-        <p className="text-yellow-800 text-sm">
+      <div className="mt-6 bg-yellow-500/20 border border-yellow-500/30 rounded-lg p-4">
+        <p className="text-yellow-300 text-sm">
           <strong>Important:</strong> The salary visibility restriction is a critical DFD requirement. Tech Interviewers should never have access to salary information to maintain unbiased technical evaluations.
         </p>
       </div>
 
       {/* Add User Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl shadow-xl max-w-md w-full mx-4">
-            <div className="p-6 border-b border-gray-200">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="glass-card border border-white/10 rounded-xl shadow-xl max-w-md w-full mx-4">
+            <div className="p-6 border-b border-white/10">
               <div className="flex items-center justify-between">
-                <h2 className="text-gray-900">Add New User</h2>
+                <h2 className="text-white/90">Add New User</h2>
                 <button
                   onClick={() => setShowAddModal(false)}
-                  className="text-gray-400 hover:text-gray-600"
+                  className="text-white/60 hover:text-white/90"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -624,12 +624,12 @@ export function AdminSettings() {
             <form onSubmit={handleSubmitAdd(onAddUser)}>
               <div className="p-6 space-y-4">
                 <div>
-                  <label className="block text-gray-700 mb-2">Full Name</label>
+                  <label className="block text-white/70 mb-2">Full Name</label>
                   <input
                     type="text"
                     {...registerAdd('name')}
                     placeholder="Enter full name"
-                    className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errorsAdd.name ? 'border-red-500' : 'border-gray-300'
+                    className={`w-full px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errorsAdd.name ? 'border-red-500' : 'glass-input text-white/90 bg-transparent'
                       }`}
                   />
                   {errorsAdd.name && (
@@ -640,10 +640,10 @@ export function AdminSettings() {
                 {/* Company Selection for Super Admin */}
                 {(currentUser.email === 'administrator' || currentUser.isSuperUser) && (
                   <div>
-                    <label className="block text-gray-700 mb-2">Assign Company</label>
+                    <label className="block text-white/70 mb-2">Assign Company</label>
                     <select
                       {...registerAdd('company')}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-4 py-2 glass-input text-white/90 bg-transparent rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     >
                       <option value="">Select Company</option>
                       {companies.map(c => (
@@ -654,12 +654,12 @@ export function AdminSettings() {
                 )}
 
                 <div>
-                  <label className="block text-gray-700 mb-2">Email Address</label>
+                  <label className="block text-white/70 mb-2">Email Address</label>
                   <input
                     type="email"
                     {...registerAdd('email')}
                     placeholder="user@company.com"
-                    className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errorsAdd.email ? 'border-red-500' : 'border-gray-300'
+                    className={`w-full px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errorsAdd.email ? 'border-red-500' : 'glass-input text-white/90 bg-transparent'
                       }`}
                   />
                   {errorsAdd.email && (
@@ -668,10 +668,10 @@ export function AdminSettings() {
                 </div>
 
                 <div>
-                  <label className="block text-gray-700 mb-2">Role</label>
+                  <label className="block text-white/70 mb-2">Role</label>
                   <select
                     {...registerAdd('role')}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-2 glass-input text-white/90 bg-transparent rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="Tech Interviewer">Tech Interviewer</option>
                     <option value="Manager">Manager</option>
@@ -680,11 +680,11 @@ export function AdminSettings() {
                   </select>
                 </div>
 
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                  <p className="text-blue-800 text-sm">
+                <div className="bg-blue-500/20 border border-blue-500/30 rounded-lg p-4 text-blue-200">
+                  <p className="text-blue-200 text-sm">
                     <strong>Permissions for {addRole}:</strong>
                   </p>
-                  <ul className="text-blue-700 text-sm mt-2 space-y-1">
+                  <ul className="text-blue-200 text-sm mt-2 space-y-1">
                     {addRole === 'Tech Interviewer' && (
                       <>
                         <li>• Cannot view salary information</li>
@@ -723,17 +723,17 @@ export function AdminSettings() {
                 </div>
               </div>
 
-              <div className="p-6 border-t border-gray-200 flex gap-3">
+              <div className="p-6 border-t border-white/10 flex gap-3">
                 <button
                   type="submit"
-                  className="flex-1 bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                  className="flex-1 btn-glass-primary text-white px-6 py-2 rounded-lg"
                 >
                   Add User
                 </button>
                 <button
                   type="button"
                   onClick={() => setShowAddModal(false)}
-                  className="flex-1 bg-gray-100 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-200 transition-colors"
+                  className="flex-1 glass text-white/80 px-6 py-2 rounded-lg hover:bg-white/10 transition-colors"
                 >
                   Cancel
                 </button>
@@ -744,16 +744,16 @@ export function AdminSettings() {
       )}
       {/* Import Modal */}
       {showImportModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full mx-4 max-h-[80vh] overflow-y-auto">
-            <div className="p-6 border-b border-gray-200 flex justify-between items-center">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="glass-card border border-white/10 rounded-xl shadow-xl max-w-2xl w-full mx-4 max-h-[80vh] overflow-y-auto">
+            <div className="p-6 border-b border-white/10 flex justify-between items-center">
               <div>
-                <h2 className="text-gray-900 text-lg font-semibold">Import Employees from {selectedCompany}</h2>
-                <p className="text-sm text-gray-500">Select employees to create as HR/Users in system</p>
+                <h2 className="text-white/90 text-lg font-semibold">Import Employees from {selectedCompany}</h2>
+                <p className="text-sm text-white/70">Select employees to create as HR/Users in system</p>
               </div>
               <button
                 onClick={() => setShowImportModal(false)}
-                className="text-gray-400 hover:text-gray-600"
+                className="text-white/60 hover:text-white/90"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -761,10 +761,10 @@ export function AdminSettings() {
 
             <div className="p-0">
               {erpEmployees.length === 0 ? (
-                <div className="p-8 text-center text-gray-500">No active employees found with email/user_id for this company.</div>
+                <div className="p-8 text-center text-white/50">No active employees found with email/user_id for this company.</div>
               ) : (
                 <table className="w-full text-sm text-left">
-                  <thead className="bg-gray-50 border-b">
+                  <thead className="glass border-white/10 text-white/70">
                     <tr>
                       <th className="px-6 py-3">Name</th>
                       <th className="px-6 py-3">Email/User ID</th>
@@ -776,16 +776,16 @@ export function AdminSettings() {
                       // Check if user already exists in our local list to show 'Imported'
                       const isImported = users.some(u => u.email === (emp.company_email || emp.user_id));
                       return (
-                        <tr key={idx} className="hover:bg-gray-50">
-                          <td className="px-6 py-3 font-medium text-gray-900">{emp.employee_name}</td>
-                          <td className="px-6 py-3 text-gray-500">{emp.company_email || emp.user_id || "N/A"}</td>
+                        <tr key={idx} className="hover:bg-white/5">
+                          <td className="px-6 py-3 font-medium text-white/90">{emp.employee_name}</td>
+                          <td className="px-6 py-3 text-white/70">{emp.company_email || emp.user_id || "N/A"}</td>
                           <td className="px-6 py-3">
                             {isImported ? (
-                              <span className="text-green-600 font-medium text-xs px-2 py-1 bg-green-50 rounded">Imported</span>
+                              <span className="text-green-300 font-medium text-xs px-2 py-1 bg-white/10 rounded">Imported</span>
                             ) : (
                               <button
                                 onClick={() => importEmployee(emp)}
-                                className="text-blue-600 hover:text-blue-800 font-medium px-3 py-1 border border-blue-200 rounded hover:bg-blue-50 transition-colors"
+                                className="text-white/80 hover:text-white/90 font-medium px-3 py-1 border border-white/10 rounded hover:bg-white/10 transition-colors"
                               >
                                 Import
                               </button>
@@ -799,10 +799,10 @@ export function AdminSettings() {
               )}
             </div>
 
-            <div className="p-6 border-t border-gray-200 text-right">
+            <div className="p-6 border-t border-white/10 text-right">
               <button
                 onClick={() => setShowImportModal(false)}
-                className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors"
+                className="glass text-white/80 px-4 py-2 rounded-lg hover:bg-white/10 transition-colors"
               >
                 Close
               </button>

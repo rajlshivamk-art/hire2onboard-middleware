@@ -126,44 +126,44 @@ export function CandidateList({ user, navigateTo, filter, initialStage = 'all' }
 
     if (loading) {
         return (
-            <div className="p-8 text-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-                <p className="text-gray-600">Loading candidates...</p>
+            <div className="min-h-screen bg-slate-950 flex items-center justify-center p-8 text-white">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-cyan-500 mx-auto mb-4"></div>
+                <p className="text-slate-300">Loading candidates...</p>
             </div>
         );
     }
 
     return (
-        <div className="p-4 md:p-6 lg:p-8">
+        <div className="min-h-screen bg-slate-950 text-white p-4 md:p-6 lg:p-8">
             {/* Header */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
                 <div className="flex items-center gap-3">
                     <button
                         onClick={() => navigateTo('dashboard')}
-                        className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                        className="p-2 hover:bg-white/10 rounded-full transition-colors"
                         title="Back to Dashboard"
                     >
-                        <ArrowLeft className="w-5 h-5 text-gray-600" />
+                        <ArrowLeft className="w-5 h-5 text-white/70" />
                     </button>
                     <div>
-                        <h1 className="text-2xl font-bold text-gray-900">{getPageTitle()}</h1>
-                        <p className="text-gray-500 text-sm mt-1">{filteredList.length} candidates found</p>
+                        <h1 className="text-3xl font-semibold text-white">{getPageTitle()}</h1>
+                        <p className="text-slate-300 text-sm mt-1">{filteredList.length} candidates found</p>
                     </div>
                 </div>
             </div>
 
             {/* Filters */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-6">
+            <div className="glass-card rounded-[32px] border border-white/10 shadow-2xl p-4 mb-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     {/* Search */}
                     <div className="relative">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                         <input
                             type="text"
                             placeholder="Search name, email..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                            className="glass-input w-full pl-10 pr-4 py-3 rounded-2xl text-white bg-slate-950/70 border-white/20 focus:ring-2 focus:ring-cyan-500 outline-none"
                         />
                     </div>
 
@@ -172,7 +172,7 @@ export function CandidateList({ user, navigateTo, filter, initialStage = 'all' }
                         <select
                             value={selectedJobId}
                             onChange={(e) => setSelectedJobId(e.target.value)}
-                            className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none bg-white"
+                            className="glass-input w-full px-4 py-3 rounded-2xl text-white bg-slate-950/70 border-white/20 focus:ring-2 focus:ring-cyan-500 outline-none"
                         >
                             <option value="all">All Jobs</option>
                             {jobs.map(job => (
@@ -186,7 +186,7 @@ export function CandidateList({ user, navigateTo, filter, initialStage = 'all' }
                         <select
                             value={selectedStage}
                             onChange={(e) => setSelectedStage(e.target.value)}
-                            className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none bg-white"
+                            className="glass-input w-full px-4 py-3 rounded-2xl text-white bg-slate-950/70 border-white/20 focus:ring-2 focus:ring-cyan-500 outline-none"
                         >
                             <option value="all">All Stages</option>
                             {stages.map(stage => (
@@ -200,7 +200,7 @@ export function CandidateList({ user, navigateTo, filter, initialStage = 'all' }
                         <select
                             value={selectedSource}
                             onChange={(e) => setSelectedSource(e.target.value)}
-                            className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none bg-white"
+                            className="glass-input w-full px-4 py-3 rounded-2xl text-white bg-slate-950/70 border-white/20 focus:ring-2 focus:ring-cyan-500 outline-none"
                         >
                             <option value="all">All Sources</option>
                             {uniqueSources.map(source => (
@@ -215,7 +215,7 @@ export function CandidateList({ user, navigateTo, filter, initialStage = 'all' }
                             type="date"
                             value={startDate}
                             onChange={(e) => setStartDate(e.target.value)}
-                            className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                            className="glass-input w-full px-4 py-3 rounded-2xl text-white bg-slate-950/70 border-white/20 focus:ring-2 focus:ring-cyan-500 outline-none"
                             placeholder="Start Date"
                         />
                     </div>
@@ -226,7 +226,7 @@ export function CandidateList({ user, navigateTo, filter, initialStage = 'all' }
                             type="date"
                             value={endDate}
                             onChange={(e) => setEndDate(e.target.value)}
-                            className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                            className="glass-input w-full px-4 py-3 rounded-2xl text-white bg-slate-950/70 border-white/20 focus:ring-2 focus:ring-cyan-500 outline-none"
                             placeholder="End Date"
                         />
                     </div>
@@ -242,7 +242,7 @@ export function CandidateList({ user, navigateTo, filter, initialStage = 'all' }
                                 setStartDate('');
                                 setEndDate('');
                             }}
-                            className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+                            className="text-sm text-cyan-300 hover:text-cyan-100 font-medium"
                         >
                             Reset Filters
                         </button>
@@ -251,20 +251,20 @@ export function CandidateList({ user, navigateTo, filter, initialStage = 'all' }
             </div>
 
             {/* Table */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden flex flex-col h-[500px]">
+            <div className="glass-card rounded-[32px] border border-white/10 shadow-2xl overflow-hidden flex flex-col h-[500px]">
                 <div className="overflow-auto flex-1 custom-scrollbar">
                     <table className="w-full relative">
-                        <thead className="bg-gray-50 border-b border-gray-200 sticky top-0 z-10 shadow-sm">
+                        <thead className="bg-slate-800 border-b border-white/10 sticky top-0 z-10 shadow-sm">
                             <tr>
-                                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Candidate</th>
-                                <th className="px-6 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Job Applied</th>
-                                <th className="px-6 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Stage</th>
-                                <th className="px-6 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Applied Date</th>
-                                <th className="px-6 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Source</th>
-                                <th className="px-6 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Action</th>
+                                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider">Candidate</th>
+                                <th className="px-6 py-3 text-center text-xs font-semibold text-slate-300 uppercase tracking-wider">Job Applied</th>
+                                <th className="px-6 py-3 text-center text-xs font-semibold text-slate-300 uppercase tracking-wider">Stage</th>
+                                <th className="px-6 py-3 text-center text-xs font-semibold text-slate-300 uppercase tracking-wider">Applied Date</th>
+                                <th className="px-6 py-3 text-center text-xs font-semibold text-slate-300 uppercase tracking-wider">Source</th>
+                                <th className="px-6 py-3 text-center text-xs font-semibold text-slate-300 uppercase tracking-wider">Action</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-gray-200">
+                        <tbody className="divide-y divide-white/10">
                             {filteredList.length > 0 ? (
                                 filteredList.map((candidate) => {
                                     const job = jobs.find(j => j.id === candidate.jobId);
@@ -272,33 +272,33 @@ export function CandidateList({ user, navigateTo, filter, initialStage = 'all' }
                                         <tr
                                             key={candidate.id}
                                             onClick={() => navigateTo('candidate-detail', { candidateId: candidate.id })}
-                                            className="hover:bg-gray-50 cursor-pointer transition-colors"
+                                            className="hover:bg-white/5 cursor-pointer transition-colors"
                                         >
                                             <td className="px-6 py-3 whitespace-nowrap align-middle">
                                                 <div className="flex items-center gap-4">
-                                                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-medium shadow-sm flex-shrink-0">
+                                                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center text-white font-medium shadow-sm flex-shrink-0">
                                                         {candidate.name.charAt(0)}
                                                     </div>
                                                     <div>
-                                                        <div className="text-sm font-medium text-gray-900">{candidate.name}</div>
-                                                        <div className="text-sm text-gray-500">{candidate.email}</div>
+                                                        <div className="text-sm font-medium text-white">{candidate.name}</div>
+                                                        <div className="text-sm text-slate-300">{candidate.email}</div>
                                                     </div>
                                                 </div>
                                             </td>
                                             <td className="px-6 py-3 whitespace-nowrap align-middle text-center">
-                                                <div className="text-sm text-gray-900">{job?.title || 'Unknown Job'}</div>
-                                                <div className="text-xs text-gray-500">{job?.department}</div>
+                                                <div className="text-sm text-white">{job?.title || 'Unknown Job'}</div>
+                                                <div className="text-xs text-slate-300">{job?.department}</div>
                                             </td>
                                             <td className="px-6 py-3 whitespace-nowrap align-middle text-center">
                                                 <span className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full
-                                            ${candidate.stage === 'Rejected' ? 'bg-red-100 text-red-800' :
-                                                        ['Offer', 'Onboarding', 'Hired'].includes(candidate.stage) ? 'bg-green-100 text-green-800' :
-                                                            'bg-blue-100 text-blue-800'}`}>
+                                            ${candidate.stage === 'Rejected' ? 'bg-red-500/20 text-red-300' :
+                                                        ['Offer', 'Onboarding', 'Hired'].includes(candidate.stage) ? 'bg-green-500/20 text-green-300' :
+                                                            'bg-cyan-500/20 text-cyan-300'}`}>
                                                     {candidate.stage}
                                                 </span>
                                             </td>
                                             <td className="px-6 py-3 whitespace-nowrap align-middle text-center">
-                                                <div className="text-sm text-gray-500">
+                                                <div className="text-sm text-slate-300">
                                                     {new Date(candidate.appliedDate).toLocaleDateString()}
                                                 </div>
                                             </td>
@@ -306,13 +306,13 @@ export function CandidateList({ user, navigateTo, filter, initialStage = 'all' }
                                                 {candidate.source ? (() => {
                                                     const getSourceStyle = (s: string) => {
                                                         const source = s.toLowerCase();
-                                                        if (source.includes('linkedin')) return 'bg-blue-100 text-blue-700';
-                                                        if (source.includes('referral')) return 'bg-purple-100 text-purple-700';
-                                                        if (source.includes('internshala')) return 'bg-sky-100 text-sky-700';
-                                                        if (source.includes('walk-in')) return 'bg-orange-100 text-orange-800';
-                                                        if (source.includes('career')) return 'bg-indigo-100 text-indigo-700';
-                                                        if (source.includes('naukri')) return 'bg-teal-100 text-teal-800';
-                                                        return 'bg-gray-100 text-gray-700';
+                                                        if (source.includes('linkedin')) return 'bg-blue-500/20 text-blue-300';
+                                                        if (source.includes('referral')) return 'bg-purple-500/20 text-purple-300';
+                                                        if (source.includes('internshala')) return 'bg-sky-500/20 text-sky-300';
+                                                        if (source.includes('walk-in')) return 'bg-orange-500/20 text-orange-300';
+                                                        if (source.includes('career')) return 'bg-indigo-500/20 text-indigo-300';
+                                                        if (source.includes('naukri')) return 'bg-teal-500/20 text-teal-300';
+                                                        return 'bg-slate-500/20 text-slate-300';
                                                     };
 
                                                     const getSourceIcon = (s: string) => {
@@ -329,18 +329,18 @@ export function CandidateList({ user, navigateTo, filter, initialStage = 'all' }
                                                         </span>
                                                     );
                                                 })() : (
-                                                    <span className="text-gray-500 text-sm">N/A</span>
+                                                    <span className="text-slate-400 text-sm">N/A</span>
                                                 )}
                                             </td>
                                             <td className="px-6 py-3 whitespace-nowrap text-center text-sm font-medium align-middle">
-                                                <button className="text-blue-600 hover:text-blue-900">View Details</button>
+                                                <button className="text-cyan-300 hover:text-cyan-100">View Details</button>
                                             </td>
                                         </tr>
                                     );
                                 })
                             ) : (
                                 <tr>
-                                    <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
+                                    <td colSpan={6} className="px-6 py-12 text-center text-slate-400">
                                         No candidates found matching your filters.
                                     </td>
                                 </tr>

@@ -50,13 +50,13 @@ export function ForgotPasswordPage({ onBack }: ForgotPasswordPageProps) {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-indigo-100 to-purple-100 px-4">
-            <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-8">
-                <h1 className="text-2xl font-semibold text-center mb-2">
+        <div className="min-h-screen flex items-center justify-center bg-slate-950 px-4">
+            <div className="glass-card w-full max-w-md p-8">
+                <h1 className="text-2xl font-semibold text-center mb-2 text-white">
                     Forgot Password
                 </h1>
 
-                <p className="text-sm text-gray-500 text-center mb-6">
+                <p className="text-sm text-white/70 text-center mb-6">
                     Enter your email to receive a password reset link
                 </p>
 
@@ -65,23 +65,26 @@ export function ForgotPasswordPage({ onBack }: ForgotPasswordPageProps) {
                         <input
                             {...register('email')}
                             placeholder="john@example.com"
-                            className="w-full border-b border-gray-300 px-1 py-2 focus:outline-none focus:border-blue-600"
+                            className={`glass-input w-full text-white placeholder-white/50 ${errors.email
+                                ? 'border-rose-400'
+                                : 'border-white/20 focus:border-cyan-400'
+                                }`}
                         />
                         {errors.email && (
-                            <p className="text-xs text-red-600 mt-1">
+                            <p className="text-xs text-rose-300 mt-1">
                                 {errors.email.message}
                             </p>
                         )}
                     </div>
 
                     {error && (
-                        <div className="text-sm text-red-700 bg-red-50 border border-red-200 rounded px-3 py-2">
+                        <div className="text-sm text-rose-300 bg-rose-500/10 border border-rose-500/20 rounded px-3 py-2">
                             {error}
                         </div>
                     )}
 
                     {message && (
-                        <div className="text-sm text-green-700 bg-green-50 border border-green-200 rounded px-3 py-2">
+                        <div className="text-sm text-emerald-300 bg-emerald-500/10 border border-emerald-500/20 rounded px-3 py-2">
                             {message}
                         </div>
                     )}
@@ -89,7 +92,7 @@ export function ForgotPasswordPage({ onBack }: ForgotPasswordPageProps) {
                     <button
                         type="submit"
                         disabled={isSubmitting}
-                        className="w-full bg-blue-600 text-white py-2.5 rounded-lg hover:bg-blue-700 transition disabled:opacity-50"
+                        className="w-full bg-cyan-500 text-white py-2.5 rounded-lg hover:bg-cyan-400 transition disabled:opacity-50"
                     >
                         {isSubmitting ? 'Sending…' : 'Send Reset Link'}
                     </button>
@@ -97,7 +100,7 @@ export function ForgotPasswordPage({ onBack }: ForgotPasswordPageProps) {
                     <button
                         type="button"
                         onClick={onBack}
-                        className="w-full text-sm text-blue-600 hover:underline"
+                        className="w-full text-sm text-cyan-300 hover:text-cyan-200 hover:underline"
                     >
                         Back to Login
                     </button>

@@ -80,8 +80,8 @@ export const BulkUploadApplications: React.FC<Props> = ({
     };
 
     return (
-        <div className="bg-white rounded-xl shadow p-6 mt-6">
-            <h3 className="text-lg font-semibold mb-4">
+        <div className="glass-card p-6 mt-6">
+            <h3 className="text-lg font-semibold text-white mb-4">
                 Bulk Upload Candidates
             </h3>
 
@@ -89,7 +89,7 @@ export const BulkUploadApplications: React.FC<Props> = ({
                 value={selectedJobId}
                 onChange={(e) => setSelectedJobId(e.target.value)}
                 disabled={loading}
-                className="w-full border rounded-lg px-3 py-2 mb-4 disabled:opacity-50"
+                className="glass-input w-full mb-4 disabled:opacity-50"
             >
                 <option value="">Select Job</option>
                 {jobs.map((job) => (
@@ -115,13 +115,13 @@ export const BulkUploadApplications: React.FC<Props> = ({
                         setFile(null);
                     }
                 }}
-                className="mb-4 block w-full disabled:opacity-50"
+                className="mb-4 block w-full text-white disabled:opacity-50 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-slate-700 file:text-white hover:file:bg-slate-600"
             />
 
             <button
                 onClick={handleUpload}
                 disabled={loading}
-                className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors"
+                className="bg-cyan-500 text-white px-6 py-2 rounded-lg hover:bg-cyan-400 disabled:opacity-50 transition-colors"
             >
                 {loading ? "Uploading..." : "Upload"}
             </button>

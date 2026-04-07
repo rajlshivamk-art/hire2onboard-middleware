@@ -160,6 +160,7 @@ export function ApplicationForm({
 
 
   const validateForm = () => {
+    const newErrors: Record<string, string> = {};
 
     previousEmployments.forEach((emp, i) => {
       if (!emp.companyName.trim()) {
@@ -175,8 +176,6 @@ export function ApplicationForm({
         newErrors[`previousEmployments.${i}.consentToContact`] = "Consent required if HR Email is provided";
       }
     });
-
-    const newErrors: Record<string, string> = {};
 
     if (!formData.name.trim() || formData.name.length < 2) {
       newErrors.name = "Full name is required (min 2 characters)";
@@ -312,88 +311,90 @@ export function ApplicationForm({
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center text-white">
+        <Loader2 className="w-8 h-8 animate-spin text-cyan-300" />
       </div>
     );
   }
 
   if (error || !job) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <p className="text-gray-600">{error || "Job not found"}</p>
-        <button
-          onClick={onBack}
-          className="ml-4 text-blue-600 hover:underline"
-        >
-          Go Back
-        </button>
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center p-6">
+        <div className="glass-card rounded-3xl border border-white/10 shadow-2xl px-8 py-10 text-center max-w-md">
+          <p className="text-white/80 mb-4">{error || "Job not found"}</p>
+          <button
+            onClick={onBack}
+            className="text-cyan-300 hover:text-white font-medium"
+          >
+            Go Back
+          </button>
+        </div>
       </div>
     );
   }
 
   if (submitted) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
-        <div className="bg-white rounded-xl shadow-lg max-w-md w-full p-8 text-center">
-          <div className="w-16 h-16 bg-green-100 rounded-full mx-auto mb-6 flex items-center justify-center">
-            <CheckCircle className="w-10 h-10 text-green-600" />
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center p-6">
+        <div className="glass-card rounded-3xl border border-white/10 shadow-2xl max-w-md w-full p-8 text-center">
+          <div className="w-16 h-16 bg-emerald-500/20 rounded-full mx-auto mb-6 flex items-center justify-center">
+            <CheckCircle className="w-10 h-10 text-emerald-300" />
           </div>
-          <h1 className="text-gray-900 mb-4">
+          <h1 className="text-white text-2xl font-semibold mb-4">
             Application Submitted!
           </h1>
-          <p className="text-gray-600 mb-6">
+          <p className="text-white/70 mb-6">
             Thank you for applying to{" "}
-            <strong>{job.title}</strong>. We've received your
+            <strong className="text-white">{job.title}</strong>. We've received your
             application and will review it shortly.
           </p>
-          <p className="text-gray-600 mb-8">
+          <p className="text-white/70 mb-8">
             You'll receive an email confirmation at{" "}
-            <strong>{formData.email}</strong> with next steps.
+            <strong className="text-white">{formData.email}</strong> with next steps.
           </p>
-          {/* Back to Job Board button removed as per requirement */}
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-slate-950 text-white">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200 shadow-sm">
+      <div className="glass-card border border-white/10 shadow-2xl">
         <div className="max-w-4xl mx-auto px-6 py-6">
           <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center">
+            <div className="w-12 h-12 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-3xl flex items-center justify-center shadow-lg shadow-cyan-500/20">
               <span className="text-white font-bold text-xl">
                 {job.company ? job.company.substring(0, 1) : "R"}
               </span>
             </div>
-            <h1 className="text-blue-600 tracking-tight">
-              {job.company || "Recruitment HRMS"}
-            </h1>
+            <div>
+              <h1 className="text-white text-2xl tracking-tight font-semibold">
+                {job.company || "Recruitment HRMS"}
+              </h1>
+              <p className="text-white/70 text-sm mt-1">
+                {job.department} • {job.location}
+              </p>
+            </div>
           </div>
-          {/* Back button removed as per requirement */}
-          <h2 className="text-gray-900 mb-2">
+          <h2 className="text-white text-3xl font-semibold mb-2">
             Apply for {job.title}
           </h2>
-          <p className="text-gray-600">
-            {job.department} • {job.location}
-          </p>
         </div>
       </div>
 
       {/* Form */}
       <div className="max-w-4xl mx-auto px-6 py-12">
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
+        <div className="glass-card rounded-[32px] border border-white/10 shadow-2xl p-8">
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Personal Information */}
             <div>
-              <h2 className="text-gray-900 mb-4">
+              <h2 className="text-white text-xl font-semibold mb-4">
                 Personal Information
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-gray-700 mb-2">
+                  <label className="block text-white/70 mb-2">
                     Full Name *
                   </label>
                   <input
@@ -405,15 +406,14 @@ export function ApplicationForm({
                         name: e.target.value,
                       })
                     }
-                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.name ? 'border-red-500' : 'border-gray-300'}`}
+                    className={`w-full px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-500 ${errors.name ? 'border-red-500' : 'glass-input'}`}
                     placeholder="John Doe"
-                  // required - Using custom validation
                   />
-                  {errors.name && <p className="text-red-600 font-medium text-sm mt-1">{errors.name}</p>}
+                  {errors.name && <p className="text-red-400 font-medium text-sm mt-1">{errors.name}</p>}
                 </div>
 
                 <div>
-                  <label className="block text-gray-700 mb-2">
+                  <label className="block text-white/70 mb-2">
                     Email Address *
                   </label>
                   <input
@@ -425,15 +425,14 @@ export function ApplicationForm({
                         email: e.target.value,
                       })
                     }
-                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.email ? 'border-red-500' : 'border-gray-300'}`}
+                    className={`w-full px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-500 ${errors.email ? 'border-red-500' : 'glass-input'}`}
                     placeholder="john@example.com"
-                  // required
                   />
-                  {errors.email && <p className="text-red-600 font-medium text-sm mt-1">{errors.email}</p>}
+                  {errors.email && <p className="text-red-400 font-medium text-sm mt-1">{errors.email}</p>}
                 </div>
 
                 <div>
-                  <label className="block text-gray-700 mb-2">
+                  <label className="block text-white/70 mb-2">
                     Phone Number *
                   </label>
                   <input
@@ -441,7 +440,6 @@ export function ApplicationForm({
                     value={formData.phone}
                     onChange={(e) => {
                       const value = e.target.value;
-                      // Only allow digits
                       if (/^\d*$/.test(value)) {
                         setFormData({
                           ...formData,
@@ -449,15 +447,15 @@ export function ApplicationForm({
                         });
                       }
                     }}
-                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.phone ? 'border-red-500' : 'border-gray-300'}`}
+                    className={`w-full px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-500 ${errors.phone ? 'border-red-500' : 'glass-input'}`}
                     placeholder="9876543210"
                     maxLength={10}
                   />
-                  {errors.phone && <p className="text-red-600 font-medium text-sm mt-1">{errors.phone}</p>}
+                  {errors.phone && <p className="text-red-400 font-medium text-sm mt-1">{errors.phone}</p>}
                 </div>
 
                 <div>
-                  <label className="block text-gray-700 mb-2">
+                  <label className="block text-white/70 mb-2">
                     Years of Experience *
                   </label>
                   <input
@@ -469,19 +467,18 @@ export function ApplicationForm({
                         yearsOfExperience: e.target.value,
                       })
                     }
-                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.yearsOfExperience ? 'border-red-500' : 'border-gray-300'}`}
+                    className={`w-full px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-500 ${errors.yearsOfExperience ? 'border-red-500' : 'glass-input'}`}
                     placeholder="5"
                     min="0"
-                  // required
                   />
-                  {errors.yearsOfExperience && <p className="text-red-600 font-medium text-sm mt-1">{errors.yearsOfExperience}</p>}
+                  {errors.yearsOfExperience && <p className="text-red-400 font-medium text-sm mt-1">{errors.yearsOfExperience}</p>}
                 </div>
               </div>
             </div>
 
             {/* Skills */}
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
-              <h2 className="text-gray-900 mb-4">Key Skills *</h2>
+            <div className="glass-card border border-white/10 rounded-[24px] p-6">
+              <h2 className="text-white text-lg font-semibold mb-4">Key Skills *</h2>
 
               <textarea
                 value={formData.skills}
@@ -491,70 +488,70 @@ export function ApplicationForm({
                     skills: e.target.value,
                   })
                 }
-                className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.skills ? "border-red-500" : "border-blue-300"
-                  }`}
+                className={`w-full px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-500 ${errors.skills ? 'border-red-500' : 'glass-input'}`}
                 rows={3}
                 placeholder="e.g. React, Node.js, SQL"
               />
 
               {errors.skills && (
-                <p className="text-red-600 font-medium text-sm mt-1">
+                <p className="text-red-400 font-medium text-sm mt-1">
                   {errors.skills}
                 </p>
               )}
 
-              <p className="text-sm text-blue-700 mt-2">
+              <p className="text-sm text-white/60 mt-2">
                 Separate skills using commas
               </p>
             </div>
 
             {/* Previous Employment Section */}
-            <div className="bg-gray-50 border border-gray-200 rounded-lg p-6">
-              <h2 className="text-gray-900 mb-4">Previous Employment</h2>
+            <div className="glass-card border border-white/10 rounded-[24px] p-6">
+              <h2 className="text-white text-lg font-semibold mb-4">Previous Employment</h2>
 
               {previousEmployments.map((emp, index) => (
-                <div key={index} className="border p-4 rounded-lg mb-4">
+                <div key={index} className="glass-card rounded-3xl border border-white/10 p-4 mb-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <input
                       type="text"
                       placeholder="Company Name *"
                       value={emp.companyName}
                       onChange={(e) => handleEmploymentChange(index, "companyName", e.target.value)}
-                      className="w-full px-3 py-2 border rounded"
+                      className="w-full px-3 py-2 rounded-xl glass-input"
                     />
                     <input
                       type="text"
                       placeholder="HR Name"
                       value={emp.hrName}
                       onChange={(e) => handleEmploymentChange(index, "hrName", e.target.value)}
-                      className="w-full px-3 py-2 border rounded"
+                      className="w-full px-3 py-2 rounded-xl glass-input"
                     />
                     <input
                       type="email"
                       placeholder="HR Email"
                       value={emp.hrEmail}
                       onChange={(e) => handleEmploymentChange(index, "hrEmail", e.target.value)}
-                      className="w-full px-3 py-2 border rounded"
+                      className="w-full px-3 py-2 rounded-xl glass-input"
                     />
                     <input
                       type="date"
                       placeholder="Start Date *"
                       value={emp.employmentStartDate}
                       onChange={(e) => handleEmploymentChange(index, "employmentStartDate", e.target.value)}
-                      className="w-full px-3 py-2 border rounded"
+                      className="w-full px-3 py-2 rounded-xl glass-input"
                     />
                     <input
                       type="date"
                       placeholder="End Date"
                       value={emp.employmentEndDate}
                       onChange={(e) => handleEmploymentChange(index, "employmentEndDate", e.target.value)}
-                      className="w-full px-3 py-2 border rounded"
+                      className="w-full px-3 py-2 rounded-xl glass-input"
                     />
-                    <label className="flex items-center gap-2">
+                    <label className="flex items-center gap-2 text-white/70">
                       <input
                         type="checkbox"
                         checked={emp.consentToContact}
                         onChange={(e) => handleEmploymentChange(index, "consentToContact", e.target.checked)}
+                        className="accent-cyan-400"
                       />
                       Consent to Contact HR
                     </label>
@@ -562,7 +559,7 @@ export function ApplicationForm({
                   <button
                     type="button"
                     onClick={() => removeEmployment(index)}
-                    className="mt-2 text-red-600"
+                    className="mt-2 text-red-400 hover:text-red-300"
                   >
                     Remove
                   </button>
@@ -572,7 +569,7 @@ export function ApplicationForm({
               <button
                 type="button"
                 onClick={addEmployment}
-                className="bg-blue-600 text-white px-4 py-2 rounded-lg"
+                className="bg-cyan-500 text-slate-950 px-4 py-2 rounded-2xl hover:bg-cyan-400 transition-colors"
               >
                 + Add Previous Employment
               </button>
@@ -580,12 +577,12 @@ export function ApplicationForm({
 
             {/* Salary Information */}
             <div>
-              <h2 className="text-gray-900 mb-4">
+              <h2 className="text-white text-xl font-semibold mb-4">
                 Salary Expectations
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-gray-700 mb-2">
+                  <label className="block text-white/70 mb-2">
                     Current Salary (INR)
                   </label>
                   <input
@@ -597,13 +594,13 @@ export function ApplicationForm({
                         currentSalary: e.target.value,
                       })
                     }
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-3 rounded-xl glass-input"
                     placeholder="100000"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-gray-700 mb-2">
+                  <label className="block text-white/70 mb-2">
                     Expected Salary (INR) *
                   </label>
                   <input
@@ -615,29 +612,21 @@ export function ApplicationForm({
                         expectedSalary: e.target.value,
                       })
                     }
-                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.expectedSalary ? 'border-red-500' : 'border-gray-300'}`}
+                    className={`w-full px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-500 ${errors.expectedSalary ? 'border-red-500' : 'glass-input'}`}
                     placeholder="120000"
-                  // required
                   />
-                  {errors.expectedSalary && <p className="text-red-600 font-medium text-sm mt-1">{errors.expectedSalary}</p>}
+                  {errors.expectedSalary && <p className="text-red-400 font-medium text-sm mt-1">{errors.expectedSalary}</p>}
                 </div>
               </div>
             </div>
 
             {/* Resume Upload */}
             <div>
-              <label className="block text-gray-700 mb-2">
+              <label className="block text-white/70 mb-2">
                 Resume/CV *
               </label>
-              <div className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${errors.resumeFile ? 'border-red-500 bg-red-50' :
-                uploadStatus === 'success' ? 'border-green-500 bg-green-50' :
-                  uploadStatus === 'uploading' ? 'border-yellow-400 bg-yellow-50' :
-                    'border-gray-300 hover:border-blue-400'
-                }`}>
-                <Upload className={`w-12 h-12 mx-auto mb-4 ${errors.resumeFile ? 'text-red-400' :
-                  uploadStatus === 'success' ? 'text-green-500' :
-                    'text-gray-400'
-                  }`} />
+              <div className={`rounded-[28px] p-8 text-center transition-colors border-2 ${errors.resumeFile ? 'border-red-500 bg-red-600/10' : uploadStatus === 'success' ? 'border-emerald-500 bg-emerald-500/10' : uploadStatus === 'uploading' ? 'border-amber-400 bg-amber-400/10' : 'border-white/10 bg-white/5 hover:border-cyan-400'}`}>
+                <Upload className={`w-12 h-12 mx-auto mb-4 ${errors.resumeFile ? 'text-red-400' : uploadStatus === 'success' ? 'text-emerald-300' : 'text-white/60'}`} />
                 <input
                   type="file"
                   onChange={handleFileChange}
@@ -645,36 +634,33 @@ export function ApplicationForm({
                   className="hidden"
                   id="resume-upload"
                   disabled={uploadStatus === 'uploading'}
-                // required
                 />
                 <label
                   htmlFor="resume-upload"
-                  className={`cursor-pointer text-blue-600 hover:underline ${uploadStatus === 'uploading' ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  className={`cursor-pointer ${uploadStatus === 'uploading' ? 'text-white/50 cursor-not-allowed' : 'text-cyan-300 hover:text-white underline'} transition-colors`}
                 >
                   {uploadStatus === 'uploading' ? 'Uploading...' : 'Click to upload'}
                 </label>
 
                 <div className="mt-2 text-sm space-y-1">
-                  <p className="text-gray-500">Required: PDF, DOC, or DOCX (50KB - 2MB)</p>
+                  <p className="text-white/60">Required: PDF, DOC, or DOCX (50KB - 2MB)</p>
 
-
-                  {/* Status Messages */}
                   {uploadStatus === 'uploading' && (
-                    <p className="text-red-600 font-medium animate-pulse">
+                    <p className="text-amber-300 font-medium animate-pulse">
                       ⚠ Uploading... Please wait
                     </p>
                   )}
 
                   {uploadStatus === 'success' && formData.resumeFile && (
-                    <div className="text-green-700 font-medium">
+                    <div className="text-emerald-300 font-medium">
                       <p>✔ Upload Complete</p>
-                      <p className="text-xs text-green-600">{formData.resumeFile.name} ({fileSizeInfo})</p>
+                      <p className="text-xs text-emerald-200">{formData.resumeFile.name} ({fileSizeInfo})</p>
                     </div>
                   )}
                 </div>
 
                 {errors.resumeFile && (
-                  <p className="text-red-500 text-sm mt-2">{errors.resumeFile}</p>
+                  <p className="text-red-400 text-sm mt-2">{errors.resumeFile}</p>
                 )}
               </div>
             </div>
@@ -682,12 +668,12 @@ export function ApplicationForm({
 
             {/* Links */}
             <div>
-              <h2 className="text-gray-900 mb-4">
+              <h2 className="text-white text-xl font-semibold mb-4">
                 Professional Links
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-gray-700 mb-2">
+                  <label className="block text-white/70 mb-2">
                     LinkedIn Profile
                   </label>
                   <input
@@ -699,14 +685,14 @@ export function ApplicationForm({
                         linkedIn: e.target.value,
                       })
                     }
-                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.linkedIn ? 'border-red-500' : 'border-gray-300'}`}
+                    className={`w-full px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-500 ${errors.linkedIn ? 'border-red-500' : 'glass-input'}`}
                     placeholder="https://linkedin.com/in/johndoe"
                   />
-                  {errors.linkedIn && <p className="text-red-600 font-medium text-sm mt-1">{errors.linkedIn}</p>}
+                  {errors.linkedIn && <p className="text-red-400 font-medium text-sm mt-1">{errors.linkedIn}</p>}
                 </div>
 
                 <div>
-                  <label className="block text-gray-700 mb-2">
+                  <label className="block text-white/70 mb-2">
                     Portfolio/Website
                   </label>
                   <input
@@ -718,17 +704,17 @@ export function ApplicationForm({
                         portfolio: e.target.value,
                       })
                     }
-                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.portfolio ? 'border-red-500' : 'border-gray-300'}`}
+                    className={`w-full px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-500 ${errors.portfolio ? 'border-red-500' : 'glass-input'}`}
                     placeholder="https://johndoe.com"
                   />
-                  {errors.portfolio && <p className="text-red-600 font-medium text-sm mt-1">{errors.portfolio}</p>}
+                  {errors.portfolio && <p className="text-red-400 font-medium text-sm mt-1">{errors.portfolio}</p>}
                 </div>
               </div>
             </div>
 
             {/* Cover Letter */}
             <div>
-              <label className="block text-gray-700 mb-2">
+              <label className="block text-white/70 mb-2">
                 Cover Letter
               </label>
               <textarea
@@ -739,24 +725,24 @@ export function ApplicationForm({
                     coverLetter: e.target.value,
                   })
                 }
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-3 rounded-xl glass-input h-40"
                 rows={6}
                 placeholder="Tell us why you're interested in this position and what makes you a great fit..."
               />
             </div>
 
             {/* Referral Section */}
-            <div className="bg-purple-50 border border-purple-200 rounded-lg p-6">
-              <h2 className="text-gray-900 mb-4">
+            <div className="glass-card border border-white/10 rounded-[24px] p-6">
+              <h2 className="text-white text-xl font-semibold mb-4">
                 Employee Referral
               </h2>
 
               <div className="mb-4">
-                <label className="block text-gray-700 mb-3">
+                <label className="block text-white/70 mb-3">
                   Were you referred by someone from our company?
                 </label>
                 <div className="flex gap-6">
-                  <label className="flex items-center gap-2 cursor-pointer">
+                  <label className="flex items-center gap-2 cursor-pointer text-white/80">
                     <input
                       type="radio"
                       name="hasReferral"
@@ -769,21 +755,21 @@ export function ApplicationForm({
                           referredBy: "",
                         });
                       }}
-                      className="w-4 h-4 text-blue-600 focus:ring-2 focus:ring-blue-500"
+                      className="w-4 h-4 accent-cyan-400 focus:ring-2 focus:ring-cyan-500"
                     />
-                    <span className="text-gray-700">No</span>
+                    <span>No</span>
                   </label>
 
-                  <label className="flex items-center gap-2 cursor-pointer">
+                  <label className="flex items-center gap-2 cursor-pointer text-white/80">
                     <input
                       type="radio"
                       name="hasReferral"
                       value="yes"
                       checked={hasReferral === "yes"}
                       onChange={() => setHasReferral("yes")}
-                      className="w-4 h-4 text-blue-600 focus:ring-2 focus:ring-blue-500"
+                      className="w-4 h-4 accent-cyan-400 focus:ring-2 focus:ring-cyan-500"
                     />
-                    <span className="text-gray-700">Yes</span>
+                    <span>Yes</span>
                   </label>
                 </div>
               </div>
@@ -791,7 +777,7 @@ export function ApplicationForm({
               {/* Referral Name Input - Shows when "Yes" is selected */}
               {hasReferral === "yes" && (
                 <div className="animate-fadeIn">
-                  <label className="block text-gray-700 mb-2">
+                  <label className="block text-white/70 mb-2">
                     Referrer's Full Name *
                   </label>
                   <input
@@ -803,12 +789,11 @@ export function ApplicationForm({
                         referredBy: e.target.value,
                       })
                     }
-                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white ${errors.referredBy ? 'border-red-500' : 'border-purple-300'}`}
+                    className={`w-full px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 ${errors.referredBy ? 'border-red-500' : 'glass-input'}`}
                     placeholder="Enter the name of the employee who referred you"
-                  // required
                   />
-                  {errors.referredBy && <p className="text-red-500 text-sm mt-1">{errors.referredBy}</p>}
-                  <p className="text-purple-600 text-sm mt-2">
+                  {errors.referredBy && <p className="text-red-400 text-sm mt-1">{errors.referredBy}</p>}
+                  <p className="text-purple-300 text-sm mt-2">
                     Please enter the full name of the employee
                     who referred you to this position.
                   </p>
@@ -817,19 +802,18 @@ export function ApplicationForm({
             </div>
 
             {/* Submit */}
-            <div className="flex gap-4 pt-6 border-t border-gray-200">
+            <div className="flex gap-4 pt-6 border-t border-white/10">
               <button
                 type="submit"
                 disabled={uploadStatus === 'uploading'}
-                className={`flex-1 text-white py-4 rounded-lg transition-colors ${uploadStatus === 'uploading' ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'}`}
+                className={`flex-1 text-white py-4 rounded-2xl transition-colors ${uploadStatus === 'uploading' ? 'bg-slate-600 cursor-not-allowed' : 'bg-cyan-500 hover:bg-cyan-400'}`}
               >
-
                 Submit Application
               </button>
               <button
                 type="button"
                 onClick={onBack}
-                className="px-8 py-4 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+                className="px-8 py-4 bg-white/10 text-white/80 rounded-2xl hover:bg-white/20 transition-colors"
               >
                 Cancel
               </button>

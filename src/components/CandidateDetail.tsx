@@ -139,7 +139,7 @@ export function CandidateDetail({
         <div className="flex flex-col items-center gap-4 text-red-600">
           <AlertCircle className="w-12 h-12" />
           <h2 className="text-xl font-semibold">Access Denied</h2>
-          <p className="text-gray-600">You do not have permission to view this candidate.</p>
+          <p className="text-white/60">You do not have permission to view this candidate.</p>
           <button
             onClick={() => navigateTo('pipeline')}
             className="text-blue-600 hover:underline"
@@ -323,7 +323,7 @@ export function CandidateDetail({
     <div className="p-4 md:p-6 lg:p-8">
       <button
         onClick={() => navigateTo("pipeline")}
-        className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-4 md:mb-6"
+        className="flex items-center gap-2 text-white/60 hover:text-white/90 mb-4 md:mb-6"
       >
         <ArrowLeft className="w-5 h-5" />
         Back to Pipeline
@@ -332,27 +332,27 @@ export function CandidateDetail({
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
         {/* Left Sidebar - Profile */}
         <div className="lg:col-span-1">
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6">
             <div className="text-center mb-6">
               <div className="w-24 h-24 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-full mx-auto mb-4 flex items-center justify-center text-white">
                 <span className="text-3xl">
                   {candidate.name.charAt(0)}
                 </span>
               </div>
-              <h2 className="text-gray-900 mb-1">
+              <h2 className="text-white/90 mb-1">
                 {candidate.name}
               </h2>
-              <div className="text-gray-600 text-sm">
-                <div className="text-gray-600 text-sm flex items-center justify-center gap-2">
+              <div className="text-white/60 text-sm">
+                <div className="text-white/60 text-sm flex items-center justify-center gap-2">
                   {isEditingJob ? (
                     <div className="flex items-center gap-2">
                       <select
                         value={newJobId || candidate.jobId}
                         onChange={(e) => setNewJobId(e.target.value)}
-                        className="border rounded px-2 py-1 text-sm max-w-[200px]"
+                        className="glass-input text-white/90 rounded px-2 py-1 text-sm max-w-[200px]"
                       >
                         {allJobs.map((j) => (
-                          <option key={j.id} value={j.id}>
+                          <option key={j.id} value={j.id} className="bg-[#0d0840] text-white/90">
                             {j.title}
                           </option>
                         ))}
@@ -397,14 +397,26 @@ export function CandidateDetail({
                 {(() => {
                   const getSourceStyle = (s: string) => {
                     const source = s.toLowerCase();
-                    // Filled pastel styles matching the Pipeline design
-                    if (source.includes('linkedin')) return 'bg-blue-100 text-blue-700';
-                    if (source.includes('referral')) return 'bg-purple-100 text-purple-700';
-                    if (source.includes('internshala')) return 'bg-sky-100 text-sky-700';
-                    if (source.includes('walk-in')) return 'bg-orange-100 text-orange-800';
-                    if (source.includes('career')) return 'bg-indigo-100 text-indigo-700';
-                    if (source.includes('naukri')) return 'bg-teal-100 text-teal-800';
-                    return 'bg-gray-100 text-gray-700';
+
+                    if (source.includes('linkedin'))
+                      return 'bg-blue-500/20 text-blue-300 border border-blue-500/30';
+
+                    if (source.includes('referral'))
+                      return 'bg-purple-500/20 text-purple-300 border border-purple-500/30';
+
+                    if (source.includes('internshala'))
+                      return 'bg-sky-500/20 text-sky-300 border border-sky-500/30';
+
+                    if (source.includes('walk-in'))
+                      return 'bg-orange-500/20 text-orange-300 border border-orange-500/30';
+
+                    if (source.includes('career'))
+                      return 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30';
+
+                    if (source.includes('naukri'))
+                      return 'bg-teal-500/20 text-teal-300 border border-teal-500/30';
+
+                    return 'bg-white/10 text-white/80 border border-white/10';
                   };
 
                   const getSourceIcon = (s: string) => {
@@ -428,20 +440,20 @@ export function CandidateDetail({
 
             <div className="space-y-4">
               <div className="flex items-start gap-3">
-                <Mail className="w-5 h-5 text-gray-400 mt-0.5" />
+                <Mail className="w-5 h-5 text-white/40 mt-0.5" />
                 <div className="flex-1">
-                  <p className="text-gray-600 text-sm">Email</p>
-                  <p className="text-gray-900">
+                  <p className="text-white/60 text-sm">Email</p>
+                  <p className="text-white/90">
                     {candidate.email}
                   </p>
                 </div>
               </div>
 
               <div className="flex items-start gap-3">
-                <Phone className="w-5 h-5 text-gray-400 mt-0.5" />
+                <Phone className="w-5 h-5 text-white/40 mt-0.5" />
                 <div className="flex-1">
-                  <p className="text-gray-600 text-sm">Phone</p>
-                  <p className="text-gray-900">
+                  <p className="text-white/60 text-sm">Phone</p>
+                  <p className="text-white/90">
                     {candidate.phone}
                   </p>
                 </div>
@@ -453,7 +465,7 @@ export function CandidateDetail({
                 <div className="flex items-start gap-3">
                   <Linkedin className="w-5 h-5 text-blue-600 mt-0.5" />
                   <div className="flex-1">
-                    <p className="text-gray-600 text-sm">LinkedIn</p>
+                    <p className="text-white/60 text-sm">LinkedIn</p>
                     <a
                       href={candidate.linkedIn.trim().startsWith('http') ? candidate.linkedIn.trim() : `https://${candidate.linkedIn.trim()}`}
                       target="_blank"
@@ -468,10 +480,10 @@ export function CandidateDetail({
 
               {candidate.coverLetter && (
                 <div className="flex items-start gap-3">
-                  <FileText className="w-5 h-5 text-gray-400 mt-0.5" />
+                  <FileText className="w-5 h-5 text-white/40 mt-0.5" />
                   <div className="flex-1">
-                    <p className="text-gray-600 text-sm">Cover Letter</p>
-                    <div className="bg-gray-50 p-3 rounded-lg text-sm text-gray-700 mt-1 whitespace-pre-wrap max-h-40 overflow-y-auto">
+                    <p className="text-white/60 text-sm">Cover Letter</p>
+                    <div className="glass p-3 rounded-lg text-sm text-white/70 mt-1 whitespace-pre-wrap max-h-40 overflow-y-auto">
                       {candidate.coverLetter}
                     </div>
                   </div>
@@ -479,9 +491,9 @@ export function CandidateDetail({
               )}
 
               <div className="flex items-start gap-3">
-                <FileText className="w-5 h-5 text-gray-400 mt-0.5" />
+                <FileText className="w-5 h-5 text-white/40 mt-0.5" />
                 <div className="flex-1">
-                  <p className="text-gray-600 text-sm">
+                  <p className="text-white/60 text-sm">
                     Resume
                   </p>
                   <a
@@ -507,15 +519,15 @@ export function CandidateDetail({
 
               {candidate.skills && candidate.skills.length > 0 && (
                 <div className="flex items-start gap-3">
-                  <FileText className="w-5 h-5 text-gray-400 mt-0.5" />
+                  <FileText className="w-5 h-5 text-white/40 mt-0.5" />
                   <div className="flex-1">
-                    <p className="text-gray-600 text-sm">Skills</p>
+                    <p className="text-white/60 text-sm">Skills</p>
 
                     <div className="flex flex-wrap gap-2 mt-2">
                       {candidate.skills.map((skill, index) => (
                         <span
                           key={index}
-                          className="px-2 py-1 text-xs rounded-full bg-blue-50 text-blue-700 border border-blue-200"
+                          className="px-2 py-1 text-xs rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30"
                         >
                           {skill}
                         </span>
@@ -527,12 +539,12 @@ export function CandidateDetail({
 
 
               <div className="flex items-start gap-3">
-                <Calendar className="w-5 h-5 text-gray-400 mt-0.5" />
+                <Calendar className="w-5 h-5 text-white/40 mt-0.5" />
                 <div className="flex-1">
-                  <p className="text-gray-600 text-sm">
+                  <p className="text-white/60 text-sm">
                     Applied Date
                   </p>
-                  <p className="text-gray-900">
+                  <p className="text-white/90">
                     {new Date(
                       candidate.appliedDate,
                     ).toLocaleDateString()}
@@ -543,17 +555,17 @@ export function CandidateDetail({
               {/* Recruiter Assignment */}
               {(user.role === "Admin" || user.role === "HR") && (
                 <div className="mt-4">
-                  <p className="text-sm text-gray-600 mb-1">Assigned Recruiter</p>
+                  <p className="text-sm text-white/60 mb-1">Assigned Recruiter</p>
 
                   <div className="flex gap-2 items-center">
                     <select
                       value={selectedRecruiterId || candidate.assignedRecruiterId || ""}
                       onChange={(e) => setSelectedRecruiterId(e.target.value)}
-                      className="border rounded px-2 py-1 text-sm w-full"
+                      className="glass-input text-white/90 w-full"
                     >
-                      <option value="">Select recruiter</option>
+                      <option value="" className="bg-[#0d0840] text-white/90">Select recruiter</option>
                       {recruiters.map(r => (
-                        <option key={r.id} value={r.id}>
+                        <option key={r.id} value={r.id} className="bg-[#0d0840] text-white/90">
                           {r.name}
                         </option>
                       ))}
@@ -578,14 +590,14 @@ export function CandidateDetail({
                 <div className="flex items-start gap-3">
                   <UserCheck className="w-5 h-5 text-purple-500 mt-0.5" />
                   <div className="flex-1">
-                    <p className="text-gray-600 text-sm">
+                    <p className="text-white/60 text-sm">
                       Referred By
                     </p>
-                    <div className="bg-purple-50 border border-purple-200 rounded-lg px-3 py-2 mt-1">
-                      <p className="text-purple-900">
+                    <div className="bg-purple-500/20 border border-purple-500/30 rounded-lg px-3 py-2 mt-1 text-purple-300">
+                      <p className="text-purple-300">
                         {candidate.referredBy}
                       </p>
-                      <p className="text-purple-600 text-xs">
+                      <p className="text-purple-200 text-xs">
                         Employee Referral
                       </p>
                     </div>
@@ -598,12 +610,12 @@ export function CandidateDetail({
                 <>
                   {!!candidate.currentSalary && (
                     <div className="flex items-start gap-3">
-                      <IndianRupee className="w-5 h-5 text-gray-400 mt-0.5" />
+                      <IndianRupee className="w-5 h-5 text-white/40 mt-0.5" />
                       <div className="flex-1">
-                        <p className="text-gray-600 text-sm">
+                        <p className="text-white/60 text-sm">
                           Current Salary
                         </p>
-                        <p className="text-gray-900">
+                        <p className="text-white/90">
                           ₹
                           {candidate.currentSalary.toLocaleString()}
                         </p>
@@ -615,7 +627,7 @@ export function CandidateDetail({
                     <div className="flex items-start gap-3">
                       <IndianRupee className="w-5 h-5 text-green-600 mt-0.5" />
                       <div className="flex-1">
-                        <p className="text-gray-600 text-sm">
+                        <p className="text-white/60 text-sm">
                           Expected Salary
                         </p>
                         <p className="text-green-600">
@@ -630,7 +642,7 @@ export function CandidateDetail({
                     <div className="flex items-start gap-3">
                       <IndianRupee className="w-5 h-5 text-green-600 mt-0.5" />
                       <div className="flex-1">
-                        <p className="text-gray-600 text-sm">
+                        <p className="text-white/60 text-sm">
                           Offered Salary
                         </p>
                         <p className="text-green-600">
@@ -645,10 +657,10 @@ export function CandidateDetail({
 
               {/* Info for Tech Interviewers */}
               {!user.canViewSalary && (
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                <div className="bg-blue-500/20 border border-blue-500/30 rounded-lg p-3 text-blue-300">
                   <div className="flex items-start gap-2">
-                    <AlertCircle className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
-                    <p className="text-blue-800 text-xs">
+                    <AlertCircle className="w-4 h-4 text-blue-300 mt-0.5 flex-shrink-0" />
+                    <p className="text-blue-300 text-xs">
                       Salary information is hidden based on your
                       role permissions.
                     </p>
@@ -661,7 +673,7 @@ export function CandidateDetail({
 
         {/* Center - Timeline & Feedback */}
         <div className="lg:col-span-1">
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <div className="glass-card rounded-xl border-white/10 p-6">
             {/* Current Stage Banner */}
             <div className={`rounded-lg p-4 md:p-6 text-white mb-6 ${candidate.stage === 'Rejected' ? 'bg-red-600' : 'bg-gradient-to-r from-blue-600 to-indigo-600'}`}>
               <p className="text-sm mb-1 opacity-90">
@@ -671,12 +683,12 @@ export function CandidateDetail({
             </div>
 
             {/* Tabs */}
-            <div className="flex gap-1 mb-6 border-b border-gray-200 overflow-x-auto">
+            <div className="flex gap-1 mb-6 border-b border-white/10 overflow-x-auto">
               <button
                 onClick={() => setActiveTab("history")}
                 className={`px-3 py-2 text-xs sm:text-sm whitespace-nowrap ${activeTab === "history"
-                  ? "border-b-2 border-blue-600 text-blue-600"
-                  : "text-gray-600 hover:text-gray-900"
+                  ? "border-b-2 border-indigo-500 text-white"
+                  : "text-white/60 hover:text-white/90"
                   }`}
               >
                 History
@@ -684,8 +696,8 @@ export function CandidateDetail({
               <button
                 onClick={() => setActiveTab("interactions")}
                 className={`px-3 py-2 text-xs sm:text-sm whitespace-nowrap ${activeTab === "interactions"
-                  ? "border-b-2 border-blue-600 text-blue-600"
-                  : "text-gray-600 hover:text-gray-900"
+                  ? "border-b-2 border-indigo-500 text-white"
+                  : "text-white/60 hover:text-white/90"
                   }`}
               >
                 Interactions
@@ -693,8 +705,8 @@ export function CandidateDetail({
               <button
                 onClick={() => setActiveTab("feedback")}
                 className={`px-3 py-2 text-xs sm:text-sm whitespace-nowrap ${activeTab === "feedback"
-                  ? "border-b-2 border-blue-600 text-blue-600"
-                  : "text-gray-600 hover:text-gray-900"
+                  ? "border-b-2 border-indigo-500 text-white"
+                  : "text-white/60 hover:text-white/90"
                   }`}
               >
                 Feedback
@@ -702,8 +714,8 @@ export function CandidateDetail({
               <button
                 onClick={() => setActiveTab("emails")}
                 className={`px-3 py-2 text-xs sm:text-sm whitespace-nowrap ${activeTab === "emails"
-                  ? "border-b-2 border-blue-600 text-blue-600"
-                  : "text-gray-600 hover:text-gray-900"
+                  ? "border-b-2 border-indigo-500 text-white"
+                  : "text-white/60 hover:text-white/90"
                   }`}
               >
                 Emails
@@ -711,8 +723,8 @@ export function CandidateDetail({
               <button
                 onClick={() => setActiveTab("documents")}
                 className={`px-3 py-2 text-xs sm:text-sm whitespace-nowrap ${activeTab === "documents"
-                  ? "border-b-2 border-blue-600 text-blue-600"
-                  : "text-gray-600 hover:text-gray-900"
+                  ? "border-b-2 border-indigo-500 text-white"
+                  : "text-white/60 hover:text-white/90"
                   }`}
               >
                 Documents
@@ -720,8 +732,8 @@ export function CandidateDetail({
               <button
                 onClick={() => setActiveTab("onboarding")}
                 className={`px-3 py-2 text-xs sm:text-sm whitespace-nowrap ${activeTab === "onboarding"
-                  ? "border-b-2 border-blue-600 text-blue-600"
-                  : "text-gray-600 hover:text-gray-900"
+                  ? "border-b-2 border-indigo-500 text-white"
+                  : "text-white/60 hover:text-white/90"
                   }`}
               >
                 Onboarding
@@ -744,13 +756,13 @@ export function CandidateDetail({
                       candidateFeedback.map((feedback) => (
                         <div
                           key={feedback.id}
-                          className="bg-gray-50 rounded-lg p-4"
+                          className="glass rounded-lg p-4"
                         >
                           <div className="flex items-center justify-between mb-2">
-                            <p className="text-gray-900 font-medium">
+                            <p className="text-white/90 font-medium">
                               {feedback.stage}
                             </p>
-                            <span className="text-gray-500 text-xs">
+                            <span className="text-white/60 text-xs">
                               {new Date(
                                 feedback.date,
                               ).toLocaleString([], {
@@ -763,7 +775,7 @@ export function CandidateDetail({
                             </span>
                           </div>
                           <div className="flex items-center justify-between mb-1">
-                            <p className="text-gray-600 text-sm">
+                            <p className="text-white/60 text-sm">
                               Reviewer: {feedback.reviewerName}{" "}
                               ({feedback.reviewerRole})
                             </p>
@@ -790,7 +802,7 @@ export function CandidateDetail({
                             )}
                           </div>
 
-                          <p className="text-gray-800 text-sm font-medium mb-2">
+                          <p className="text-white/70 text-sm font-medium mb-2">
                             Round: {feedback.roundName}
                           </p>
                           {feedback.rating && (
@@ -798,22 +810,22 @@ export function CandidateDetail({
                               <span className="text-yellow-500">
                                 {"★".repeat(feedback.rating)}
                               </span>
-                              <span className="text-gray-300">
+                              <span className="text-white/40">
                                 {"★".repeat(5 - feedback.rating)}
                               </span>
                             </div>
                           )}
-                          <p className="text-gray-700">
+                          <p className="text-white/70">
                             {feedback.comments}
                           </p>
-                          <div className="mt-3 pt-3 border-t border-gray-200">
+                          <div className="mt-3 pt-3 border-t border-white/10">
                             <span
                               className={`px-3 py-1 rounded-full text-sm ${feedback.decision === "Advance"
-                                ? "bg-green-100 text-green-700"
+                                ? "bg-green-500/20 text-green-300 border border-green-500/30"
                                 : feedback.decision ===
                                   "Reject"
-                                  ? "bg-red-100 text-red-700"
-                                  : "bg-yellow-100 text-yellow-700"
+                                  ? "bg-red-500/20 text-red-300 border border-red-500/30"
+                                  : "bg-yellow-500/20 text-yellow-300 border border-yellow-500/30"
                                 }`}
                             >
                               {feedback.decision}
@@ -832,7 +844,7 @@ export function CandidateDetail({
                   {candidate.stage !== "Rejected" && (
                     <button
                       onClick={() => setShowFeedbackModal(true)}
-                      className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors"
+                      className="w-full btn-glass-primary"
                     >
                       Add Feedback
                     </button>
@@ -939,14 +951,14 @@ export function CandidateDetail({
           />
 
 
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 sticky top-8">
-            <h3 className="text-gray-900 mb-4">Actions</h3>
+          <div className="glass-card rounded-xl border-white/10 p-6 sticky top-8">
+            <h3 className="text-white/90 mb-4">Actions</h3>
 
             <div className="space-y-3">
               {user.canMoveCandidate && nextStage && (
                 <button
                   onClick={handleAdvance}
-                  className="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center gap-2"
+                  className="w-full btn-glass-primary flex items-center justify-center gap-2"
                 >
                   Advance to {nextStage}
                 </button>
@@ -977,7 +989,7 @@ export function CandidateDetail({
               {user.canMoveCandidate && candidate.stage !== "Rejected" && (
                 <button
                   onClick={() => setShowRejectionModal(true)}
-                  className="w-full bg-red-600 text-white py-3 rounded-lg hover:bg-red-700 transition-colors"
+                  className="w-full bg-red-500/80 text-white py-3 rounded-lg hover:bg-red-500 transition-colors"
                 >
                   Reject Candidate
                 </button>
@@ -985,7 +997,7 @@ export function CandidateDetail({
 
               <a
                 href={`mailto:${candidate.email}`}
-                className="w-full bg-gray-100 text-gray-700 py-3 rounded-lg hover:bg-gray-200 transition-colors flex items-center justify-center gap-2"
+                className="w-full glass text-white/80 hover:bg-white/10 py-3 rounded-lg transition-colors flex items-center justify-center gap-2"
               >
                 <MessageSquare className="w-5 h-5" />
                 Send Email
@@ -1014,8 +1026,8 @@ export function CandidateDetail({
 
             {/* Permission Info */}
             {!user.canMoveCandidate && (
-              <div className="mt-6 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                <p className="text-yellow-800 text-sm">
+              <div className="mt-6 bg-yellow-500/20 text-yellow-300 border border-yellow-500/30 rounded-lg p-4">
+                <p className="text-yellow-300 text-sm">
                   You can provide feedback but cannot move
                   candidates between stages.
                 </p>

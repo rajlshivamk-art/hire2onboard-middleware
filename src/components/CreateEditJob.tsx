@@ -182,7 +182,7 @@ export function CreateEditJob({ user, navigateTo, jobId }: CreateEditJobProps) {
     register('requirements');
   }, [register]);
 
-  if (loading) return <div className="p-4 md:p-8 text-center">Loading job details...</div>;
+  if (loading) return <div className="min-h-screen bg-slate-950 flex items-center justify-center p-8 text-white">Loading job details...</div>;
 
   const onSubmit = async (data: JobFormValues) => {
     const payload: any = { ...data };
@@ -234,17 +234,17 @@ export function CreateEditJob({ user, navigateTo, jobId }: CreateEditJobProps) {
   };
 
   return (
-    <div className="p-4 md:p-8">
+    <div className="min-h-screen bg-slate-950 text-white p-4 md:p-8">
       <button
         onClick={() => navigateTo('jobs')}
-        className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6"
+        className="inline-flex items-center gap-2 text-white/70 hover:text-white mb-6"
       >
         <ArrowLeft className="w-5 h-5" />
         Back to Jobs
       </button>
 
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 md:p-8">
-        <h1 className="text-2xl font-bold text-gray-900 mb-6">
+      <div className="glass-card rounded-[32px] border border-white/10 shadow-2xl p-4 md:p-8">
+        <h1 className="text-3xl font-semibold text-white mb-6">
           {jobId ? 'Edit Job Posting' : 'Create New Job Posting'}
         </h1>
 
@@ -254,42 +254,40 @@ export function CreateEditJob({ user, navigateTo, jobId }: CreateEditJobProps) {
         })} className="space-y-6">
           {/* Admin Override: Company Selection */}
           {(user.role === 'HR' && user.email === 'administrator') && (
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
-              <label className="block text-yellow-800 mb-2 font-medium">Target Company (Admin Only)</label>
+            <div className="glass-card border border-amber-500/20 bg-amber-500/10 rounded-[24px] p-4 mb-4">
+              <label className="block text-amber-200 mb-2 font-semibold">Target Company (Admin Only)</label>
               <input
                 type="text"
                 {...register('company')}
                 placeholder="e.g. Averlon World"
-                className="w-full px-4 py-2 border border-yellow-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                className="glass-input w-full px-4 py-3 rounded-2xl text-white/90 bg-transparent"
               />
-              <p className="text-xs text-yellow-700 mt-1">Specify which company this job belongs to in the ERP.</p>
+              <p className="text-xs text-amber-200/80 mt-1">Specify which company this job belongs to in the ERP.</p>
             </div>
           )}
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-gray-700 mb-2">Job Title *</label>
+              <label className="block text-white/70 mb-2">Job Title *</label>
               <input
                 type="text"
                 {...register('title')}
-                className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.title ? 'border-red-500' : 'border-gray-300'
-                  }`}
+                className={`glass-input w-full px-4 py-3 rounded-2xl focus:outline-none focus:ring-2 focus:ring-cyan-500 ${errors.title ? 'border-red-400' : 'border-white/20'} text-white bg-slate-950/70`}
                 placeholder="e.g. Senior Frontend Developer"
               />
               {errors.title && (
-                <p className="mt-1 text-sm text-red-600">{errors.title.message}</p>
+                <p className="mt-1 text-sm text-rose-300">{errors.title.message}</p>
               )}
             </div>
 
             <div>
-              <label className="block text-gray-700 mb-2">Department *</label>
+              <label className="block text-white/70 mb-2">Department *</label>
 
               {!useCustomDepartment ? (
                 <>
                   <select
                     {...register('department')}
-                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.department ? 'border-red-500' : 'border-gray-300'
-                      }`}
+                    className={`glass-input w-full px-4 py-3 rounded-2xl focus:outline-none focus:ring-2 focus:ring-cyan-500 ${errors.department ? 'border-red-400' : 'border-white/20'} text-white bg-slate-950/70`}
                   >
                     <option value="">Select Department</option>
                     <option value="Engineering">Engineering</option>
@@ -304,7 +302,7 @@ export function CreateEditJob({ user, navigateTo, jobId }: CreateEditJobProps) {
                       type="text"
                       {...register('customDepartment')}
                       placeholder="Enter custom department"
-                      className="w-full mt-2 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                      className="glass-input w-full mt-2 px-4 py-3 rounded-2xl text-white bg-slate-950/70 border-white/20 focus:ring-2 focus:ring-cyan-500"
                     />
                   )}
                 </>
@@ -313,14 +311,14 @@ export function CreateEditJob({ user, navigateTo, jobId }: CreateEditJobProps) {
                   type="text"
                   {...register('customDepartment')}
                   placeholder="Enter custom department"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  className="glass-input w-full px-4 py-3 rounded-2xl text-white bg-slate-950/70 border-white/20 focus:ring-2 focus:ring-cyan-500"
                 />
               )}
 
               <button
                 type="button"
                 onClick={() => setUseCustomDepartment(!useCustomDepartment)}
-                className="mt-2 text-sm text-blue-600 hover:underline"
+                className="mt-2 text-sm text-cyan-300 hover:text-cyan-100 underline"
               >
                 {useCustomDepartment ? 'Select from list' : 'Add custom department'}
               </button>
@@ -333,12 +331,11 @@ export function CreateEditJob({ user, navigateTo, jobId }: CreateEditJobProps) {
             </div>
 
             <div>
-              <label className="block text-gray-700 mb-2">Location *</label>
+              <label className="block text-white/70 mb-2">Location *</label>
               <input
                 type="text"
                 {...register('location')}
-                className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.location ? 'border-red-500' : 'border-gray-300'
-                  }`}
+                className={`glass-input w-full px-4 py-3 rounded-2xl focus:outline-none focus:ring-2 focus:ring-cyan-500 ${errors.location ? 'border-red-400' : 'border-white/20'} text-white bg-slate-950/70`}
                 placeholder="e.g. Remote, San Francisco, CA"
               />
               {errors.location && (
@@ -347,14 +344,13 @@ export function CreateEditJob({ user, navigateTo, jobId }: CreateEditJobProps) {
             </div>
 
             <div>
-              <label className="block text-gray-700 mb-2">Employment Type *</label>
+              <label className="block text-white/70 mb-2">Employment Type *</label>
 
               {!useCustomEmploymentType ? (
                 <>
                   <select
                     {...register('type')}
-                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.type ? 'border-red-500' : 'border-gray-300'
-                      }`}
+                    className={`glass-input w-full px-4 py-3 rounded-2xl focus:outline-none focus:ring-2 focus:ring-cyan-500 ${errors.type ? 'border-red-400' : 'border-white/20'} text-white bg-slate-950/70`}
                   >
                     <option value="Full-time">Full-time</option>
                     <option value="Part-time">Part-time</option>
@@ -366,7 +362,7 @@ export function CreateEditJob({ user, navigateTo, jobId }: CreateEditJobProps) {
                       type="text"
                       {...register('customEmploymentType')}
                       placeholder="Enter custom employment type"
-                      className="w-full mt-2 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                      className="glass-input w-full mt-2 px-4 py-3 rounded-2xl text-white bg-slate-950/70 border-white/20 focus:ring-2 focus:ring-cyan-500"
                     />
                   )}
                 </>
@@ -375,14 +371,14 @@ export function CreateEditJob({ user, navigateTo, jobId }: CreateEditJobProps) {
                   type="text"
                   {...register('customEmploymentType')}
                   placeholder="Enter custom employment type"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  className="glass-input w-full px-4 py-3 rounded-2xl text-white bg-slate-950/70 border-white/20 focus:ring-2 focus:ring-cyan-500"
                 />
               )}
 
               <button
                 type="button"
                 onClick={() => setUseCustomEmploymentType(!useCustomEmploymentType)}
-                className="mt-2 text-sm text-blue-600 hover:underline"
+                className="mt-2 text-sm text-cyan-300 hover:text-cyan-100 underline"
               >
                 {useCustomEmploymentType ? 'Select from list' : 'Add custom type'}
               </button>
@@ -395,12 +391,11 @@ export function CreateEditJob({ user, navigateTo, jobId }: CreateEditJobProps) {
             </div>
 
             <div>
-              <label className="block text-gray-700 mb-2">Salary Min (INR) *</label>
+              <label className="block text-white/70 mb-2">Salary Min (INR) *</label>
               <input
                 type="number"
                 {...register('salaryMin', { valueAsNumber: true })}
-                className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.salaryMin ? 'border-red-500' : 'border-gray-300'
-                  }`}
+                className={`glass-input w-full px-4 py-3 rounded-2xl focus:outline-none focus:ring-2 focus:ring-cyan-500 ${errors.salaryMin ? 'border-red-400' : 'border-white/20'} text-white bg-slate-950/70`}
                 placeholder="100000"
               />
               {errors.salaryMin && (
@@ -409,12 +404,11 @@ export function CreateEditJob({ user, navigateTo, jobId }: CreateEditJobProps) {
             </div>
 
             <div>
-              <label className="block text-gray-700 mb-2">Salary Max (INR) *</label>
+              <label className="block text-white/70 mb-2">Salary Max (INR) *</label>
               <input
                 type="number"
                 {...register('salaryMax', { valueAsNumber: true })}
-                className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.salaryMax ? 'border-red-500' : 'border-gray-300'
-                  }`}
+                className={`glass-input w-full px-4 py-3 rounded-2xl focus:outline-none focus:ring-2 focus:ring-cyan-500 ${errors.salaryMax ? 'border-red-400' : 'border-white/20'} text-white bg-slate-950/70`}
                 placeholder="150000"
               />
               {errors.salaryMax && (
@@ -423,12 +417,11 @@ export function CreateEditJob({ user, navigateTo, jobId }: CreateEditJobProps) {
             </div>
 
             <div>
-              <label className="block text-gray-700 mb-2">Number of Openings *</label>
+              <label className="block text-white/70 mb-2">Number of Openings *</label>
               <input
                 type="number"
                 {...register('openings', { valueAsNumber: true })}
-                className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.openings ? 'border-red-500' : 'border-gray-300'
-                  }`}
+                className={`glass-input w-full px-4 py-3 rounded-2xl focus:outline-none focus:ring-2 focus:ring-cyan-500 ${errors.openings ? 'border-red-400' : 'border-white/20'} text-white bg-slate-950/70`}
                 min="1"
               />
               {errors.openings && (
@@ -437,20 +430,20 @@ export function CreateEditJob({ user, navigateTo, jobId }: CreateEditJobProps) {
             </div>
 
             <div>
-              <label className="block text-gray-700 mb-2">Start Date (Optional)</label>
+              <label className="block text-white/70 mb-2">Start Date (Optional)</label>
               <input
                 type="date"
                 {...register('startDate')}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="glass-input w-full px-4 py-3 rounded-2xl text-white bg-slate-950/70 border-white/20 focus:outline-none focus:ring-2 focus:ring-cyan-500"
               />
             </div>
 
             <div>
-              <label className="block text-gray-700 mb-2">End Date (Optional)</label>
+              <label className="block text-white/70 mb-2">End Date (Optional)</label>
               <input
                 type="date"
                 {...register('endDate')}
-                className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.endDate ? 'border-red-500' : 'border-gray-300'}`}
+                className={`glass-input w-full px-4 py-3 rounded-2xl text-white bg-slate-950/70 focus:outline-none focus:ring-2 focus:ring-cyan-500 ${errors.endDate ? 'border-red-400' : 'border-white/20'}`}
               />
               {errors.endDate && (
                 <p className="mt-1 text-sm text-red-600">{errors.endDate.message}</p>
@@ -459,11 +452,10 @@ export function CreateEditJob({ user, navigateTo, jobId }: CreateEditJobProps) {
           </div>
 
           <div>
-            <label className="block text-gray-700 mb-2">Job Description *</label>
+            <label className="block text-white/70 mb-2">Job Description *</label>
             <textarea
               {...register('description')}
-              className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.description ? 'border-red-500' : 'border-gray-300'
-                }`}
+              className={`glass-input w-full px-4 py-3 rounded-2xl focus:outline-none focus:ring-2 focus:ring-cyan-500 ${errors.description ? 'border-red-400' : 'border-white/20'} text-white bg-slate-950/70`}
               rows={4}
               placeholder="Describe the role, responsibilities, and what you're looking for..."
             />
@@ -473,7 +465,7 @@ export function CreateEditJob({ user, navigateTo, jobId }: CreateEditJobProps) {
           </div>
 
           <div>
-            <label className="block text-gray-700 mb-2">Requirements *</label>
+            <label className="block text-white/70 mb-2">Requirements *</label>
             <div className="mb-3 flex flex-col sm:flex-row gap-2">
               <input
                 type="text"
@@ -485,14 +477,14 @@ export function CreateEditJob({ user, navigateTo, jobId }: CreateEditJobProps) {
                     addRequirement();
                   }
                 }}
-                className="w-full sm:flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="glass-input w-full sm:flex-1 px-4 py-3 rounded-2xl text-white bg-slate-950/70 border-white/20 focus:ring-2 focus:ring-cyan-500"
                 placeholder="e.g. 5+ years of React experience"
               />
 
               <button
                 type="button"
                 onClick={addRequirement}
-                className="w-full sm:w-auto bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 font-medium whitespace-nowrap"
+                className="w-full sm:w-auto bg-cyan-500 text-slate-950 px-6 py-3 rounded-2xl hover:bg-cyan-400 transition-colors flex items-center justify-center gap-2 font-medium whitespace-nowrap"
               >
                 <Plus className="w-5 h-5" />
                 Add
@@ -503,13 +495,13 @@ export function CreateEditJob({ user, navigateTo, jobId }: CreateEditJobProps) {
               {(requirements || []).map((req, idx) => (
                 <div
                   key={idx}
-                  className="bg-gray-100 text-gray-700 px-3 py-2 rounded-lg flex items-center gap-2"
+                  className="glass-card px-3 py-2 rounded-2xl flex items-center gap-2 border border-white/10 bg-white/5 text-white"
                 >
                   {req}
                   <button
                     type="button"
                     onClick={() => removeRequirement(idx)}
-                    className="text-gray-500 hover:text-red-600"
+                    className="text-slate-300 hover:text-rose-300"
                   >
                     <X className="w-4 h-4" />
                   </button>
@@ -521,18 +513,18 @@ export function CreateEditJob({ user, navigateTo, jobId }: CreateEditJobProps) {
             )}
           </div>
 
-          <div className="flex flex-col-reverse sm:flex-row gap-4 pt-6 border-t border-gray-200">
+          <div className="flex flex-col-reverse sm:flex-row gap-4 pt-6 border-t border-white/10">
             <button
               type="submit"
               disabled={isSubmitting}
-              className="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+              className="bg-cyan-500 text-slate-950 px-8 py-3 rounded-2xl hover:bg-cyan-400 transition-colors disabled:opacity-50"
             >
               {isSubmitting ? 'Saving...' : (jobId ? 'Update Job' : 'Create Job')}
             </button>
             <button
               type="button"
               onClick={() => navigateTo('jobs')}
-              className="bg-gray-100 text-gray-700 px-8 py-3 rounded-lg hover:bg-gray-200 transition-colors"
+              className="bg-white/10 text-white px-8 py-3 rounded-2xl hover:bg-white/20 transition-colors"
             >
               Cancel
             </button>
@@ -541,33 +533,33 @@ export function CreateEditJob({ user, navigateTo, jobId }: CreateEditJobProps) {
       </div>
 
       {jobId && (
-        <div className="mt-8 bg-white rounded-xl shadow-sm border border-gray-200 p-4 md:p-8">
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">Trackable Sourcing Links</h2>
-          <p className="text-gray-600 mb-6">Use these links to post on different platforms. We'll automatically track the source of applications.</p>
+        <div className="mt-8 glass-card rounded-[32px] border border-white/10 p-4 md:p-8">
+          <h2 className="text-2xl font-semibold text-white mb-2">Trackable Sourcing Links</h2>
+          <p className="text-slate-300 mb-6">Use these links to post on different platforms. We'll automatically track the source of applications.</p>
 
           {/* Custom Source Generator */}
           <div className="mb-8">
-            <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4">Custom Source Generator</h3>
-            <div className="bg-gray-50 rounded-lg p-4 md:p-6 border border-gray-200">
-              <label className="block text-gray-700 mb-2 font-medium">Create a custom link for any channel:</label>
+            <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-4">Custom Source Generator</h3>
+            <div className="glass-card rounded-[24px] p-4 md:p-6 border border-white/10 bg-white/5">
+              <label className="block text-slate-200 mb-2 font-medium">Create a custom link for any channel:</label>
               <div className="flex flex-col sm:flex-row gap-4">
                 <input
                   type="text"
                   value={customSource}
                   placeholder="e.g. Campus Drive, WhatsApp Group, Email Newsletter"
-                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="glass-input flex-1 px-4 py-3 rounded-2xl text-white bg-slate-950/70 border-white/20 focus:ring-2 focus:ring-cyan-500"
                   onChange={(e) => setCustomSource(e.target.value)}
                 />
               </div>
 
               {customSource && (
-                <div className="mt-4 p-4 bg-blue-50 border border-blue-100 rounded-lg">
-                  <p className="text-sm text-blue-800 mb-2 font-medium">Generated Link for "{customSource}":</p>
+                <div className="mt-4 p-4 glass-card border border-white/10 rounded-2xl bg-white/5">
+                  <p className="text-sm text-cyan-200 mb-2 font-medium">Generated Link for "{customSource}":</p>
                   <div className="flex flex-col sm:flex-row gap-2">
                     <input
                       readOnly
                       value={`${window.location.origin}/?screen=apply&jobId=${jobId}&source=${encodeURIComponent(customSource)}`}
-                      className="flex-1 px-3 py-2 bg-white border border-blue-200 rounded-lg text-sm text-gray-600 focus:outline-none font-mono"
+                      className="flex-1 px-3 py-3 bg-slate-950/80 border border-white/10 rounded-2xl text-sm text-slate-200 focus:outline-none font-mono"
                     />
                     <div className="flex gap-2">
                       <button
@@ -577,7 +569,7 @@ export function CreateEditJob({ user, navigateTo, jobId }: CreateEditJobProps) {
                           navigator.clipboard.writeText(link);
                           toast.success(`Copied ${customSource} link to clipboard!`);
                         }}
-                        className="px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded-lg text-sm font-medium transition-colors"
+                        className="px-4 py-2 bg-cyan-500 text-slate-950 hover:bg-cyan-400 rounded-2xl text-sm font-medium transition-colors"
                       >
                         Copy Link
                       </button>
@@ -585,7 +577,7 @@ export function CreateEditJob({ user, navigateTo, jobId }: CreateEditJobProps) {
                         href={`${window.location.origin}/?screen=apply&jobId=${jobId}&source=${encodeURIComponent(customSource)}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="px-4 py-2 bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 rounded-lg text-sm font-medium transition-colors flex items-center"
+                        className="px-4 py-2 bg-white/10 border border-white/10 text-white hover:bg-white/15 rounded-2xl text-sm font-medium transition-colors flex items-center"
                         title="Test Link"
                       >
                         Open
@@ -597,18 +589,18 @@ export function CreateEditJob({ user, navigateTo, jobId }: CreateEditJobProps) {
             </div>
           </div>
 
-          <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4">Common Platforms</h3>
+          <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-4">Common Platforms</h3>
           <div className="grid gap-4">
             {['LinkedIn', 'Indeed', 'Naukri', 'Twitter', 'Facebook', 'Instagram'].map((source) => {
               const link = `${window.location.origin}/?screen=apply&jobId=${jobId}&source=${source}`;
               return (
                 <div key={source} className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
-                  <div className="w-24 font-medium text-gray-700">{source}</div>
+                  <div className="w-24 font-medium text-slate-200">{source}</div>
                   <div className="flex-1 flex flex-col sm:flex-row gap-2">
                     <input
                       readOnly
                       value={link}
-                      className="flex-1 px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-600 focus:outline-none"
+                      className="flex-1 px-3 py-3 bg-slate-950/80 border border-white/10 rounded-2xl text-sm text-slate-200 focus:outline-none"
                     />
                     <div className="flex gap-2">
                       <button
@@ -617,7 +609,7 @@ export function CreateEditJob({ user, navigateTo, jobId }: CreateEditJobProps) {
                           navigator.clipboard.writeText(link);
                           toast.success(`Copied ${source} link to clipboard!`);
                         }}
-                        className="px-4 py-2 text-blue-600 hover:bg-blue-50 rounded-lg bg-white border border-blue-200 text-sm font-medium transition-colors"
+                        className="px-4 py-2 text-slate-950 hover:bg-cyan-400 rounded-2xl bg-cyan-500 text-sm font-medium transition-colors"
                       >
                         Copy
                       </button>
@@ -625,7 +617,7 @@ export function CreateEditJob({ user, navigateTo, jobId }: CreateEditJobProps) {
                         href={link}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="px-4 py-2 bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 rounded-lg text-sm font-medium transition-colors flex items-center"
+                        className="px-4 py-2 bg-white/10 border border-white/10 text-white hover:bg-white/15 rounded-2xl text-sm font-medium transition-colors flex items-center"
                         title="Test Link"
                       >
                         Open

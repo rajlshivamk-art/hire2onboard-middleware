@@ -124,11 +124,11 @@ export function EvaluationPanel({
         }
     };
     return (
-        <div className="bg-white !rounded-2xl !shadow-xl !border !border-gray-200 p-6 mb-6">
+        <div className="glass-card !rounded-2xl !border !border-white/10 p-6 mb-6">
             {/* Header */}
             <div className="flex items-center justify-between mb-4">
-                <h3 className="text-gray-900 font-semibold text-lg">Evaluation</h3>
-                <span className="text-sm text-gray-600">
+                <h3 className="text-white/90 font-semibold text-lg">Evaluation</h3>
+                <span className="text-sm text-white/60">
                     Overall Score:{" "}
                     <b>{cumulativeScore !== undefined ? cumulativeScore : "N/A"}</b>
                 </span>
@@ -140,37 +140,37 @@ export function EvaluationPanel({
                     {evaluationScores.map((s, idx) => (
                         <div
                             key={idx}
-                            className="flex justify-between items-center bg-gray-50 px-4 py-3 rounded-xl text-sm shadow-sm"
+                            className="flex justify-between items-center glass px-4 py-3 rounded-xl text-sm"
                         >
                             <div>
-                                <p className="font-medium text-gray-800">{s.roundName}</p>
-                                <p className="text-xs text-gray-500">
+                                <p className="font-medium text-white/90">{s.roundName}</p>
+                                <p className="text-xs text-white/50">
                                     Reviewed by {s.reviewerRole}
                                 </p>
                             </div>
-                            <span className="font-semibold text-indigo-600">
+                            <span className="font-semibold text-indigo-300">
                                 {s.overall}
                             </span>
                         </div>
                     ))}
                 </div>
             ) : (
-                <p className="text-sm text-gray-500 mb-4">
+                <p className="text-sm text-white/50 mb-4">
                     No evaluations submitted yet
                 </p>
             )}
 
             {/* CTA */}
             {stage === "Rejected" ? (
-                <p className="text-sm text-gray-400 italic">
+                <p className="text-sm text-white/40 italic">
                     Evaluations are disabled for rejected candidates
                 </p>
             ) : !round ? (
-                <p className="text-sm text-gray-400 italic">
+                <p className="text-sm text-white/40 italic">
                     Evaluation will be available once the interview round starts
                 </p>
             ) : alreadyEvaluated ? (
-                <p className="text-sm text-green-600 font-medium">
+                <p className="text-sm text-green-300 font-medium">
                     ✓ You’ve already evaluated this round
                 </p>
             ) : (
@@ -192,10 +192,10 @@ export function EvaluationPanel({
 
             {/* Modal */}
             {open && (
-                <div className="fixed inset-0 bg-black/40 z-[9999] flex items-center justify-center px-4">
-                    <div className="bg-white rounded-2xl w-full max-w-md max-h-[90vh] flex flex-col animate-in fade-in zoom-in duration-200">
-                        <div className="p-6 border-b">
-                            <h4 className="font-semibold text-gray-900">
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[9999] flex items-center justify-center px-4">
+                    <div className="glass-card rounded-2xl w-full max-w-md max-h-[90vh] flex flex-col animate-in fade-in zoom-in duration-200">
+                        <div className="p-6 border-b border-white/10">
+                            <h4 className="font-semibold text-white/90">
                                 {round?.roundName} Evaluation
                             </h4>
                         </div>
@@ -203,7 +203,7 @@ export function EvaluationPanel({
                         <div className="p-6 space-y-4 overflow-y-auto">
                             {Object.keys(scores).map((key) => (
                                 <div key={key} className="flex justify-between items-center">
-                                    <label className="capitalize text-sm text-gray-600">
+                                    <label className="capitalize text-sm text-white/60">
                                         {key}
                                     </label>
                                     <input
@@ -217,16 +217,16 @@ export function EvaluationPanel({
                                                 [key]: Number(e.target.value),
                                             })
                                         }
-                                        className="w-20 border rounded-lg px-2 py-1 text-center"
+                                        className="w-20 glass-input text-white/90 text-center"
                                     />
                                 </div>
                             ))}
                         </div>
 
-                        <div className="p-4 border-t flex justify-end gap-2 bg-white">
+                        <div className="p-4 border-t flex justify-end gap-2 glass">
                             <button
                                 onClick={() => setOpen(false)}
-                                className="px-4 py-2 text-sm bg-gray-100 rounded-lg"
+                                className="px-4 py-2 text-sm glass hover:bg-white/10 text-white/80 rounded-lg"
                             >
                                 Cancel
                             </button>

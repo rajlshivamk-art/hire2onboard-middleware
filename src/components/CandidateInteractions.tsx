@@ -36,26 +36,23 @@ interface Props {
 }
 
 // --------------------- Helpers ---------------------
-const STATUS_STYLES: Record<
-    Interaction['status'],
-    { border: string; badge: string }
-> = {
-    Completed: {
-        border: 'border-l-green-500',
-        badge: 'bg-green-100 text-green-800',
-    },
-    Pending: {
-        border: 'border-l-amber-400',
-        badge: 'bg-amber-100 text-amber-800',
-    },
-    Rescheduled: {
-        border: 'border-l-blue-500',
-        badge: 'bg-blue-100 text-blue-800',
-    },
-    'No Answer': {
-        border: 'border-l-gray-400',
-        badge: 'bg-gray-100 text-gray-700',
-    },
+const STATUS_STYLES = {
+  Completed: {
+    border: 'border-l-green-500',
+    badge: 'bg-green-500/20 text-green-300 border border-green-500/30',
+  },
+  Pending: {
+    border: 'border-l-amber-400',
+    badge: 'bg-amber-500/20 text-amber-300 border border-amber-500/30',
+  },
+  Rescheduled: {
+    border: 'border-l-blue-500',
+    badge: 'bg-blue-500/20 text-blue-300 border border-blue-500/30',
+  },
+  'No Answer': {
+    border: 'border-l-gray-400',
+    badge: 'bg-white/10 text-white/80 border border-white/10',
+  },
 };
 
 const formatTimestamp = (timestamp: string) => {
@@ -141,13 +138,14 @@ export function CandidateInteractions({ candidateId, user }: Props) {
     };
 
     return (
-        <div className="mt-8 bg-gray-50 rounded-xl shadow-lg border border-gray-200">
+        <div className="mt-8 glass-card rounded-xl border border-white/10">
             {/* Header */}
-            <div className="px-6 py-4 border-b bg-white rounded-t-xl">
-                <h3 className="text-xl font-semibold text-gray-900">
+            <div className="px-6 py-4 border-b border-white/10 glass rounded-t-xl">
+                <h3 className="text-xl font-semibold text-white/90
+">
                     Candidate Interactions
                 </h3>
-                <p className="text-sm text-gray-500 mt-1">
+                <p className="text-sm text-white/50 mt-1">
                     All recruiter-candidate touchpoints
                 </p>
             </div>
@@ -164,8 +162,8 @@ export function CandidateInteractions({ candidateId, user }: Props) {
                                 onClick={() => setMethod(m.label)}
                                 className={`flex items-center gap-2 px-4 py-2 rounded-lg border text-sm font-medium transition
                                     ${method === m.label
-                                        ? 'bg-blue-600 text-white border-blue-600 shadow'
-                                        : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-100'
+                                        ? 'btn-glass-primary'
+                                        : 'glass border-white/10 text-white/80 hover:bg-white/10'
                                     }`}
                             >
                                 <Icon size={16} />
@@ -180,7 +178,7 @@ export function CandidateInteractions({ candidateId, user }: Props) {
                         value={customMethod}
                         onChange={(e) => setCustomMethod(e.target.value)}
                         placeholder="Specify interaction method"
-                        className="w-full px-4 py-3 border rounded-lg focus:ring-1 focus:ring-blue-400"
+                        className="w-full px-4 py-3 glass-input rounded-lg text-white/90 placeholder:text-white/40"
                     />
                 )}
 
@@ -193,10 +191,12 @@ export function CandidateInteractions({ candidateId, user }: Props) {
                                 e.target.value as typeof STATUS[number]
                             )
                         }
-                        className="px-4 py-3 border rounded-lg focus:ring-1 focus:ring-blue-400"
+                        className="px-4 py-3 glass-input rounded-lg text-white/80"
                     >
                         {STATUS.map((s) => (
-                            <option key={s}>{s}</option>
+                            <option className="bg-[#0d0840]" key={s}>
+                                {s}
+                            </option>
                         ))}
                     </select>
 
@@ -206,7 +206,7 @@ export function CandidateInteractions({ candidateId, user }: Props) {
                             setCandidateUpdate(e.target.value)
                         }
                         placeholder="Candidate availability / update"
-                        className="px-4 py-3 border rounded-lg focus:ring-1 focus:ring-blue-400"
+                        className="px-4 py-3 glass-input rounded-lg text-white/90 placeholder:text-white/40"
                     />
                 </div>
 
@@ -216,14 +216,14 @@ export function CandidateInteractions({ candidateId, user }: Props) {
                     onChange={(e) => setNote(e.target.value)}
                     placeholder="Recruiter note (required)"
                     rows={3}
-                    className="w-full px-4 py-3 border rounded-lg focus:ring-1 focus:ring-blue-400"
+                    className="w-full px-4 py-3 glass-input rounded-lg text-white/90 placeholder:text-white/40"
                 />
 
                 {/* Submit */}
                 <button
                     onClick={submitInteraction}
                     disabled={loading}
-                    className="bg-blue-600 text-white px-6 py-2 rounded-lg shadow hover:bg-blue-700 disabled:opacity-50"
+                    className="btn-glass-primary px-6 py-2 rounded-lg shadow hover:bg-blue-700 disabled:opacity-50"
                 >
                     {loading ? 'Saving...' : 'Log Interaction'}
                 </button>
@@ -232,7 +232,7 @@ export function CandidateInteractions({ candidateId, user }: Props) {
             {/* Timeline */}
             <div className="p-6 space-y-4">
                 {interactions.length === 0 && (
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-white/50">
                         No interactions logged yet.
                     </p>
                 )}
@@ -242,12 +242,12 @@ export function CandidateInteractions({ candidateId, user }: Props) {
                     return (
                         <div
                             key={idx}
-                            className={`border-l-4 ${style.border} bg-white p-4 rounded-lg shadow-sm grid grid-cols-[1fr_auto] gap-4`}
+                            className={`border-l-4 ${style.border} glass p-4 rounded-lg grid grid-cols-[1fr_auto] gap-4`}
                         >
                             {/* Left */}
                             <div className="space-y-2">
                                 <div className="flex items-center gap-3">
-                                    <span className="font-semibold text-sm text-gray-900">
+                                    <span className="font-semibold text-sm text-white/90">
                                         {i.method}
                                     </span>
                                     <span
@@ -257,28 +257,28 @@ export function CandidateInteractions({ candidateId, user }: Props) {
                                     </span>
                                 </div>
 
-                                <p className="text-xs text-gray-500">
+                                <p className="text-xs text-white/50">
                                     Recruiter:{' '}
-                                    <span className="font-medium text-gray-700">
+                                    <span className="font-medium text-white/70">
                                         {i.recruiterName}
                                     </span>
                                 </p>
 
                                 {i.candidateUpdate && (
-                                    <div className="flex items-center gap-2 text-sm text-gray-700">
+                                    <div className="flex items-center gap-2 text-sm text-white/70">
                                         <CalendarClock
                                             size={14}
-                                            className="text-gray-400"
+                                            className="text-white/40"
                                         />
                                         <span>{i.candidateUpdate}</span>
                                     </div>
                                 )}
 
                                 {i.note && (
-                                    <div className="flex items-start gap-2 text-sm text-gray-700">
+                                    <div className="flex items-start gap-2 text-sm text-white/70">
                                         <StickyNote
                                             size={14}
-                                            className="text-gray-400 mt-0.5"
+                                            className="text-white/40 mt-0.5"
                                         />
                                         <span>{i.note}</span>
                                     </div>
@@ -286,7 +286,7 @@ export function CandidateInteractions({ candidateId, user }: Props) {
                             </div>
 
                             {/* Right */}
-                            <div className="text-xs text-gray-400 whitespace-nowrap">
+                            <div className="text-xs text-white/40 whitespace-nowrap">
                                 {formatTimestamp(i.timestamp)}
                             </div>
                         </div>

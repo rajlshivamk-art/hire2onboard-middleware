@@ -50,34 +50,40 @@ export function ResetPasswordPage({ token, onSuccess }: ResetPasswordProps) {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-50">
-            <form onSubmit={handleSubmit(onSubmit)} className="w-96 space-y-4 bg-white p-6 rounded-xl shadow-lg">
-                <h1 className="text-xl font-semibold text-center">Reset Password</h1>
+        <div className="min-h-screen flex items-center justify-center bg-slate-950">
+            <form onSubmit={handleSubmit(onSubmit)} className="glass-card w-96 space-y-4 p-6">
+                <h1 className="text-xl font-semibold text-center text-white">Reset Password</h1>
 
                 <input
                     type="password"
                     {...register("password")}
                     placeholder="New password"
-                    className="w-full border p-2 rounded"
+                    className={`glass-input w-full text-white placeholder-white/50 ${formState.errors.password
+                        ? 'border-rose-400'
+                        : 'border-white/20 focus:border-cyan-400'
+                        }`}
                 />
                 {formState.errors.password && (
-                    <p className="text-red-500 text-sm">{formState.errors.password.message}</p>
+                    <p className="text-rose-300 text-sm">{formState.errors.password.message}</p>
                 )}
 
                 <input
                     type="password"
                     {...register("confirmPassword")}
                     placeholder="Confirm password"
-                    className="w-full border p-2 rounded"
+                    className={`glass-input w-full text-white placeholder-white/50 ${formState.errors.confirmPassword
+                        ? 'border-rose-400'
+                        : 'border-white/20 focus:border-cyan-400'
+                        }`}
                 />
                 {formState.errors.confirmPassword && (
-                    <p className="text-red-500 text-sm">{formState.errors.confirmPassword.message}</p>
+                    <p className="text-rose-300 text-sm">{formState.errors.confirmPassword.message}</p>
                 )}
 
-                {error && <p className="text-red-600 text-center">{error}</p>}
-                {message && <p className="text-green-600 text-center">{message}</p>}
+                {error && <p className="text-rose-300 text-center bg-rose-500/10 border border-rose-500/20 rounded px-3 py-2">{error}</p>}
+                {message && <p className="text-emerald-300 text-center bg-emerald-500/10 border border-emerald-500/20 rounded px-3 py-2">{message}</p>}
 
-                <button type="submit" className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition">
+                <button type="submit" className="w-full bg-cyan-500 text-white py-2 rounded hover:bg-cyan-400 transition">
                     Reset Password
                 </button>
             </form>

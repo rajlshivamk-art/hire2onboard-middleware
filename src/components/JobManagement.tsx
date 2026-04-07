@@ -2,6 +2,13 @@ import { useState, useEffect } from 'react';
 import { Plus, Search, MapPin, Clock, IndianRupee, Ban, RefreshCw, Trash2 } from 'lucide-react';
 import { User, Job } from '../types';
 import { api } from '../lib/api';
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem
+} from "../components/ui/select"
 
 interface JobManagementProps {
   user: User;
@@ -28,13 +35,13 @@ export function JobManagement({ user, navigateTo }: JobManagementProps) {
     <div className="p-4 md:p-6 lg:p-8">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 md:mb-8">
         <div>
-          <h1 className="text-gray-900 mb-2">Job Postings</h1>
-          <p className="text-gray-600">Manage all open and closed positions</p>
+          <h1 className="text-white/90 mb-2">Job Postings</h1>
+          <p className="text-white/60">Manage all open and closed positions</p>
         </div>
         {user.canEditJob && (
           <button
             onClick={() => navigateTo('create-job', { jobId: null })}
-            className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 justify-center"
+            className="btn-glass-primary px-6 py-3 rounded-lg flex items-center gap-2 justify-center"
           >
             <Plus className="w-5 h-5" />
             Post New Job
@@ -43,28 +50,38 @@ export function JobManagement({ user, navigateTo }: JobManagementProps) {
       </div>
 
       {/* Search and Filters */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-6">
+      <div className="glass rounded-xl border border-white/10 p-4 mb-6">
         <div className="flex flex-col md:flex-row gap-3 md:gap-4">
           <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-white/40" />
             <input
               type="text"
               placeholder="Search jobs..."
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full pl-10 pr-4 py-2 glass-input rounded-lg text-white/90 placeholder:text-white/40"
             />
           </div>
-          <select className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-            <option>All Departments</option>
-            <option>Engineering</option>
-            <option>Product</option>
-            <option>Sales</option>
-          </select>
-          <select className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-            <option>All Status</option>
-            <option>Open</option>
-            <option>Closed</option>
-            <option>On Hold</option>
-          </select>
+          <Select>
+            <SelectTrigger className="w-full min-w-[220px]">
+              <SelectValue placeholder="All Departments" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Departments</SelectItem>
+              <SelectItem value="engineering">Engineering</SelectItem>
+              <SelectItem value="product">Product</SelectItem>
+              <SelectItem value="sales">Sales</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select>
+            <SelectTrigger className="w-full min-w-[220px]">
+              <SelectValue placeholder="All Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Status</SelectItem>
+              <SelectItem value="open">Open</SelectItem>
+              <SelectItem value="closed">Closed</SelectItem>
+              <SelectItem value="hold">On Hold</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
@@ -73,26 +90,26 @@ export function JobManagement({ user, navigateTo }: JobManagementProps) {
         {jobs.map((job) => (
           <div
             key={job.id}
-            className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow"
+            className="glass-card rounded-xl border border-white/10 p-6 hover:bg-white/10 transition"
           >
             <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4 mb-4">
               <div className="flex-1">
                 <div className="flex flex-wrap items-center gap-3 mb-2">
-                  <h2 className="text-gray-900">{job.title}</h2>
+                  <h2 className="text-white/90">{job.title}</h2>
                   <span
-                    className={`px-3 py-1 rounded-full text-sm whitespace-nowrap ${job.status === 'Open' || job.status === 'Active'
-                      ? 'bg-green-100 text-green-700'
+                    className={`px-3 py-1 rounded-full text-sm whitespace-nowrap border ${job.status === 'Open' || job.status === 'Active'
+                      ? 'bg-green-500/20 text-green-300 border-green-500/30'
                       : job.status === 'Closed'
-                        ? 'bg-gray-100 text-gray-700'
-                        : 'bg-yellow-100 text-yellow-700'
+                        ? 'bg-white/10 text-white/80 border-white/10'
+                        : 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30'
                       }`}
                   >
                     {job.status}
                   </span>
                 </div>
-                <p className="text-gray-600 mb-4">{job.description}</p>
+                <p className="text-white/60 mb-4">{job.description}</p>
 
-                <div className="flex flex-wrap gap-4 text-sm text-gray-600">
+                <div className="flex flex-wrap gap-4 text-sm text-white/60">
                   <div className="flex items-center gap-2">
                     <MapPin className="w-4 h-4" />
                     {job.location}
@@ -108,7 +125,7 @@ export function JobManagement({ user, navigateTo }: JobManagementProps) {
                     </div>
                   )}
                   <div className="flex items-center gap-2">
-                    <span className="text-gray-400">•</span>
+                    <span className="text-white/40">•</span>
                     {job.openings} opening{job.openings > 1 ? 's' : ''}
                   </div>
                 </div>
@@ -117,7 +134,7 @@ export function JobManagement({ user, navigateTo }: JobManagementProps) {
               <div className="flex gap-2 lg:flex-shrink-0">
                 <button
                   onClick={() => navigateTo('pipeline', { jobId: job.id })}
-                  className="px-4 py-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors whitespace-nowrap"
+                  className="px-4 py-2 text-blue-300 hover:bg-blue-500/20 rounded-lg transition-colors whitespace-nowrap"
                 >
                   View Candidates
                 </button>
@@ -134,7 +151,7 @@ export function JobManagement({ user, navigateTo }: JobManagementProps) {
                         }
                       }
                     }}
-                    className="px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors whitespace-nowrap flex items-center gap-2"
+                    className="px-4 py-2 text-red-300 hover:bg-red-500/20 rounded-lg transition-colors whitespace-nowrap flex items-center gap-2"
                   >
                     <Ban className="w-4 h-4" />
                     Close
@@ -153,7 +170,7 @@ export function JobManagement({ user, navigateTo }: JobManagementProps) {
                         }
                       }
                     }}
-                    className="px-4 py-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors whitespace-nowrap flex items-center gap-2"
+                    className="px-4 py-2 text-green-300 hover:bg-green-500/20 rounded-lg transition-colors whitespace-nowrap flex items-center gap-2"
                   >
                     <RefreshCw className="w-4 h-4" />
                     Re-open
@@ -164,7 +181,7 @@ export function JobManagement({ user, navigateTo }: JobManagementProps) {
                     onClick={() => {
                       navigateTo('create-job', { jobId: job.id });
                     }}
-                    className="px-4 py-2 bg-gray-100 text-gray-700 hover:bg-gray-200 rounded-lg transition-colors"
+                    className="px-4 py-2 bg-gray-100 glass text-white/80 hover:bg-white/10 rounded-lg transition-colors"
                   >
                     Edit
                   </button>
@@ -182,7 +199,7 @@ export function JobManagement({ user, navigateTo }: JobManagementProps) {
                         }
                       }
                     }}
-                    className="px-4 py-2 text-gray-400 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors whitespace-nowrap flex items-center gap-2"
+                    className="px-4 py-2 text-white/40 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors whitespace-nowrap flex items-center gap-2"
                     title="Delete Job"
                   >
                     <Trash2 className="w-4 h-4" />
@@ -192,13 +209,13 @@ export function JobManagement({ user, navigateTo }: JobManagementProps) {
             </div>
 
             {/* Requirements */}
-            <div className="border-t border-gray-200 pt-4 mt-4">
-              <p className="text-gray-700 mb-2">Requirements:</p>
+            <div className="border-t border-white/10 pt-4 mt-4">
+              <p className="text-white/70 mb-2">Requirements:</p>
               <div className="flex flex-wrap gap-2">
                 {job.requirements.map((req, idx) => (
                   <span
                     key={idx}
-                    className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm"
+                    className="bg-white/10 text-white/80 border border-white/10 px-3 py-1 rounded-full text-sm"
                   >
                     {req}
                   </span>
@@ -206,8 +223,8 @@ export function JobManagement({ user, navigateTo }: JobManagementProps) {
               </div>
             </div>
 
-            <div className="border-t border-gray-200 pt-4 mt-4">
-              <p className="text-gray-500 text-sm">Posted on {new Date(job.postedDate).toLocaleDateString()}</p>
+            <div className="border-t border-white/10 pt-4 mt-4">
+              <p className="text-white/70 text-sm">Posted on {new Date(job.postedDate).toLocaleDateString()}</p>
             </div>
           </div>
         ))}

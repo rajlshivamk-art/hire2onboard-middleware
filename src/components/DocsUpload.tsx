@@ -67,74 +67,31 @@ export function OnboardingUploadPage({ uploadToken }: OnboardingUploadPageProps)
     };
 
     return (
-        <div
-            style={{
-                minHeight: "100vh",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                backgroundColor: "#f7f8fc",
-                padding: "2rem",
-                fontFamily: "'Inter', sans-serif",
-            }}
-        >
-            <div
-                style={{
-                    width: "100%",
-                    maxWidth: "420px",
-                    backgroundColor: "#ffffff",
-                    borderRadius: "24px",
-                    boxShadow: "0 12px 32px rgba(0,0,0,0.08)",
-                    border: "1px solid rgba(0,0,0,0.05)",
-                    padding: "2rem",
-                }}
-            >
+        <div className="min-h-screen flex items-center justify-content-center bg-slate-950 p-8 font-['Inter',sans-serif]">
+            <div className="w-full max-w-md glass-card p-8">
                 {/* Header */}
-                <div style={{ textAlign: "center", marginBottom: "1.5rem" }}>
-                    <h1
-                        style={{
-                            fontSize: "1.75rem",
-                            fontWeight: 600,
-                            color: "#111827",
-                        }}
-                    >
+                <div className="text-center mb-6">
+                    <h1 className="text-2xl font-semibold text-white">
                         Upload Documents
                     </h1>
-                    <p style={{ fontSize: "0.875rem", color: "#6b7280" }}>
+                    <p className="text-sm text-white/70">
                         Submit the requested onboarding documents
                     </p>
                 </div>
 
                 <form
                     onSubmit={handleSubmit(onSubmit)}
-                    style={{
-                        display: "flex",
-                        flexDirection: "column",
-                        gap: "1.5rem",
-                    }}
+                    className="flex flex-col gap-6"
                 >
                     {/* Document Type */}
                     <div>
-                        <label
-                            style={{
-                                fontSize: "0.875rem",
-                                fontWeight: 500,
-                                color: "#4b5563",
-                            }}
-                        >
+                        <label className="block text-sm font-medium text-white/70 mb-1">
                             Document Type
                         </label>
 
                         <select
                             {...register("documentType")}
-                            style={{
-                                marginTop: "0.25rem",
-                                padding: "0.625rem 0.75rem",
-                                borderRadius: "12px",
-                                border: "1px solid #d1d5db",
-                                fontSize: "0.875rem",
-                                width: "100%",
-                            }}
+                            className="glass-input w-full"
                         >
                             <option value="">Select document</option>
                             <option value="AADHAR">Aadhar Card</option>
@@ -159,7 +116,7 @@ export function OnboardingUploadPage({ uploadToken }: OnboardingUploadPageProps)
                         </select>
 
                         {errors.documentType && (
-                            <p style={{ fontSize: "0.75rem", color: "#b91c1c" }}>
+                            <p className="text-xs text-rose-300 mt-1">
                                 {errors.documentType.message}
                             </p>
                         )}
@@ -167,30 +124,18 @@ export function OnboardingUploadPage({ uploadToken }: OnboardingUploadPageProps)
 
                     {/* File Upload */}
                     <div>
-                        <label
-                            style={{
-                                fontSize: "0.875rem",
-                                fontWeight: 500,
-                                color: "#4b5563",
-                            }}
-                        >
+                        <label className="block text-sm font-medium text-white/70 mb-1">
                             Upload File
                         </label>
 
                         <input
                             type="file"
                             {...register("file")}
-                            style={{
-                                marginTop: "0.25rem",
-                                padding: "0.5rem 0.75rem",
-                                borderRadius: "12px",
-                                border: "1px solid #d1d5db",
-                                width: "100%",
-                            }}
+                            className="glass-input w-full"
                         />
 
                         {errors.file && (
-                            <p style={{ fontSize: "0.75rem", color: "#b91c1c" }}>
+                            <p className="text-xs text-rose-300 mt-1">
                                 {errors.file.message as string}
                             </p>
                         )}
@@ -198,27 +143,13 @@ export function OnboardingUploadPage({ uploadToken }: OnboardingUploadPageProps)
 
                     {/* Messages */}
                     {error && (
-                        <div
-                            style={{
-                                color: "#b91c1c",
-                                background: "#fef2f2",
-                                padding: "0.75rem",
-                                borderRadius: "12px",
-                            }}
-                        >
+                        <div className="text-rose-300 bg-red-500/20 border border-red-500/30 p-3 rounded-lg">
                             {error}
                         </div>
                     )}
 
                     {message && (
-                        <div
-                            style={{
-                                color: "#166534",
-                                background: "#dcfce7",
-                                padding: "0.75rem",
-                                borderRadius: "12px",
-                            }}
-                        >
+                        <div className="text-emerald-300 bg-emerald-500/20 border border-emerald-500/30 p-3 rounded-lg">
                             {message}
                         </div>
                     )}
@@ -227,16 +158,7 @@ export function OnboardingUploadPage({ uploadToken }: OnboardingUploadPageProps)
                     <button
                         type="submit"
                         disabled={uploading}
-                        style={{
-                            padding: "0.75rem",
-                            borderRadius: "12px",
-                            backgroundColor: "#6366f1",
-                            color: "#fff",
-                            fontWeight: 500,
-                            border: "none",
-                            cursor: "pointer",
-                            opacity: uploading ? 0.6 : 1,
-                        }}
+                        className="w-full py-3 px-4 bg-cyan-500 hover:bg-cyan-400 text-white font-medium rounded-lg disabled:opacity-50 transition-colors"
                     >
                         {uploading ? "Uploading…" : "Upload Document"}
                     </button>

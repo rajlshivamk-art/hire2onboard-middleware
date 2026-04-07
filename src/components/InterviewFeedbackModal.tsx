@@ -107,11 +107,11 @@ export function InterviewFeedbackModal({ candidate, user, onClose, onFeedbackSub
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-        <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
-          <h2 className="text-gray-900">Interview Feedback - {candidate.stage}</h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+      <div className="glass-card rounded-[32px] border border-white/10 shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        <div className="sticky top-0 bg-slate-800 border-b border-white/10 px-6 py-4 flex items-center justify-between">
+          <h2 className="text-white">Interview Feedback - {candidate.stage}</h2>
+          <button onClick={onClose} className="text-slate-400 hover:text-white">
             <X className="w-6 h-6" />
           </button>
         </div>
@@ -119,21 +119,21 @@ export function InterviewFeedbackModal({ candidate, user, onClose, onFeedbackSub
         <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-6">
           {/* Round Name */}
           <div>
-            <label className="block text-gray-700 mb-2">Round Name *</label>
+            <label className="block text-white/70 mb-2">Round Name *</label>
             <input
               type="text"
               {...register('roundName')}
-              className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.roundName ? 'border-red-500' : 'border-gray-300'}`}
+              className={`glass-input w-full px-4 py-3 rounded-2xl text-white bg-slate-950/70 border-white/20 focus:ring-2 focus:ring-cyan-500 outline-none ${errors.roundName ? 'border-red-400' : ''}`}
               placeholder="e.g. System Design, Coding Round 1"
             />
             {errors.roundName && (
-              <p className="mt-1 text-sm text-red-600">{errors.roundName.message}</p>
+              <p className="mt-1 text-sm text-rose-300">{errors.roundName.message}</p>
             )}
           </div>
 
           {/* Rating */}
           <div>
-            <label className="block text-gray-700 mb-2">Overall Rating *</label>
+            <label className="block text-white/70 mb-2">Overall Rating *</label>
             <div className="flex gap-2">
               {[1, 2, 3, 4, 5].map((star) => (
                 <button
@@ -145,14 +145,14 @@ export function InterviewFeedbackModal({ candidate, user, onClose, onFeedbackSub
                   <Star
                     className={`w-8 h-8 ${star <= rating
                       ? 'fill-yellow-400 text-yellow-400'
-                      : 'text-gray-300'
+                      : 'text-slate-400'
                       }`}
                   />
                 </button>
               ))}
             </div>
             {errors.rating && (
-              <p className="mt-1 text-sm text-red-600">{errors.rating.message}</p>
+              <p className="mt-1 text-sm text-rose-300">{errors.rating.message}</p>
             )}
           </div>
 
@@ -160,50 +160,47 @@ export function InterviewFeedbackModal({ candidate, user, onClose, onFeedbackSub
           {user.role === 'Tech Interviewer' && (
             <>
               <div>
-                <label className="block text-gray-700 mb-2">Code Quality *</label>
+                <label className="block text-white/70 mb-2">Code Quality *</label>
                 <textarea
                   {...register('codeQuality')}
-                  className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.codeQuality ? 'border-red-500' : 'border-gray-300'
-                    }`}
+                  className={`glass-input w-full px-4 py-3 rounded-2xl text-white bg-slate-950/70 border-white/20 focus:ring-2 focus:ring-cyan-500 outline-none resize-none ${errors.codeQuality ? 'border-red-400' : ''}`}
                   rows={3}
                   placeholder="Assess code quality, best practices, etc."
                 />
                 {errors.codeQuality && (
-                  <p className="mt-1 text-sm text-red-600">{errors.codeQuality.message}</p>
+                  <p className="mt-1 text-sm text-rose-300">{errors.codeQuality.message}</p>
                 )}
               </div>
 
               <div>
-                <label className="block text-gray-700 mb-2">Problem Solving *</label>
+                <label className="block text-white/70 mb-2">Problem Solving *</label>
                 <textarea
                   {...register('problemSolving')}
-                  className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.problemSolving ? 'border-red-500' : 'border-gray-300'
-                    }`}
+                  className={`glass-input w-full px-4 py-3 rounded-2xl text-white bg-slate-950/70 border-white/20 focus:ring-2 focus:ring-cyan-500 outline-none resize-none ${errors.problemSolving ? 'border-red-400' : ''}`}
                   rows={3}
                   placeholder="How did they approach problems?"
                 />
                 {errors.problemSolving && (
-                  <p className="mt-1 text-sm text-red-600">{errors.problemSolving.message}</p>
+                  <p className="mt-1 text-sm text-rose-300">{errors.problemSolving.message}</p>
                 )}
               </div>
 
               <div>
-                <label className="block text-gray-700 mb-2">Technical Skills *</label>
+                <label className="block text-white/70 mb-2">Technical Skills *</label>
                 <textarea
                   {...register('technicalSkills')}
-                  className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.technicalSkills ? 'border-red-500' : 'border-gray-300'
-                    }`}
+                  className={`glass-input w-full px-4 py-3 rounded-2xl text-white bg-slate-950/70 border-white/20 focus:ring-2 focus:ring-cyan-500 outline-none resize-none ${errors.technicalSkills ? 'border-red-400' : ''}`}
                   rows={3}
                   placeholder="Evaluate specific technical competencies"
                 />
                 {errors.technicalSkills && (
-                  <p className="mt-1 text-sm text-red-600">{errors.technicalSkills.message}</p>
+                  <p className="mt-1 text-sm text-rose-300">{errors.technicalSkills.message}</p>
                 )}
               </div>
 
               {/* Salary field HIDDEN for Tech Interviewers */}
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <p className="text-blue-800 text-sm">
+              <div className="glass-card border border-cyan-500/20 bg-cyan-500/10 rounded-2xl p-4">
+                <p className="text-cyan-200 text-sm">
                   Note: Salary negotiation fields are not available for your role.
                 </p>
               </div>
@@ -214,47 +211,45 @@ export function InterviewFeedbackModal({ candidate, user, onClose, onFeedbackSub
           {(user.role === 'HR' || user.role === 'Recruiter') && (
             <>
               <div>
-                <label className="block text-gray-700 mb-2">
+                <label className="block text-white/70 mb-2">
                   {candidate.stage === 'Round 1' ? 'Behaviour & Grooming *' : 'Culture Fit *'}
                 </label>
                 <textarea
                   {...register('cultureFit')}
-                  className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.cultureFit ? 'border-red-500' : 'border-gray-300'
-                    }`}
+                  className={`glass-input w-full px-4 py-3 rounded-2xl text-white bg-slate-950/70 border-white/20 focus:ring-2 focus:ring-cyan-500 outline-none resize-none ${errors.cultureFit ? 'border-red-400' : ''}`}
                   rows={3}
                   placeholder={candidate.stage === 'Round 1' ? "Assess behaviour, communication, and grooming" : "How well does the candidate align with company culture?"}
                 />
                 {errors.cultureFit && (
-                  <p className="mt-1 text-sm text-red-600">{errors.cultureFit.message}</p>
+                  <p className="mt-1 text-sm text-rose-300">{errors.cultureFit.message}</p>
                 )}
               </div>
 
               <div>
-                <label className="block text-gray-700 mb-2">Communication Skills *</label>
+                <label className="block text-white/70 mb-2">Communication Skills *</label>
                 <textarea
                   {...register('communication')}
-                  className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.communication ? 'border-red-500' : 'border-gray-300'
-                    }`}
+                  className={`glass-input w-full px-4 py-3 rounded-2xl text-white bg-slate-950/70 border-white/20 focus:ring-2 focus:ring-cyan-500 outline-none resize-none ${errors.communication ? 'border-red-400' : ''}`}
                   rows={3}
                   placeholder="Assess verbal and written communication"
                 />
                 {errors.communication && (
-                  <p className="mt-1 text-sm text-red-600">{errors.communication.message}</p>
+                  <p className="mt-1 text-sm text-rose-300">{errors.communication.message}</p>
                 )}
               </div>
 
               {/* Salary Discussion - Only for Round 3 (Final HR) */}
               {candidate.stage === 'Round 3' && (
                 <div>
-                  <label className="block text-gray-700 mb-2">Negotiated Salary ($) *</label>
+                  <label className="block text-white/70 mb-2">Negotiated Salary ($) *</label>
                   <input
                     type="number"
                     {...register('negotiatedSalary')}
-                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.negotiatedSalary ? 'border-red-500' : 'border-gray-300'}`}
+                    className={`glass-input w-full px-4 py-3 rounded-2xl text-white bg-slate-950/70 border-white/20 focus:ring-2 focus:ring-cyan-500 outline-none ${errors.negotiatedSalary ? 'border-red-400' : ''}`}
                     placeholder="Enter negotiated salary"
                   />
                   {errors.negotiatedSalary && (
-                    <p className="mt-1 text-sm text-red-600">{errors.negotiatedSalary.message}</p>
+                    <p className="mt-1 text-sm text-rose-300">{errors.negotiatedSalary.message}</p>
                   )}
                 </div>
               )}
@@ -265,30 +260,28 @@ export function InterviewFeedbackModal({ candidate, user, onClose, onFeedbackSub
           {user.role === 'Manager' && (
             <>
               <div>
-                <label className="block text-gray-700 mb-2">Leadership Potential *</label>
+                <label className="block text-white/70 mb-2">Leadership Potential *</label>
                 <textarea
                   {...register('cultureFit')}
-                  className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.cultureFit ? 'border-red-500' : 'border-gray-300'
-                    }`}
+                  className={`glass-input w-full px-4 py-3 rounded-2xl text-white bg-slate-950/70 border-white/20 focus:ring-2 focus:ring-cyan-500 outline-none resize-none ${errors.cultureFit ? 'border-red-400' : ''}`}
                   rows={3}
                   placeholder="Assess leadership and strategic thinking"
                 />
                 {errors.cultureFit && (
-                  <p className="mt-1 text-sm text-red-600">{errors.cultureFit.message}</p>
+                  <p className="mt-1 text-sm text-rose-300">{errors.cultureFit.message}</p>
                 )}
               </div>
 
               <div>
-                <label className="block text-gray-700 mb-2">Team Fit *</label>
+                <label className="block text-white/70 mb-2">Team Fit *</label>
                 <textarea
                   {...register('communication')}
-                  className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.communication ? 'border-red-500' : 'border-gray-300'
-                    }`}
+                  className={`glass-input w-full px-4 py-3 rounded-2xl text-white bg-slate-950/70 border-white/20 focus:ring-2 focus:ring-cyan-500 outline-none resize-none ${errors.communication ? 'border-red-400' : ''}`}
                   rows={3}
                   placeholder="How well will they fit with the existing team?"
                 />
                 {errors.communication && (
-                  <p className="mt-1 text-sm text-red-600">{errors.communication.message}</p>
+                  <p className="mt-1 text-sm text-rose-300">{errors.communication.message}</p>
                 )}
               </div>
             </>
@@ -296,39 +289,38 @@ export function InterviewFeedbackModal({ candidate, user, onClose, onFeedbackSub
 
           {/* Common Fields */}
           <div>
-            <label className="block text-gray-700 mb-2">Additional Comments *</label>
+            <label className="block text-white/70 mb-2">Additional Comments *</label>
             <textarea
               {...register('comments')}
-              className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.comments ? 'border-red-500' : 'border-gray-300'
-                }`}
+              className={`glass-input w-full px-4 py-3 rounded-2xl text-white bg-slate-950/70 border-white/20 focus:ring-2 focus:ring-cyan-500 outline-none resize-none ${errors.comments ? 'border-red-400' : ''}`}
               rows={4}
               placeholder="Any other observations or notes"
             />
             {errors.comments && (
-              <p className="mt-1 text-sm text-red-600">{errors.comments.message}</p>
+              <p className="mt-1 text-sm text-rose-300">{errors.comments.message}</p>
             )}
           </div>
 
           <div>
-            <label className="block text-gray-700 mb-2">Decision *</label>
+            <label className="block text-white/70 mb-2">Decision *</label>
             <div className="flex gap-4">
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
                   type="radio"
                   value="Advance"
                   {...register('decision')}
-                  className="w-4 h-4 text-blue-600"
+                  className="w-4 h-4 text-cyan-500 focus:ring-cyan-500"
                 />
-                <span className="text-gray-700">Advance</span>
+                <span className="text-white/80">Advance</span>
               </label>
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
                   type="radio"
                   value="Hold"
                   {...register('decision')}
-                  className="w-4 h-4 text-blue-600"
+                  className="w-4 h-4 text-cyan-500 focus:ring-cyan-500"
                 />
-                <span className="text-gray-700">Hold</span>
+                <span className="text-white/80">Hold</span>
               </label>
               {user.role !== 'Tech Interviewer' && (
                 <label className="flex items-center gap-2 cursor-pointer">
@@ -336,26 +328,26 @@ export function InterviewFeedbackModal({ candidate, user, onClose, onFeedbackSub
                     type="radio"
                     value="Reject"
                     {...register('decision')}
-                    className="w-4 h-4 text-blue-600"
+                    className="w-4 h-4 text-cyan-500 focus:ring-cyan-500"
                   />
-                  <span className="text-gray-700">Reject</span>
+                  <span className="text-white/80">Reject</span>
                 </label>
               )}
             </div>
           </div>
 
-          <div className="flex gap-4 pt-4 border-t border-gray-200">
+          <div className="flex gap-4 pt-4 border-t border-white/10">
             <button
               type="submit"
               disabled={isSubmitting}
-              className="flex-1 bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+              className="flex-1 bg-cyan-500 text-slate-950 py-3 rounded-2xl hover:bg-cyan-400 transition-colors disabled:opacity-50 font-medium"
             >
               Submit Feedback
             </button>
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 bg-gray-100 text-gray-700 py-3 rounded-lg hover:bg-gray-200 transition-colors"
+              className="flex-1 bg-white/10 text-white py-3 rounded-2xl hover:bg-white/20 transition-colors font-medium"
             >
               Cancel
             </button>

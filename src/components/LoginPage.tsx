@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -25,7 +26,7 @@ export function LoginPage({ onLogin, onPublicAccess, onForgotPassword }: LoginPa
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { isSubmitting },
   } = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
   });
@@ -36,7 +37,6 @@ export function LoginPage({ onLogin, onPublicAccess, onForgotPassword }: LoginPa
       const { access_token, user } = await api.auth.login(data.email, data.password);
       setAccessToken(access_token);
       onLogin(user);
-
     } catch (err: any) {
       if (err.response?.data?.detail) setAuthError(err.response.data.detail);
       else if (err.message) setAuthError(err.message);
@@ -45,114 +45,132 @@ export function LoginPage({ onLogin, onPublicAccess, onForgotPassword }: LoginPa
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-indigo-100 to-purple-100 p-4 relative overflow-hidden">
+    <div className="min-h-screen flex items-center justify-center relative overflow-hidden">
 
-      {/* Premium Animated Background */}
+      {/* Background */}
       <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-20 left-10 w-72 h-72 bg-blue-400/20 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-20 right-10 w-96 h-96 bg-indigo-400/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
-        <div className="absolute top-1/2 left-1/2 w-80 h-80 bg-purple-400/20 rounded-full blur-3xl animate-pulse delay-500"></div>
+
+        {/* Mountains */}
+        <svg
+          className="absolute bottom-0 w-full"
+          viewBox="0 0 1440 420"
+          preserveAspectRatio="xMidYMax slice"
+        >
+          <path d="M0 420 L0 280 L120 180 L240 260 L360 140 L480 220 L600 100 L720 200 L840 120 L960 210 L1080 140 L1200 230 L1320 160 L1440 240 L1440 420 Z" fill="rgba(15,20,80,0.7)" />
+          <path d="M0 420 L0 320 L180 240 L300 300 L420 200 L540 280 L660 180 L780 260 L900 190 L1020 270 L1140 210 L1260 300 L1380 240 L1440 290 L1440 420 Z" fill="rgba(10,14,60,0.85)" />
+          <path d="M0 420 L0 370 L40 340 L60 370 L80 330 L100 360 L120 320 L150 355 L180 315 L210 350 L240 310 L270 345 L300 355 L330 320 L360 350 L400 315 L430 345 L460 320 L490 350 L520 315 L560 345 L600 310 L640 350 L680 320 L720 355 L760 318 L800 348 L840 312 L880 345 L920 315 L960 350 L1000 318 L1040 348 L1080 315 L1120 345 L1160 320 L1200 350 L1240 315 L1280 345 L1320 320 L1360 348 L1400 330 L1440 355 L1440 420 Z" fill="rgba(6,8,40,0.95)" />
+        </svg>
+
+        {/* Minimal Stars */}
+        {[
+          [12,10],[30,6],[50,12],[70,8],[85,14],
+          [20,30],[40,25],[60,32],[80,28]
+        ].map(([x, y], i) => (
+          <div
+            key={i}
+            className="absolute bg-white rounded-full"
+            style={{
+              left: `${x}%`,
+              top: `${y}%`,
+              width: '1.5px',
+              height: '1.5px',
+              opacity: 0.3,
+            }}
+          />
+        ))}
+
+        {/* Subtle Glow */}
+        <div
+          className="absolute rounded-full"
+          style={{
+            width: '420px',
+            height: '420px',
+            top: '-120px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            background: 'radial-gradient(circle, rgba(99,102,241,0.05) 0%, transparent 70%)',
+          }}
+        />
       </div>
 
       {/* Login Card */}
-      <div className="relative z-10 w-full max-w-md bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/50 px-8 py-8">
+      <div
+        className="relative z-10 mx-auto"
+        style={{
+          width: '360px',
+          maxWidth: '90%',
+          padding: '40px 34px',
+          borderRadius: '16px',
+          background: 'rgba(255,255,255,0.06)',
+          backdropFilter: 'blur(18px)',
+          WebkitBackdropFilter: 'blur(18px)',
+          border: '1px solid rgba(255,255,255,0.25)',
+          boxShadow: '0 20px 60px rgba(0,0,0,0.45)',
+        }}
+      >
+        <h2 className="text-center text-2xl text-white font-semibold mb-8">
+          Login
+        </h2>
 
-        {/* Header */}
-        <div className="text-center mb-6">
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600 rounded-2xl mb-4 shadow-2xl shadow-blue-500/40 ring-4 ring-blue-100">
-            <span className="text-white font-bold text-4xl">A</span>
-          </div>
-          <h1 className="text-3xl font-semibold tracking-tight bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent">
-            Recruitment HRMS
-          </h1>
-          <p className="text-gray-600">Enterprise Recruitment Solution</p>
-        </div>
-
-        {/* Form */}
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
 
           {/* Email */}
-          <div>
-            <label className="block text-sm font-medium text-gray-600 mb-1">
-              Email or Username
-            </label>
-            <input
-              type="text"
-              placeholder="john@example.com or username"
-              {...register('email')}
-              className={`w-full px-1 py-2 text-sm bg-transparent border-0 border-b focus:outline-none focus:ring-0 transition ${errors.email
-                ? 'border-b-red-500'
-                : 'border-b-gray-300 focus:border-b-blue-500'
-                }`}
-            />
-            {errors.email && (
-              <p className="text-xs text-red-600 mt-1">{errors.email.message}</p>
-            )}
-          </div>
+          <input
+            type="text"
+            placeholder="Email"
+            {...register('email')}
+            className="w-full bg-transparent border-b border-white/40 pb-2 text-white outline-none placeholder-white/60"
+          />
 
           {/* Password */}
-          <div>
-            <label className="block text-sm font-medium text-gray-600 mb-1">
-              Password
-            </label>
-            <input
-              type="password"
-              placeholder="John@123"
-              {...register('password')}
-              className={`w-full px-1 py-2 text-sm bg-transparent border-0 border-b focus:outline-none focus:ring-0 transition ${errors.password
-                ? 'border-b-red-500'
-                : 'border-b-gray-300 focus:border-b-blue-500'
-                }`}
-            />
-            {errors.password && (
-              <p className="text-xs text-red-600 mt-1">{errors.password.message}</p>
-            )}
+          <input
+            type="password"
+            placeholder="Password"
+            {...register('password')}
+            className="w-full bg-transparent border-b border-white/40 pb-2 text-white outline-none placeholder-white/60"
+          />
+
+          {/* Forgot Password */}
+          <div className="flex justify-end text-sm">
+            <button
+              type="button"
+              onClick={onForgotPassword}
+              className="text-white/70 hover:text-white"
+            >
+              Forgot Password?
+            </button>
           </div>
 
-          {/* Auth Error */}
+          {/* Error */}
           {authError && (
-            <div className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg px-4 py-2">
+            <div className="text-xs text-red-300">
               {authError}
             </div>
           )}
 
-          {/* Submit */}
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="w-full mt-2 py-2.5 rounded-lg bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 transition disabled:opacity-50"
-          >
-            {isSubmitting ? 'Signing In…' : 'Sign In'}
-          </button>
+          {/* Buttons */}
+          <div className="flex flex-col gap-3 mt-2">
 
-          {/* Footer */}
-          <div className="text-center space-y-2 pt-2">
             <button
-              type="button"
-              onClick={onForgotPassword}
-              className="text-sm text-blue-600 hover:underline"
+              type="submit"
+              disabled={isSubmitting}
+              className="w-full py-2.5 rounded-full bg-white text-indigo-700 font-medium hover:bg-gray-200 transition"
             >
-              Forgot Password?
+              {isSubmitting ? 'Signing in…' : 'Login'}
             </button>
 
             {onPublicAccess && (
-              <>
-                <div className="flex items-center gap-3">
-                  <div className="flex-1 border-t border-gray-300"></div>
-                  <span className="text-xs text-gray-400 uppercase">or</span>
-                  <div className="flex-1 border-t border-gray-300"></div>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={onPublicAccess}
-                  className="w-full py-2.5 rounded-lg border border-blue-600/30 text-sm text-blue-600 hover:bg-blue-50 transition"
-                >
-                  View Public Job Board
-                </button>
-              </>
+              <button
+                type="button"
+                onClick={onPublicAccess}
+                className="w-full py-2.5 rounded-full border border-white/30 text-white/80 hover:bg-white/10 transition"
+              >
+                View Public Job Board
+              </button>
             )}
+
           </div>
+
         </form>
       </div>
     </div>

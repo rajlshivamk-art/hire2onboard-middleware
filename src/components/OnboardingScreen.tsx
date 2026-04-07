@@ -114,23 +114,23 @@ export function OnboardingScreen({ user, navigateTo }: OnboardingScreenProps) {
 
 
   return (
-    <div className="p-8">
+    <div className="min-h-screen bg-slate-950 text-white p-8">
       <div className="mb-8">
-        <h1 className="text-gray-900 mb-2">Onboarding</h1>
-        <p className="text-gray-600">Manage onboarding process for new hires</p>
+        <h1 className="text-white text-3xl font-semibold mb-2">Onboarding</h1>
+        <p className="text-white/70">Manage onboarding process for new hires</p>
       </div>
 
       {loading ? (
         <div className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-300"></div>
         </div>
       ) : onboardingCandidates.length === 0 ? (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center">
-          <div className="w-16 h-16 bg-gray-100 rounded-full mx-auto mb-4 flex items-center justify-center">
-            <UserIcon className="w-8 h-8 text-gray-400" />
+        <div className="glass-card rounded-3xl border border-white/10 p-12 text-center shadow-2xl max-w-xl mx-auto">
+          <div className="w-16 h-16 bg-white/10 rounded-full mx-auto mb-4 flex items-center justify-center">
+            <UserIcon className="w-8 h-8 text-cyan-300" />
           </div>
-          <h2 className="text-gray-900 mb-2">No candidates in onboarding</h2>
-          <p className="text-gray-600">Candidates who reach the onboarding stage will appear here.</p>
+          <h2 className="text-white text-xl font-semibold mb-2">No candidates in onboarding</h2>
+          <p className="text-white/70">Candidates who reach the onboarding stage will appear here.</p>
         </div>
       ) : (
         <div className="space-y-6">
@@ -164,27 +164,27 @@ export function OnboardingScreen({ user, navigateTo }: OnboardingScreenProps) {
             };
 
             return (
-              <div key={candidate.id} className="bg-white rounded-xl shadow-sm border border-gray-200">
+              <div key={candidate.id} className="glass-card rounded-[28px] border border-white/10 shadow-2xl overflow-hidden">
                 {/* Header */}
-                <div className="p-6 border-b border-gray-200">
+                <div className="p-6 border-b border-white/10">
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-2">
-                        <div className="w-12 h-12 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-full flex items-center justify-center text-white">
+                        <div className="w-12 h-12 bg-gradient-to-br from-cyan-500 to-slate-900 rounded-full flex items-center justify-center text-white shadow-lg shadow-cyan-500/20">
                           <span className="text-lg">{candidate.name.charAt(0)}</span>
                         </div>
                         <div>
-                          <h2 className="text-gray-900">{candidate.name}</h2>
-                          <p className="text-gray-600">{job?.title}</p>
+                          <h2 className="text-white text-xl font-semibold">{candidate.name}</h2>
+                          <p className="text-white/70">{job?.title}</p>
                         </div>
                       </div>
-                      <div className="flex items-center gap-4 text-sm text-gray-600 mt-4">
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:gap-4 text-sm text-white/60 mt-4">
                         <div className="flex items-center gap-2">
                           <Calendar className="w-4 h-4" />
                           Applied: {new Date(candidate.appliedDate).toLocaleDateString()}
                         </div>
                         {candidate.offeredSalary && user.canViewSalary && (
-                          <div className="text-green-600">
+                          <div className="text-emerald-300 font-medium">
                             Offered: ₹{candidate.offeredSalary.toLocaleString()}
                           </div>
                         )}
@@ -194,16 +194,16 @@ export function OnboardingScreen({ user, navigateTo }: OnboardingScreenProps) {
                     <div className="flex items-center gap-2">
                       <button
                         onClick={handleSendReminder}
-                        className="px-4 py-2 border border-blue-200 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors flex items-center gap-2"
+                        className="px-4 py-2 border border-cyan-500/20 text-cyan-200 hover:bg-white/10 rounded-2xl transition-colors flex items-center gap-2"
                         title="Send reminder for pending documents"
                       >
-                        <Briefcase className="w-4 h-4" /> {/* Using Briefcase as generic icon since Mail might need import */}
+                        <Briefcase className="w-4 h-4" />
                         Request Documents
                       </button>
 
                       <button
                         onClick={() => navigateTo('candidate-detail', { candidateId: candidate.id })}
-                        className="px-4 py-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                        className="px-4 py-2 text-white/90 border border-white/10 hover:bg-white/10 rounded-2xl transition-colors"
                       >
                         View Details
                       </button>
@@ -213,12 +213,12 @@ export function OnboardingScreen({ user, navigateTo }: OnboardingScreenProps) {
                   {/* Progress Bar */}
                   <div className="mt-6">
                     <div className="flex items-center justify-between mb-2">
-                      <p className="text-gray-700">Onboarding Progress</p>
-                      <p className="text-gray-600">{completedTasks} / {totalTasks} completed</p>
+                      <p className="text-white/80">Onboarding Progress</p>
+                      <p className="text-white/60">{completedTasks} / {totalTasks} completed</p>
                     </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div className="w-full bg-white/10 rounded-full h-2 overflow-hidden">
                       <div
-                        className="bg-green-600 h-2 rounded-full transition-all duration-300"
+                        className="bg-emerald-400 h-2 rounded-full transition-all duration-300"
                         style={{ width: `${progress}%` }}
                       />
                     </div>
@@ -227,61 +227,60 @@ export function OnboardingScreen({ user, navigateTo }: OnboardingScreenProps) {
 
                 {/* Checklist */}
                 <div className="p-6">
-                  <h3 className="text-gray-900 mb-4">Onboarding Checklist</h3>
+                  <h3 className="text-white text-xl font-semibold mb-4">Onboarding Checklist</h3>
                   <div className="space-y-3">
                     {candidateTasks.map((task) => (
                       <div
                         key={task.id}
-                        className="group flex items-center justify-between p-4 rounded-lg border border-gray-100 bg-gray-50"
+                        className="group flex flex-col gap-4 p-4 rounded-3xl border border-white/10 bg-white/5 sm:flex-row sm:items-center sm:justify-between"
                       >
                         <div className="flex-1">
-                          <p className={`font-medium ${task.status === 'Completed' ? 'text-green-700' : 'text-gray-900'}`}>{task.task}</p>
+                          <p className={`font-medium ${task.status === 'Completed' ? 'text-emerald-300' : 'text-white'}`}>{task.task}</p>
                         </div>
 
                         {/* Radio Group */}
-                        <div className="flex items-center gap-4">
-                          <label className="flex items-center gap-2 cursor-pointer hover:bg-yellow-50 p-1 rounded">
+                        <div className="flex flex-wrap items-center gap-3">
+                          <label className="flex items-center gap-2 cursor-pointer rounded-full px-3 py-2 bg-white/5 hover:bg-white/10 transition-colors">
                             <input
                               type="radio"
                               name={`status-${candidate.id}-${task.id}`}
                               checked={task.status === 'Pending'}
                               onChange={() => handleUpdateTaskStatus(task.id, 'Pending')}
-                              className="w-4 h-4 text-yellow-600 border-gray-300 focus:ring-yellow-500"
+                              className="w-4 h-4 accent-amber-400 focus:ring-2 focus:ring-amber-400"
                             />
-                            <span className={`text-sm ${task.status === 'Pending' ? 'text-yellow-700 font-medium' : 'text-gray-600'}`}>Pending</span>
+                            <span className={`text-sm ${task.status === 'Pending' ? 'text-amber-300 font-medium' : 'text-white/70'}`}>Pending</span>
                           </label>
 
-                          <label className="flex items-center gap-2 cursor-pointer hover:bg-blue-50 p-1 rounded">
+                          <label className="flex items-center gap-2 cursor-pointer rounded-full px-3 py-2 bg-white/5 hover:bg-white/10 transition-colors">
                             <input
                               type="radio"
                               name={`status-${candidate.id}-${task.id}`}
                               checked={task.status === 'Received'}
                               onChange={() => handleUpdateTaskStatus(task.id, 'Received')}
-                              className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                              className="w-4 h-4 accent-cyan-400 focus:ring-2 focus:ring-cyan-400"
                             />
-                            <span className={`text-sm ${task.status === 'Received' ? 'text-blue-700 font-medium' : 'text-gray-600'}`}>Received</span>
+                            <span className={`text-sm ${task.status === 'Received' ? 'text-cyan-300 font-medium' : 'text-white/70'}`}>Received</span>
                           </label>
 
-                          <label className="flex items-center gap-2 cursor-pointer hover:bg-green-50 p-1 rounded">
+                          <label className="flex items-center gap-2 cursor-pointer rounded-full px-3 py-2 bg-white/5 hover:bg-white/10 transition-colors">
                             <input
                               type="radio"
                               name={`status-${candidate.id}-${task.id}`}
                               checked={task.status === 'Completed'}
                               onChange={() => handleUpdateTaskStatus(task.id, 'Completed')}
-                              className="w-4 h-4 text-green-600 border-gray-300 focus:ring-green-500"
+                              className="w-4 h-4 accent-emerald-400 focus:ring-2 focus:ring-emerald-400"
                             />
-                            <span className={`text-sm ${task.status === 'Completed' ? 'text-green-700 font-medium' : 'text-gray-600'}`}>Completed</span>
+                            <span className={`text-sm ${task.status === 'Completed' ? 'text-emerald-300 font-medium' : 'text-white/70'}`}>Completed</span>
                           </label>
                         </div>
 
-                        {/* Delete Action - kept from original */}
                         {user.canManageUsers && (
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
                               handleDeleteTask(candidate.id, task.id);
                             }}
-                            className="ml-4 text-gray-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-opacity p-2"
+                            className="ml-0 sm:ml-4 text-white/50 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity p-2"
                             title="Delete Task"
                           >
                             <Trash2 className="w-4 h-4" />
@@ -292,11 +291,11 @@ export function OnboardingScreen({ user, navigateTo }: OnboardingScreenProps) {
                   </div>
 
                   {/* Add Task Input */}
-                  <div className="flex gap-2 mt-4 pt-4 border-t border-gray-100">
+                  <div className="flex flex-col gap-3 mt-4 pt-4 border-t border-white/10 sm:flex-row">
                     <input
                       type="text"
                       placeholder="Add new task..."
-                      className="flex-1 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                      className="flex-1 px-4 py-3 rounded-2xl glass-input text-white/90"
                       value={taskInputs[candidate.id] || ''}
                       onChange={(e) => setTaskInputs({ ...taskInputs, [candidate.id]: e.target.value })}
                       onKeyDown={(e) => {
@@ -307,7 +306,7 @@ export function OnboardingScreen({ user, navigateTo }: OnboardingScreenProps) {
                     />
                     <button
                       onClick={() => handleAddTask(candidate.id)}
-                      className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+                      className="px-4 py-3 bg-cyan-500 text-slate-950 rounded-2xl hover:bg-cyan-400 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                       disabled={!taskInputs[candidate.id]?.trim()}
                     >
                       <Plus className="w-4 h-4" />
@@ -317,7 +316,7 @@ export function OnboardingScreen({ user, navigateTo }: OnboardingScreenProps) {
                 </div>
 
                 <div className="mt-6 pb-4">
-                  <h4 className="text-sm font-medium text-gray-700 mb-3 px-4">
+                  <h4 className="text-sm font-medium text-white/80 mb-3 px-4">
                     Uploaded Documents
                   </h4>
 
@@ -327,21 +326,9 @@ export function OnboardingScreen({ user, navigateTo }: OnboardingScreenProps) {
                         <button
                           key={doc.type}
                           onClick={() => handleViewDocument(candidate.id, doc.type)}
-                          className="
-            inline-flex items-center gap-2
-            px-3 py-1.5
-            text-sm text-gray-800
-            rounded-full
-            border border-gray-200
-            bg-gray-50
-            shadow-sm
-            hover:bg-gray-100
-            hover:border-gray-300
-            transition
-            cursor-pointer
-          "
+                          className="inline-flex items-center gap-2 px-3 py-2 text-sm text-white/80 rounded-full border border-white/10 bg-white/5 hover:bg-white/10 transition cursor-pointer"
                         >
-                          <CheckCircle2 className="w-4 h-4 text-green-600 shrink-0" />
+                          <CheckCircle2 className="w-4 h-4 text-emerald-300 shrink-0" />
                           <span className="capitalize whitespace-nowrap">
                             {doc.type.replace(/_/g, " ").toLowerCase()}
                           </span>
@@ -349,25 +336,25 @@ export function OnboardingScreen({ user, navigateTo }: OnboardingScreenProps) {
                       ))}
                     </div>
                   ) : (
-                    <p className="text-gray-500 text-sm px-4">No documents uploaded yet.</p>
+                    <p className="text-white/60 text-sm px-4">No documents uploaded yet.</p>
                   )}
                 </div>
 
 
                 {progress === 100 && (
-                  <div className="mt-6 bg-green-50 border border-green-200 rounded-lg p-4 flex flex-col sm:flex-row items-center justify-between gap-4 mx-6 mb-6">
+                  <div className="mt-6 bg-emerald-500/10 border border-emerald-400/20 rounded-3xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4 mx-6 mb-6">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
-                        <CheckCircle2 className="w-6 h-6 text-green-600" />
+                      <div className="w-10 h-10 bg-emerald-500/20 rounded-full flex items-center justify-center">
+                        <CheckCircle2 className="w-6 h-6 text-emerald-300" />
                       </div>
                       <div>
-                        <h4 className="font-medium text-green-900">Ready to Hire</h4>
-                        <p className="text-green-700 text-sm">All tasks completed. Mark {candidate.name} as hired.</p>
+                        <h4 className="font-medium text-white">Ready to Hire</h4>
+                        <p className="text-white/70 text-sm">All tasks completed. Mark {candidate.name} as hired.</p>
                       </div>
                     </div>
                     <button
                       onClick={() => handleMarkAsHired(candidate.id)}
-                      className="px-6 py-2.5 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 transition-colors shadow-sm flex items-center gap-2"
+                      className="px-6 py-2.5 bg-emerald-500 text-slate-950 font-medium rounded-2xl hover:bg-emerald-400 transition-colors shadow-sm flex items-center gap-2"
                     >
                       <Briefcase className="w-4 h-4" />
                       Mark as Hired
