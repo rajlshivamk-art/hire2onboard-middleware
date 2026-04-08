@@ -18,6 +18,7 @@ import { Toaster } from 'react-hot-toast';
 import { User } from "./types";
 import { api } from "./lib/api";
 import { OnboardingUploadPage } from "./components/DocsUpload";
+import { RegisterPage } from "./components/RegisterPage";
 
 const urlParams = new URLSearchParams(window.location.search);
 const resetToken = urlParams.get('token');
@@ -166,6 +167,14 @@ export default function App() {
     return <OnboardingUploadPage uploadToken={uploadToken} />;
   }
 
+  if (currentScreen === "register") {
+  return (
+    <RegisterPage
+      onRegisterSuccess={() => setCurrentScreen("login")}
+    />
+  );
+}
+
   // ── LOGIN ──
   if (currentScreen === "login" || !currentUser) {
     return (
@@ -173,6 +182,7 @@ export default function App() {
         onLogin={handleLogin}
         onPublicAccess={() => setCurrentScreen("public-jobs")}
         onForgotPassword={() => setCurrentScreen("forgot-password")}
+        onRegister={() => setCurrentScreen("register")} 
       />
     );
   }
