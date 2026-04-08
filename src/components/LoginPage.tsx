@@ -18,9 +18,10 @@ interface LoginPageProps {
   onLogin: (user: User) => void;
   onPublicAccess?: () => void;
   onForgotPassword: () => void;
+  onRegister?: () => void;
 }
 
-export function LoginPage({ onLogin, onPublicAccess, onForgotPassword }: LoginPageProps) {
+export function LoginPage({ onLogin, onPublicAccess, onForgotPassword, onRegister }: LoginPageProps) {
   const [authError, setAuthError] = useState('');
 
   const {
@@ -158,6 +159,16 @@ export function LoginPage({ onLogin, onPublicAccess, onForgotPassword }: LoginPa
             >
               {isSubmitting ? 'Signing in…' : 'Login'}
             </button>
+            <div className="text-center text-sm text-white/70 mt-2">
+              Don’t have an account?{" "}
+              <button
+                type="button"
+                onClick={onRegister}
+                className="text-white font-medium hover:underline"
+              >
+                Register
+              </button>
+            </div>
 
             {onPublicAccess && (
               <button
