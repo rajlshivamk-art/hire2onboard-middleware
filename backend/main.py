@@ -7,7 +7,7 @@ from beanie import init_beanie
 
 from backend.config import settings
 
-# ✅ UPDATED MODELS IMPORT
+# ✅ MODELS
 from backend.models import (
     User,
     Job,
@@ -15,11 +15,11 @@ from backend.models import (
     OnboardingTask,
     RefreshToken,
     EmailTracking,
-    Portal,          # ✅ NEW
-    Integration      # ✅ NEW
+    Portal,
+    Integration
 )
 
-# Routers
+# ✅ ROUTERS (FIXED IMPORT STYLE)
 from backend.routers import (
     auth,
     jobs,
@@ -27,9 +27,11 @@ from backend.routers import (
     users,
     interviews,
     ghosting,
-    applications_bulk,
-    bitrix           # ✅ NEW
+    applications_bulk
 )
+
+# ✅ IMPORTANT: DIRECT IMPORT (FIXES YOUR ERROR)
+from backend.routers.bitrix import router as bitrix_router
 
 from backend.db_initializer import initialize_db
 from backend.utils.files import init_gridfs
@@ -52,8 +54,8 @@ async def lifespan(app: FastAPI):
             OnboardingTask,
             RefreshToken,
             EmailTracking,
-            Portal,        # ✅ REGISTERED
-            Integration    # ✅ REGISTERED
+            Portal,
+            Integration
         ]
     )
 
@@ -95,7 +97,7 @@ app.add_middleware(
 
 
 # ===========================================================
-# PERFORMANCE MIDDLEWARE
+# PERFORMANCE
 # ===========================================================
 app.add_middleware(GZipMiddleware, minimum_size=1000)
 
@@ -111,12 +113,12 @@ app.include_router(interviews.router)
 app.include_router(ghosting.router)
 app.include_router(applications_bulk.router)
 
-# ✅ BITRIX ROUTES
-app.include_router(bitrix.router)
+# ✅ FIXED BITRIX ROUTE
+app.include_router(bitrix_router)
 
 
 # ===========================================================
-# HEALTH + ROOT
+# HEALTH
 # ===========================================================
 @app.get("/")
 async def root():
