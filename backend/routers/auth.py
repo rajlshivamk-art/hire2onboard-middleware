@@ -82,6 +82,47 @@ async def get_current_user_optional(request: Request) -> Optional[User]:
         return None
 
 # -----------------------
+# REGISTER
+# -----------------------
+
+from pydantic import BaseModel, EmailStr
+
+class UserRegister(BaseModel):
+    name: str
+    email: EmailStr
+    password: str
+
+
+@router.post("/register")
+async def register(user_data: UserRegister):
+    # Check if user already exists
+    existing_user = await User.find_one(User.email == user_data.email)
+    if existing_user:
+        raise HTTPException(
+            status_code=400,
+            detail="User with this email already exists"
+        )
+
+    # Hash password
+    hashed_password = pwd_context.hash(user_data.password)
+
+    # Create user (Admin by default)
+    new_user = User(
+        name=user_data.name,
+        email=user_data.email,
+        password=hashed_password,
+        role="Admin",
+        company="My Company"  # or dynamic later
+    )
+
+    await new_user.insert()
+
+    return {
+        "success": True,
+        "message": "User registered successfully"
+    }
+
+# -----------------------
 # LOGIN / REFRESH / LOGOUT
 # -----------------------
 

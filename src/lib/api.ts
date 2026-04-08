@@ -120,6 +120,13 @@ export const onboarding = {
 
 export const api = {
     auth: {
+        register: async (name: string, email: string, password: string) => {
+            const response = await apiClient.post(
+                '/auth/register',
+                { name, email, password }
+            );
+            return response.data;
+        },
         login: async (email: string, password: string) => {
             const response = await apiClient.post<{
                 access_token: string;
