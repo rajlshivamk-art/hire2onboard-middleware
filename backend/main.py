@@ -4,6 +4,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 from beanie import init_beanie
+from backend.models import Company  
+
 
 from backend.config import settings
 
@@ -16,7 +18,8 @@ from backend.models import (
     RefreshToken,
     EmailTracking,
     Portal,
-    Integration
+    Integration,
+    Company
 )
 
 # ✅ ROUTERS (FIXED IMPORT STYLE)
@@ -55,8 +58,10 @@ async def lifespan(app: FastAPI):
             RefreshToken,
             EmailTracking,
             Portal,
-            Integration
+            Integration,
+            Company
         ]
+        
     )
 
     # GridFS init

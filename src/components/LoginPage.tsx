@@ -4,7 +4,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { User } from '../types';
 import { api } from '../lib/api';
-import { setAccessToken } from '../types';
 
 const loginSchema = z.object({
   email: z.string().min(1, 'Email or Username is required'),
@@ -39,12 +38,13 @@ export function LoginPage({
   const onSubmit = async (data: LoginFormValues) => {
     setAuthError('');
     try {
-      const { access_token, user } = await api.auth.login(
+      // ✅ FIX: rely on api.ts (it already sets token)
+      const response = await api.auth.login(
         data.email,
         data.password
       );
-      setAccessToken(access_token);
-      onLogin(user);
+
+      onLogin(response.user);
     } catch (err: any) {
       if (err.response?.data?.detail) setAuthError(err.response.data.detail);
       else if (err.message) setAuthError(err.message);
@@ -133,15 +133,12 @@ export function LoginPage({
               {isSubmitting ? 'Signing in…' : 'Login'}
             </button>
 
-            {/* Register (FIXED CLICK SAFE) */}
+            {/* Register */}
             <div className="text-center text-sm text-white/70 mt-1">
               Don’t have an account?{" "}
               <button
                 type="button"
-                onClick={() => {
-                  if (onRegister) onRegister();
-                  else console.warn("onRegister not provided");
-                }}
+                onClick={() => onRegister?.()}
                 className="text-white font-medium hover:underline"
               >
                 Register

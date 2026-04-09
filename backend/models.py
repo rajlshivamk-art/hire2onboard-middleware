@@ -1,9 +1,8 @@
 from typing import List, Optional
 from datetime import datetime
-from uuid import uuid4
-
 from beanie import Document, PydanticObjectId
-from pydantic import Field
+from pydantic import EmailStr, Field
+from uuid import uuid4
 
 from .schemas import (
     UserBase,
@@ -13,16 +12,36 @@ from .schemas import (
     CandidateInteraction,
     InterviewSchedule,
     EvaluationScore,
-    EmailEvent,
+    EmailEvent
 )
 
 # ===========================================================
-# USER
+# 🏢 COMPANY (NEW - SaaS TENANT)
+# ===========================================================
+class Company(Document):
+    name: str
+    createdAt: datetime = Field(default_factory=datetime.utcnow)
+
+    class Settings:
+        name = "companies"
+
+
+
+# ===========================================================
+# 👤 USER
 # ===========================================================
 class User(Document, UserBase):
     id: Optional[PydanticObjectId] = None
+
     password: str
+
+    # 🔥 OLD FIELD (KEEP - backward compatibility)
     company: Optional[str] = None
+
+    # ✅ NEW FIELD (SaaS)
+    companyId: Optional[PydanticObjectId] = None
+
+    # Reset password
     reset_token: Optional[str] = None
     reset_token_expiry: Optional[datetime] = None
 
@@ -31,17 +50,24 @@ class User(Document, UserBase):
         indexes = [
             [("email", 1)],
             "company",
+            "companyId"  # ✅ IMPORTANT for SaaS queries
         ]
 
 
 # ===========================================================
-# JOB
+# 💼 JOB
 # ===========================================================
 class Job(Document, JobBase):
     id: Optional[PydanticObjectId] = None
+
     postedDate: datetime
     status: str
+
+    # 🔥 OLD
     company: Optional[str] = None
+
+    # ✅ NEW
+    companyId: Optional[PydanticObjectId] = None
 
     class Settings:
         name = "jobs"
@@ -50,11 +76,12 @@ class Job(Document, JobBase):
             [("postedDate", -1)],
             "title",
             "company",
+            "companyId"
         ]
 
 
 # ===========================================================
-# FEEDBACK (EMBEDDED)
+# 📝 FEEDBACK (Embedded)
 # ===========================================================
 class Feedback(FeedbackBase):
     id: PydanticObjectId = Field(default_factory=PydanticObjectId)
@@ -63,31 +90,42 @@ class Feedback(FeedbackBase):
 
 
 # ===========================================================
-# ONBOARDING TASK
+# 📋 ONBOARDING TASK
 # ===========================================================
 class OnboardingTask(Document):
     id: Optional[PydanticObjectId] = None
+
     candidateId: str
     task: str
     status: str = "Pending"
     completedDate: Optional[datetime] = None
+
+    # ✅ SaaS ready
+    companyId: Optional[PydanticObjectId] = None
 
     class Settings:
         name = "onboarding_tasks"
 
 
 # ===========================================================
-# APPLICATION
+# 📄 APPLICATION
 # ===========================================================
 class Application(Document, ApplicationBase):
     id: Optional[PydanticObjectId] = None
+
     stage: str
     appliedDate: datetime
+
     feedback: List[Feedback] = []
     rejectionReason: Optional[str] = None
     assignedRecruiterId: Optional[str] = None
     onboardingTasks: List[OnboardingTask] = []
+
+    # 🔥 OLD
     company: Optional[str] = None
+
+    # ✅ NEW
+    companyId: Optional[PydanticObjectId] = None
 
     interactions: List[CandidateInteraction] = []
     interviewSchedules: List[InterviewSchedule] = []
@@ -103,15 +141,17 @@ class Application(Document, ApplicationBase):
             [("appliedDate", -1)],
             "source",
             "company",
-            "dob",
+            "companyId",
+            "dob"
         ]
 
 
 # ===========================================================
-# REFRESH TOKEN
+# 🔑 REFRESH TOKEN
 # ===========================================================
 class RefreshToken(Document):
     id: Optional[PydanticObjectId] = None
+
     user_id: PydanticObjectId
     token: str
     expires_at: datetime
@@ -120,12 +160,12 @@ class RefreshToken(Document):
         name = "refresh_tokens"
         indexes = [
             "user_id",
-            [("expires_at", 1)],
+            [("expires_at", 1)]
         ]
 
 
 # ===========================================================
-# EMAIL TRACKING
+# 📧 EMAIL TRACKING
 # ===========================================================
 class EmailTracking(Document):
     id: Optional[PydanticObjectId] = None
@@ -154,13 +194,42 @@ class EmailTracking(Document):
     lastOpenSource: Optional[str] = None
     openConfidence: Optional[str] = None
 
+    # ✅ SaaS ready
+    companyId: Optional[PydanticObjectId] = None
+
     class Settings:
         name = "email_tracking"
-        indexes = ["trackingId", "applicationId", "candidateEmail"]
+        indexes = [
+            "trackingId",
+            "applicationId",
+            "candidateEmail",
+            "companyId"
+        ]
 
 
 # ===========================================================
-# 🔥 BITRIX PORTAL (NEW)
+# 🔗 INTEGRATION (BITRIX ETC)
+# ===========================================================
+class Integration(Document):
+    id: Optional[PydanticObjectId] = None
+
+    member_id: str
+    domain: Optional[str] = None
+
+    access_token: str
+    refresh_token: Optional[str] = None
+    expires_at: Optional[datetime] = None
+
+    # ✅ SaaS ready
+    companyId: Optional[PydanticObjectId] = None
+
+    class Settings:
+        name = "integrations"
+        indexes = ["member_id", "companyId"]
+
+
+# ===========================================================
+# 🌐 PORTAL (BITRIX)
 # ===========================================================
 class Portal(Document):
     id: Optional[PydanticObjectId] = None
@@ -169,40 +238,11 @@ class Portal(Document):
     access_token: str
     refresh_token: Optional[str] = None
     domain: Optional[str] = None
-    expires_at: datetime
+    expires_at: Optional[datetime] = None
+
+    # ✅ SaaS ready
+    companyId: Optional[PydanticObjectId] = None
 
     class Settings:
         name = "portals"
-        indexes = [
-            "member_id",
-            [("expires_at", 1)],
-        ]
-
-
-# ===========================================================
-# 🔥 BITRIX INTEGRATION (NEW)
-# ===========================================================
-class Integration(Document):
-    id: Optional[PydanticObjectId] = None
-
-    user_id: PydanticObjectId
-    crm_type: str = "BITRIX"
-
-    access_token: str
-    refresh_token: Optional[str] = None
-    api_domain: Optional[str] = None
-
-    member_id: str
-    expires_at: datetime
-
-    status: str = "ACTIVE"
-    last_error: Optional[str] = None
-    last_tested_at: Optional[datetime] = None
-
-    class Settings:
-        name = "integrations"
-        indexes = [
-            "user_id",
-            "member_id",
-            [("expires_at", 1)],
-        ]
+        indexes = ["member_id", "companyId"]

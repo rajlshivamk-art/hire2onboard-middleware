@@ -120,13 +120,18 @@ export const onboarding = {
 
 export const api = {
     auth: {
-        register: async (name: string, email: string, password: string) => {
-            const response = await apiClient.post(
-                '/auth/register',
-                { name, email, password }
-            );
-            return response.data;
+        // ✅ SaaS Company Registration
+        registerCompany: async (data: {
+            admin_name: string;
+            email: string;
+            password: string;
+            company_name: string;
+        }) => {
+            const res = await apiClient.post('/auth/register-company', data);
+            return res.data;
         },
+
+        // ✅ Login
         login: async (email: string, password: string) => {
             const response = await apiClient.post<{
                 access_token: string;
@@ -136,14 +141,17 @@ export const api = {
             setAccessToken(response.data.access_token);
             return response.data;
         },
+
         logout: async () => {
             await apiClient.post('/auth/logout');
             setAccessToken(null);
         },
+
         forgotPassword: async (email: string) => {
             const response = await apiClient.post('/auth/forgot-password', { email });
             return response.data;
         },
+
         resetPassword: async (token: string, newPassword: string) => {
             const response = await apiClient.post('/auth/reset-password', {
                 token,
@@ -151,12 +159,14 @@ export const api = {
             });
             return response.data;
         },
+
         refreshAccessToken: async () => {
             const response = await apiClient.post<{ access_token: string }>(
                 '/auth/refresh',
                 {},
                 { withCredentials: true }
             );
+
             const { access_token } = response.data;
             setAccessToken(access_token);
             return access_token;

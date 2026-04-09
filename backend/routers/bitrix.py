@@ -1,9 +1,10 @@
-from fastapi import APIRouter, Request, Response
+from fastapi import APIRouter, Request, Response, Depends
 from fastapi.responses import HTMLResponse, RedirectResponse
 from datetime import datetime, timedelta
 
 from backend.config import settings
-from backend.models import Portal, Integration
+from backend.models import Portal, Integration, User
+from backend.routers.auth import get_current_user_optional  # ✅ SAFE OPTIONAL AUTH
 
 router = APIRouter(prefix="/bitrix", tags=["Bitrix"])
 
@@ -14,7 +15,10 @@ FRONTEND_URL = settings.FRONTEND_URL
 # POST /install → Bitrix Marketplace install
 # ===========================================================
 @router.post("/install", response_class=HTMLResponse)
-async def install(request: Request):
+async def install(
+    request: Request,
+    current_user: User = Depends(get_current_user_optional)  # ✅ OPTIONAL (Bitrix safe)
+):
     try:
         body = await request.json()
         query = dict(request.query_params)
@@ -30,7 +34,9 @@ async def install(request: Request):
 
         expires_at = datetime.utcnow() + timedelta(seconds=AUTH_EXPIRES)
 
-        # ✅ Beanie UPSERT
+        # ✅ SaaS: resolve companyId (if user context exists)
+        company_id = str(current_user.companyId) if current_user and current_user.companyId else None
+
         existing = await Portal.find_one(Portal.member_id == member_id)
 
         if existing:
@@ -38,7 +44,13 @@ async def install(request: Request):
             existing.refresh_token = REFRESH_ID
             existing.domain = DOMAIN
             existing.expires_at = expires_at
+
+            # ✅ SaaS FIX
+            if company_id:
+                existing.companyId = company_id
+
             await existing.save()
+
         else:
             await Portal(
                 member_id=member_id,
@@ -46,6 +58,7 @@ async def install(request: Request):
                 refresh_token=REFRESH_ID,
                 domain=DOMAIN,
                 expires_at=expires_at,
+                companyId=company_id  # ✅ CRITICAL
             ).insert()
 
         print("✅ Portal saved:", member_id)

@@ -366,3 +366,14 @@ html { font-size: var(--font-size); }
   background: linear-gradient(180deg, rgba(99,102,241,0.7), rgba(79,70,229,0.9));
 }
 *::-webkit-scrollbar-corner { background: transparent; }
+
+/* ── Native select dropdown fix ── */
+select {
+  background-color: #0d0840;
+  color-scheme: dark;
+}
+
+select option {
+  background-color: #0d0840;
+  color: rgba(255, 255, 255, 0.85);
+}

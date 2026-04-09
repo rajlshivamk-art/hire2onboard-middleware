@@ -2,9 +2,11 @@ from fastapi import APIRouter, HTTPException, Query, Security, Depends
 from typing import List
 from fastapi.security import APIKeyHeader
 from datetime import datetime, timedelta
-from backend.models import EmailTracking, Application, Job
+from backend.models import EmailTracking, Application, Job, User
 from bson import ObjectId
 import os
+
+from backend.routers.auth import get_current_user  # ✅ NEW
 
 router = APIRouter(
     prefix="/ghosting",
@@ -14,13 +16,15 @@ router = APIRouter(
 API_KEY = os.getenv("GHOSTING_API_KEY")
 api_key_header = APIKeyHeader(name="X-API-Key", auto_error=False)
 
+
 async def verify_api_key(api_key: str = Security(api_key_header)):
     if not api_key or api_key != API_KEY:
         raise HTTPException(status_code=401, detail="Invalid or missing API key")
     return api_key
 
+
 # --------------------------------------
-# Helper: Serialize Previous Employments
+# Helper
 # --------------------------------------
 def serialize_previous_employments(app):
     previous_employments = []
@@ -39,10 +43,16 @@ def serialize_previous_employments(app):
 
 
 # --------------------------------------
-# Get interaction summary for one application
+# INTERACTION (SaaS SAFE)
 # --------------------------------------
-@router.get("/interaction/{application_id}", dependencies=[Depends(verify_api_key)])
-async def get_interaction(application_id: str):
+@router.get(
+    "/interaction/{application_id}",
+    dependencies=[Depends(verify_api_key)]
+)
+async def get_interaction(
+    application_id: str,
+    current_user: User = Depends(get_current_user)   # ✅ NEW
+):
     tracking = await EmailTracking.find_one(
         EmailTracking.applicationId == application_id
     )
@@ -54,6 +64,10 @@ async def get_interaction(application_id: str):
         app = await Application.find_one({"_id": ObjectId(tracking.applicationId)})
     except Exception:
         app = None
+
+    # ✅ SaaS FIX
+    if app and app.companyId != current_user.companyId:
+        raise HTTPException(status_code=403, detail="Cross-company access denied")
 
     candidate_info = None
 
@@ -97,11 +111,16 @@ async def get_interaction(application_id: str):
 
 
 # --------------------------------------
-# List candidates who might be ghosting
+# GHOSTED LIST (SaaS SAFE)
 # --------------------------------------
-@router.get("/ghosted", response_model=List[dict], dependencies=[Depends(verify_api_key)])
+@router.get(
+    "/ghosted",
+    response_model=List[dict],
+    dependencies=[Depends(verify_api_key)]
+)
 async def get_ghosted_candidates(
-    hours: int = Query(48, description="Hours since last interaction")
+    hours: int = Query(48),
+    current_user: User = Depends(get_current_user)   # ✅ NEW
 ):
     cutoff_time = datetime.utcnow() - timedelta(hours=hours)
 
@@ -125,6 +144,10 @@ async def get_ghosted_candidates(
         if not app:
             continue
 
+        # ✅ SaaS FIX
+        if app.companyId != current_user.companyId:
+            continue
+
         ghosted_list.append({
             "applicationId": str(t.applicationId),
             "companyName": getattr(app, "company", None),
@@ -143,10 +166,16 @@ async def get_ghosted_candidates(
 
 
 # --------------------------------------
-# List all tracked applications
+# ALL TRACKED (SaaS SAFE)
 # --------------------------------------
-@router.get("/all-tracked", response_model=List[dict], dependencies=[Depends(verify_api_key)])
-async def get_all_tracked():
+@router.get(
+    "/all-tracked",
+    response_model=List[dict],
+    dependencies=[Depends(verify_api_key)]
+)
+async def get_all_tracked(
+    current_user: User = Depends(get_current_user)   # ✅ NEW
+):
     tracked_docs = await EmailTracking.find().to_list(None)
 
     result = []
@@ -156,6 +185,10 @@ async def get_all_tracked():
             app = await Application.find_one({"_id": ObjectId(t.applicationId)})
         except Exception:
             app = None
+
+        # ✅ SaaS FIX
+        if app and app.companyId != current_user.companyId:
+            continue
 
         candidate_info = None
 
@@ -201,16 +234,25 @@ async def get_all_tracked():
 
 
 # --------------------------------------
-# Reset tracking manually
+# RESET TRACKING (SaaS SAFE)
 # --------------------------------------
 @router.post("/reset/{application_id}")
-async def reset_tracking(application_id: str):
+async def reset_tracking(
+    application_id: str,
+    current_user: User = Depends(get_current_user)   # ✅ NEW
+):
     tracking = await EmailTracking.find_one(
         EmailTracking.applicationId == application_id
     )
 
     if not tracking:
         raise HTTPException(status_code=404, detail="Tracking data not found")
+
+    app = await Application.find_one({"_id": ObjectId(application_id)})
+
+    # ✅ SaaS FIX
+    if app and app.companyId != current_user.companyId:
+        raise HTTPException(status_code=403, detail="Cross-company access denied")
 
     tracking.openCount = 0
     tracking.clickCount = 0

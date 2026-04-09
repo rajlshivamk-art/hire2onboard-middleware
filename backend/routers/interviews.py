@@ -13,6 +13,9 @@ router = APIRouter(
 )
 
 
+# ==========================================================
+# CREATE INTERVIEW
+# ==========================================================
 @router.post("/", response_model=InterviewSchedule)
 async def schedule_interview(
     interview: InterviewSchedule,
@@ -25,28 +28,35 @@ async def schedule_interview(
     if not app:
         raise HTTPException(status_code=404, detail="Application not found")
 
-    # Company isolation (strict multi-tenancy)
-    if app.company != current_user.company:
+    # ✅ SaaS FIX: strict tenant isolation
+    if app.companyId != current_user.companyId:
         raise HTTPException(status_code=403, detail="Cross-company access denied")
-    
+
     app.interviewSchedules.append(interview.model_dump())
 
     try:
         await app.save()
-    except Exception as e:
+    except Exception:
         raise HTTPException(status_code=500, detail="DB save failed")
 
     return app.interviewSchedules[-1]
 
+
+# ==========================================================
+# GET INTERVIEWS
+# ==========================================================
 @router.get("/", response_model=List[InterviewSchedule])
 async def get_interviews(
     applicationId: Optional[str] = None,
     recruiterId: Optional[str] = None,
     current_user: User = Depends(get_current_user)
 ):
-    query = Application.find(Application.company == current_user.company)
+    # ✅ SaaS FIX
+    query = Application.find(
+        Application.companyId == current_user.companyId
+    )
 
-    if applicationId:
+    if applicationId and PydanticObjectId.is_valid(applicationId):
         query = query.find(Application.id == PydanticObjectId(applicationId))
 
     if recruiterId:
@@ -61,6 +71,9 @@ async def get_interviews(
     return interviews
 
 
+# ==========================================================
+# UPDATE INTERVIEW STATUS
+# ==========================================================
 @router.patch("/{applicationId}/{interviewId}", response_model=InterviewSchedule)
 async def update_interview_status(
     applicationId: str,
@@ -75,7 +88,8 @@ async def update_interview_status(
     if not app:
         raise HTTPException(status_code=404, detail="Application not found")
 
-    if app.company != current_user.company:
+    # ✅ SaaS FIX
+    if app.companyId != current_user.companyId:
         raise HTTPException(status_code=403, detail="Cross-company access denied")
 
     for interview in app.interviewSchedules:
@@ -86,6 +100,10 @@ async def update_interview_status(
 
     raise HTTPException(status_code=404, detail="Interview not found")
 
+
+# ==========================================================
+# ASSIGN INTERVIEWER
+# ==========================================================
 @router.patch(
     "/{applicationId}/{interviewId}/assign-interviewer",
     response_model=InterviewSchedule
@@ -103,12 +121,20 @@ async def assign_interviewer(
     if not app:
         raise HTTPException(status_code=404, detail="Application not found")
 
-    if app.company != current_user.company:
+    # ✅ SaaS FIX
+    if app.companyId != current_user.companyId:
         raise HTTPException(status_code=403, detail="Cross-company access denied")
 
     interviewer = await User.get(PydanticObjectId(interviewerId))
-    if not interviewer or interviewer.role not in ["Tech Interviewer", "Interviewer"]:
-        raise HTTPException(status_code=400, detail="Invalid interviewer")
+    if not interviewer:
+        raise HTTPException(status_code=404, detail="Interviewer not found")
+
+    # ✅ Ensure interviewer belongs to SAME company
+    if interviewer.companyId != current_user.companyId:
+        raise HTTPException(status_code=403, detail="Cross-company interviewer assignment denied")
+
+    if interviewer.role not in ["Tech Interviewer", "Interviewer"]:
+        raise HTTPException(status_code=400, detail="Invalid interviewer role")
 
     for interview in app.interviewSchedules:
         if str(interview.id) == interviewId:

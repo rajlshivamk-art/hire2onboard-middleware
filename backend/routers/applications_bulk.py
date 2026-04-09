@@ -22,14 +22,14 @@ async def bulk_upload_applications(
     current_user: User = Depends(get_current_user)
 ) -> Dict[str, Any]:
 
-    # 🔐 ROLE-BASED ACCESS CONTROL
+    # 🔐 ROLE CHECK
     if current_user.role not in ["HR", "Recruiter", "Manager", "Admin"]:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Not authorized"
         )
 
-    # ✅ Validate jobId format
+    # ✅ Validate jobId
     try:
         job_object_id = PydanticObjectId(jobId)
     except Exception:
@@ -38,7 +38,7 @@ async def bulk_upload_applications(
             detail="Invalid jobId"
         )
 
-    # ✅ Verify job exists
+    # ✅ Fetch job
     job = await Job.get(job_object_id)
     if not job:
         raise HTTPException(
@@ -46,14 +46,14 @@ async def bulk_upload_applications(
             detail="Job not found"
         )
 
-    # 🏢 STRICT MULTI-TENANCY CHECK
-    if job.company != current_user.company:
+    # 🔥 SaaS FIX: strict tenant isolation
+    if job.companyId != current_user.companyId:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Cross-company access denied"
         )
 
-    # ✅ Validate file type
+    # ✅ File validation
     if not file.filename.endswith((".xlsx", ".xls")):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -93,7 +93,6 @@ async def bulk_upload_applications(
                 })
                 continue
 
-            # Parse skills safely
             skills_raw = row.get("Skills", "")
             skills = [
                 s.strip()
@@ -106,13 +105,14 @@ async def bulk_upload_applications(
                 name=name,
                 email=email,
                 phone=phone,
-                resumeUrl="excel_bulk_upload",  # Placeholder
+                resumeUrl="excel_bulk_upload",
                 yearsOfExperience=row.get("Years of Experience"),
                 skills=skills,
                 currentSalary=row.get("Current Salary"),
                 expectedSalary=row.get("Expected Salary"),
                 source="excel_bulk_upload",
-                company=current_user.company, 
+                company=current_user.company,         # legacy support
+                companyId=current_user.companyId,     # ✅ SaaS FIX
                 stage="Applied",
                 appliedDate=datetime.utcnow()
             )
@@ -120,7 +120,7 @@ async def bulk_upload_applications(
             applications.append(application)
             inserted_count += 1
 
-        except Exception as e:
+        except Exception:
             skipped_rows.append({
                 "row": index + 2,
                 "reason": "Parsing error"
@@ -132,6 +132,10 @@ async def bulk_upload_applications(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="No valid rows found in Excel"
         )
+
+    # 🔥 CRITICAL SaaS SAFETY (double guarantee)
+    for app in applications:
+        app.companyId = current_user.companyId
 
     try:
         await Application.insert_many(applications)
@@ -146,5 +150,5 @@ async def bulk_upload_applications(
         "inserted": inserted_count,
         "skipped": len(skipped_rows),
         "total_rows": len(df),
-        "skipped_details": skipped_rows[:10]  # limit error preview
+        "skipped_details": skipped_rows[:10]
     }

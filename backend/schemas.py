@@ -45,6 +45,17 @@ class LoginResponse(BaseModel):
     token_type: str = "bearer"
     user: UserResponse
 
+
+# ===========================================================
+# 🏢 COMPANY REGISTER (NEW)
+# ===========================================================
+
+class CompanyRegister(BaseModel):
+    company_name: str
+    admin_name: str
+    email: EmailStr
+    password: str
+
 # Job Schemas
 class JobBase(BaseModel):
     title: str

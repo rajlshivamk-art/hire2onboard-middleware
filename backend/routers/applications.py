@@ -35,10 +35,10 @@ async def get_applications(
 ):
     # Company isolation (UNCHANGED)
     query = (
-        Application.find(Application.company == current_user.company)
-        if current_user.company
-        else Application.find_all()
-    )
+    Application.find(Application.companyId == current_user.companyId)
+    if current_user.companyId
+    else Application.find_all()
+)
 
     if userId:
         if PydanticObjectId.is_valid(userId):
@@ -73,7 +73,9 @@ async def submit_application(application: ApplicationCreate, background_tasks: B
         job = await Job.get(PydanticObjectId(app_data["jobId"]))
         if job:
             app_data["company"] = job.company
+            app_data["companyId"] = job.companyId
             
+    app_data["companyId"] = job.companyId if job else None
     app = Application(**app_data)
     await app.insert()
 
@@ -129,7 +131,10 @@ async def submit_application(application: ApplicationCreate, background_tasks: B
     return app
 
 @router.get("/{applicationId}", response_model=ApplicationResponse)
-async def get_application(applicationId: str):
+async def get_application(
+    applicationId: str,
+    current_user: User = Depends(get_current_user)
+):
     if not PydanticObjectId.is_valid(applicationId):
         raise HTTPException(status_code=404, detail="Application not found")
         
@@ -140,6 +145,10 @@ async def get_application(applicationId: str):
 
 @router.post("/{applicationId}/feedback", response_model=FeedbackResponse)
 async def submit_feedback(applicationId: str, feedback: FeedbackCreate, background_tasks: BackgroundTasks):
+
+    if application.companyId != current_user.companyId:
+         raise HTTPException(status_code=403, detail="Unauthorized")
+
     if not PydanticObjectId.is_valid(applicationId):
          raise HTTPException(status_code=404, detail="Application not found")
          
@@ -736,7 +745,7 @@ async def recruiter_performance_report(
 ):
     
     match_stage = {
-        "company": current_user.company
+        "companyId": current_user.companyId
     }
 
     if recruiter_id:
@@ -1080,7 +1089,10 @@ async def get_recruiters(
             detail="Only role=Recruiter is supported for this endpoint"
         )
 
-    recruiters = await User.find({"company": current_user.company, "role": "Recruiter"}).to_list()
+    recruiters = await User.find({
+    "companyId": current_user.companyId,
+    "role": "Recruiter"
+    }).to_list()
     return recruiters
 
 @router.post("/{applicationId}/evaluation")
@@ -1098,7 +1110,7 @@ async def add_evaluation_score(
         raise HTTPException(404, "Application not found")
 
     # Company isolation
-    if app.company and current_user.company and app.company != current_user.company:
+    if app.companyId and current_user.companyId and app.companyId != current_user.companyId:
         raise HTTPException(status_code=403, detail="Cross-company access denied")
 
     # **Validate roundId**
@@ -1142,7 +1154,7 @@ async def get_evaluation(applicationId: str, current_user: User = Depends(get_cu
         raise HTTPException(404, "Application not found")
 
     # Company isolation
-    if app.company and current_user.company and app.company != current_user.company:
+    if app.companyId and current_user.companyId and app.companyId != current_user.companyId:
         raise HTTPException(status_code=403, detail="Cross-company access denied")
 
     return {
@@ -1267,7 +1279,7 @@ async def get_onboarding_document(
         raise HTTPException(status_code=404, detail="Application not found")
 
     # Authorization
-    if app.company != current_user.company:
+    if app.companyId != current_user.companyId:
         raise HTTPException(status_code=403, detail="Not authorized")
 
     # Find document

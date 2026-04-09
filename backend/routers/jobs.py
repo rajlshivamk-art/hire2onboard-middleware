@@ -36,22 +36,23 @@ async def get_jobs(
     current_user: User = Depends(get_current_user_optional),
     company: Optional[str] = None
 ):
-    # Authenticated users
+    # 🔐 Authenticated users
     if current_user:
-        # Super Admin
+
+        # Super Admin (global access)
         if current_user.email == "administrator":
             query = {}
             if company:
                 query["company"] = company
             return await Job.find(query).sort("-postedDate").to_list()
 
-        # HR (company restricted)
-        if current_user.company:
+        # ✅ SaaS FIX: Strict tenant isolation
+        if current_user.companyId:
             return await Job.find(
-                Job.company == current_user.company
+                Job.companyId == current_user.companyId
             ).sort("-postedDate").to_list()
 
-    # Public job board
+    # 🌐 Public job board (no tenant restriction)
     return await Job.find(
         In(Job.status, ["Active", "Open"])
     ).sort("-postedDate").to_list()
@@ -70,15 +71,16 @@ async def get_job(
     if not job:
         raise HTTPException(status_code=404, detail="Job not found")
 
-    # 🔐 Enforce tenant isolation
+    # 🔐 SaaS tenant enforcement
     if current_user and current_user.email != "administrator":
-        if current_user.company and job.company != current_user.company:
+        if current_user.companyId and job.companyId != current_user.companyId:
             raise HTTPException(
                 status_code=403,
                 detail="Not authorized to view this job"
             )
 
     return job
+
 
 # -------------------- CREATE JOB --------------------
 @router.post("/", response_model=JobResponse, status_code=status.HTTP_201_CREATED)
@@ -91,14 +93,17 @@ async def create_job(
     job_data["postedDate"] = datetime.utcnow()
     job_data["status"] = "Active"
 
-    # Enforce company from authenticated user
+    # 🔥 SaaS FIX: enforce tenant
+    job_data["companyId"] = current_user.companyId
+
+    # Optional backward compatibility
     if current_user.company:
         job_data["company"] = current_user.company
 
     job = Job(**job_data)
     await job.insert()
 
-    # Background ERP sync (non-blocking)
+    # Background ERP sync
     from ..services.erp_service import ERPService
     background_tasks.add_task(
         ERPService.create_job_opening,
@@ -122,9 +127,9 @@ async def update_job(
     if not job:
         raise HTTPException(status_code=404, detail="Job not found")
 
-    # 🔐 Authorization: Admin OR same company HR
+    # 🔐 SaaS tenant enforcement
     if current_user.email != "administrator":
-        if not current_user.company or job.company != current_user.company:
+        if not current_user.companyId or job.companyId != current_user.companyId:
             raise HTTPException(
                 status_code=403,
                 detail="Not authorized to update this job"
@@ -151,9 +156,9 @@ async def delete_job(
     if not job:
         raise HTTPException(status_code=404, detail="Job not found")
 
-    # 🔐 Authorization: Admin OR same company HR
+    # 🔐 SaaS tenant enforcement
     if current_user.email != "administrator":
-        if not current_user.company or job.company != current_user.company:
+        if not current_user.companyId or job.companyId != current_user.companyId:
             raise HTTPException(
                 status_code=403,
                 detail="Not authorized to delete this job"
@@ -161,9 +166,12 @@ async def delete_job(
 
     # Cascade delete applications
     from ..models import Application
-    apps = await Application.find(Application.jobId == job_id).to_list()
+    apps = await Application.find(
+        Application.jobId == job_id,
+        Application.companyId == current_user.companyId  # ✅ SaaS safe
+    ).to_list()
+
     for app in apps:
         await app.delete()
 
     await job.delete()
-    return

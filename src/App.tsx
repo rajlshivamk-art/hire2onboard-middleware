@@ -168,11 +168,7 @@ export default function App() {
   }
 
   if (currentScreen === "register") {
-  return (
-    <RegisterPage
-      onRegisterSuccess={() => setCurrentScreen("login")}
-    />
-  );
+  return <RegisterPage onRegisterSuccess={() => setCurrentScreen("login")} />;
 }
 
   // ── LOGIN ──
