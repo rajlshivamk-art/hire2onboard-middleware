@@ -22,6 +22,14 @@ interface RegisterPageProps {
   onRegisterSuccess: () => void;
 }
 
+const autofillFix: React.CSSProperties = {
+  fontFamily: "'Inter', sans-serif",
+  WebkitBoxShadow: "0 0 0px 1000px transparent inset",
+  WebkitTextFillColor: "#ffffff",
+  caretColor: "#ffffff",
+  transition: "background-color 5000s ease-in-out 0s",
+};
+
 export function RegisterPage({ onRegisterSuccess }: RegisterPageProps) {
   const [error, setError] = useState("");
 
@@ -41,10 +49,9 @@ export function RegisterPage({ onRegisterSuccess }: RegisterPageProps) {
         admin_name: data.name,
         email: data.email,
         password: data.password,
-        company_name: data.name + "'s Company", // or add input field
+        company_name: data.name + "'s Company",
       });
 
-      // ✅ redirect back to login
       onRegisterSuccess();
     } catch (err: any) {
       if (err.response?.data?.detail) setError(err.response.data.detail);
@@ -54,7 +61,10 @@ export function RegisterPage({ onRegisterSuccess }: RegisterPageProps) {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center relative overflow-hidden">
+    <div
+      className="min-h-screen flex items-center justify-center relative overflow-hidden"
+      style={{ fontFamily: "'Inter', sans-serif" }}
+    >
 
       {/* Background (same as login) */}
       <div className="absolute inset-0 pointer-events-none">
@@ -80,78 +90,98 @@ export function RegisterPage({ onRegisterSuccess }: RegisterPageProps) {
           backdropFilter: "blur(18px)",
           border: "1px solid rgba(255,255,255,0.25)",
           boxShadow: "0 20px 60px rgba(0,0,0,0.45)",
+          fontFamily: "'Inter', sans-serif",
         }}
       >
         <h2 className="text-center text-2xl text-white font-semibold mb-8">
           Register
         </h2>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-7">
 
           {/* Name */}
-          <input
-            type="text"
-            placeholder="Full Name"
-            {...register("name")}
-            className="w-full bg-transparent border-b border-white/40 pb-2 text-white outline-none placeholder-white/60"
-          />
-          {errors.name && (
-            <p className="text-xs text-red-300">{errors.name.message}</p>
-          )}
+          <div className="flex flex-col gap-1">
+            <input
+              type="text"
+              placeholder="Full Name"
+              {...register("name")}
+              style={autofillFix}
+              className="w-full bg-transparent border-b border-white/40 py-2 text-white outline-none placeholder-white/60 text-sm"
+            />
+            {errors.name && (
+              <p className="text-xs text-red-300 mt-1">{errors.name.message}</p>
+            )}
+          </div>
 
           {/* Email */}
-          <input
-            type="text"
-            placeholder="Email"
-            {...register("email")}
-            className="w-full bg-transparent border-b border-white/40 pb-2 text-white outline-none placeholder-white/60"
-          />
-          {errors.email && (
-            <p className="text-xs text-red-300">{errors.email.message}</p>
-          )}
+          <div className="flex flex-col gap-1">
+            <input
+              type="text"
+              placeholder="Email"
+              {...register("email")}
+              style={autofillFix}
+              className="w-full bg-transparent border-b border-white/40 py-2 text-white outline-none placeholder-white/60 text-sm"
+            />
+            {errors.email && (
+              <p className="text-xs text-red-300 mt-1">{errors.email.message}</p>
+            )}
+          </div>
 
           {/* Password */}
-          <input
-            type="password"
-            placeholder="Password"
-            {...register("password")}
-            className="w-full bg-transparent border-b border-white/40 pb-2 text-white outline-none placeholder-white/60"
-          />
-          {errors.password && (
-            <p className="text-xs text-red-300">{errors.password.message}</p>
-          )}
+          <div className="flex flex-col gap-1">
+            <input
+              type="password"
+              placeholder="Password"
+              {...register("password")}
+              style={autofillFix}
+              className="w-full bg-transparent border-b border-white/40 py-2 text-white outline-none placeholder-white/60 text-sm"
+            />
+            {errors.password && (
+              <p className="text-xs text-red-300 mt-1">{errors.password.message}</p>
+            )}
+          </div>
 
           {/* Confirm Password */}
-          <input
-            type="password"
-            placeholder="Confirm Password"
-            {...register("confirmPassword")}
-            className="w-full bg-transparent border-b border-white/40 pb-2 text-white outline-none placeholder-white/60"
-          />
-          {errors.confirmPassword && (
-            <p className="text-xs text-red-300">
-              {errors.confirmPassword.message}
-            </p>
-          )}
+          <div className="flex flex-col gap-1">
+            <input
+              type="password"
+              placeholder="Confirm Password"
+              {...register("confirmPassword")}
+              style={autofillFix}
+              className="w-full bg-transparent border-b border-white/40 py-2 text-white outline-none placeholder-white/60 text-sm"
+            />
+            {errors.confirmPassword && (
+              <p className="text-xs text-red-300 mt-1">
+                {errors.confirmPassword.message}
+              </p>
+            )}
+          </div>
 
           {/* API Error */}
           {error && <div className="text-xs text-red-300">{error}</div>}
 
           {/* Submit */}
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="w-full py-2.5 rounded-full bg-white text-indigo-700 font-medium hover:bg-gray-200 transition"
-          >
-            {isSubmitting ? "Creating account..." : "Register"}
-          </button>
+          <div className="pt-2">
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              style={{ fontFamily: "'Inter', sans-serif" }}
+              className="w-full py-2.5 rounded-full bg-white text-indigo-700 font-semibold hover:bg-gray-200 transition"
+            >
+              {isSubmitting ? "Creating account..." : "Register"}
+            </button>
+          </div>
 
           {/* Back to login */}
-          <div className="text-center text-sm text-white/70">
+          <div
+            className="text-center text-sm text-white/70"
+            style={{ fontFamily: "'Inter', sans-serif" }}
+          >
             Already have an account?{" "}
             <button
               type="button"
               onClick={onRegisterSuccess}
+              style={{ fontFamily: "'Inter', sans-serif" }}
               className="text-white font-medium hover:underline"
             >
               Login
