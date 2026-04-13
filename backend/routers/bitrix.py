@@ -165,7 +165,7 @@ async def app_launcher(request: Request):
           <body>
             <script>
               BX24.init(function() {{
-                BX24.resizeWindow(1200, 800);
+                BX24.resizeWindow(window.innerWidth, window.innerHeight);
                 window.location.replace("{redirect_url}");
               }});
             </script>

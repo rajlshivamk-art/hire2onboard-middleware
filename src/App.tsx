@@ -112,7 +112,7 @@ export default function App() {
     return (
       <div className="min-h-screen">
         <div className="glass-nav sticky top-0 z-10 px-6 py-5">
-          <div className="max-w-6xl mx-auto flex items-center justify-between">
+          <div className="w-full flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-primary-gradient rounded-xl flex items-center justify-center shadow-primary">
                 <span className="text-white font-bold text-xl">
@@ -204,7 +204,7 @@ export default function App() {
         }}
       />
 
-      <div className="flex h-screen overflow-hidden">
+      <div className="flex w-full h-screen overflow-hidden">
 
         {/* ── Mobile top bar ── */}
         <div className="lg:hidden fixed top-0 left-0 right-0 glass-nav z-40 px-4 py-3">
@@ -333,7 +333,7 @@ export default function App() {
         </aside>
 
         {/* ── Main content ── */}
-        <main className="flex-1 overflow-auto pt-[57px] lg:pt-0">
+        <main className="flex-1 w-full overflow-auto pt-[57px] lg:pt-0">
           {currentScreen === "dashboard" && (
             <Dashboard user={currentUser} navigateTo={navigateTo} />
           )}
