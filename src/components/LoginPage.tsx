@@ -57,7 +57,7 @@ export function LoginPage({
     paddingBottom: '7px',
     paddingRight: '26px',
     color: 'white',
-    fontSize: '13px',
+    fontSize: '18px',
     fontFamily: 'Inter, sans-serif',
     outline: 'none',
     WebkitTextFillColor: 'white',
@@ -71,7 +71,7 @@ export function LoginPage({
   const labelStyle: React.CSSProperties = {
     display: 'block',
     color: 'rgba(255,255,255,0.52)',
-    fontSize: '10px',
+    fontSize: '14px',
     fontWeight: 500,
     marginBottom: '6px',
     fontFamily: 'Inter, sans-serif',
@@ -80,13 +80,13 @@ export function LoginPage({
   };
 
   const fieldStyle: React.CSSProperties = {
-    marginBottom: '20px',
+    marginBottom: '26px',
   };
 
   const errorStyle: React.CSSProperties = {
     color: '#fca5a5',
-    fontSize: '10.5px',
-    marginTop: '4px',
+    fontSize: '13px',
+    marginTop: '6px',
     fontFamily: 'Inter, sans-serif',
   };
 
@@ -199,7 +199,7 @@ export function LoginPage({
           <h2
             style={{
               textAlign: 'center',
-              fontSize: '20px',
+              fontSize: '24px',
               color: 'white',
               fontWeight: 600,
               marginBottom: '28px',
@@ -256,7 +256,7 @@ export function LoginPage({
                   background: 'none',
                   border: 'none',
                   color: 'rgba(255,255,255,0.55)',
-                  fontSize: '11px',
+                  fontSize: '13px',
                   fontFamily: 'Inter, sans-serif',
                   cursor: 'pointer',
                   padding: 0,
@@ -284,7 +284,7 @@ export function LoginPage({
                 background: 'white',
                 color: '#4338ca',
                 fontWeight: 600,
-                fontSize: '14px',
+                fontSize: '16px',
                 fontFamily: 'Inter, sans-serif',
                 border: 'none',
                 cursor: isSubmitting ? 'not-allowed' : 'pointer',
@@ -307,7 +307,7 @@ export function LoginPage({
                   background: 'transparent',
                   color: 'rgba(255,255,255,0.75)',
                   fontWeight: 500,
-                  fontSize: '13px',
+                  fontSize: '15px',
                   fontFamily: 'Inter, sans-serif',
                   border: '1px solid rgba(255,255,255,0.28)',
                   cursor: 'pointer',
@@ -322,7 +322,7 @@ export function LoginPage({
             <div
               style={{
                 textAlign: 'center',
-                fontSize: '12px',
+                fontSize: '14px',
                 color: 'rgba(255,255,255,0.55)',
                 fontFamily: 'Inter, sans-serif',
               }}

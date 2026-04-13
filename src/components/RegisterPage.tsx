@@ -62,7 +62,7 @@ export function RegisterPage({ onRegisterSuccess }: RegisterPageProps) {
     paddingBottom: "7px",
     paddingRight: "26px",
     color: "white",
-    fontSize: "13px",
+    fontSize: "18px",
     fontFamily: "Inter, sans-serif",
     outline: "none",
     WebkitTextFillColor: "white",
@@ -74,7 +74,7 @@ export function RegisterPage({ onRegisterSuccess }: RegisterPageProps) {
   const labelStyle: React.CSSProperties = {
     display: "block",
     color: "rgba(255,255,255,0.52)",
-    fontSize: "10px",
+    fontSize: "14px",
     fontWeight: 500,
     marginBottom: "6px",
     fontFamily: "Inter, sans-serif",
@@ -88,7 +88,7 @@ export function RegisterPage({ onRegisterSuccess }: RegisterPageProps) {
 
   const errorStyle: React.CSSProperties = {
     color: "#fca5a5",
-    fontSize: "10.5px",
+    fontSize: "12px",
     marginTop: "4px",
     fontFamily: "Inter, sans-serif",
   };
@@ -193,7 +193,7 @@ export function RegisterPage({ onRegisterSuccess }: RegisterPageProps) {
           <h2
             style={{
               textAlign: "center",
-              fontSize: "20px",
+              fontSize: "24px",
               color: "white",
               fontWeight: 600,
               marginBottom: "22px",
@@ -323,7 +323,7 @@ export function RegisterPage({ onRegisterSuccess }: RegisterPageProps) {
                   background: "white",
                   color: "#4338ca",
                   fontWeight: 600,
-                  fontSize: "14px",
+                  fontSize: "16px",
                   fontFamily: "Inter, sans-serif",
                   border: "none",
                   cursor: isSubmitting ? "not-allowed" : "pointer",
@@ -338,7 +338,7 @@ export function RegisterPage({ onRegisterSuccess }: RegisterPageProps) {
               <div
                 style={{
                   textAlign: "center",
-                  fontSize: "12px",
+                  fontSize: "14px",
                   color: "rgba(255,255,255,0.55)",
                   fontFamily: "Inter, sans-serif",
                 }}
@@ -354,7 +354,7 @@ export function RegisterPage({ onRegisterSuccess }: RegisterPageProps) {
                     fontWeight: 600,
                     cursor: "pointer",
                     fontFamily: "Inter, sans-serif",
-                    fontSize: "12px",
+                    fontSize: "14px",
                     textDecoration: "underline",
                     padding: 0,
                     marginLeft: "3px",
