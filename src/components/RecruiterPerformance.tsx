@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { api } from "../lib/api";
 import toast from "react-hot-toast";
-import { SmoothSelect } from "./ui/smooth-select";
+
 
 /* ===================== TYPES ===================== */
 
@@ -225,28 +225,29 @@ export const RecruiterPerformanceReport = () => {
 
             {/* Filters */}
             <div className="glass-card border border-white/10 rounded-[28px] p-4 flex flex-wrap gap-4 items-center">
-                <SmoothSelect
-                    value={recruiterId}
-                    onChange={setRecruiterId}
-                    placeholder="All Recruiters"
-                    options={
-                        data?.rows.map((r) => ({
-                            label: r.recruiterName,
-                            value: r.recruiterId,
-                        })) ?? []
-                    }
-                />
+                <select
+    value={recruiterId ?? ""}
+    onChange={(e) => setRecruiterId(e.target.value || undefined)}
+    className="rounded-2xl px-3 py-2 text-sm text-white/90 bg-slate-800 border border-white/10 focus:outline-none focus:ring-1 focus:ring-cyan-500"
+>
+    <option value="">All Recruiters</option>
+    {data?.rows.map((r) => (
+        <option key={r.recruiterId} value={r.recruiterId}>
+            {r.recruiterName}
+        </option>
+    ))}
+</select>
 
-                <SmoothSelect
-                    value={dateRange}
-                    onChange={(v) => setDateRange(v as any)}
-                    placeholder="Custom"
-                    options={[
-                        { label: "Today", value: "today" },
-                        { label: "Last 7 Days", value: "weekly" },
-                        { label: "This Month", value: "monthly" },
-                    ]}
-                />
+<select
+    value={dateRange}
+    onChange={(e) => setDateRange(e.target.value as any)}
+    className="rounded-2xl px-3 py-2 text-sm text-white/90 bg-slate-800 border border-white/10 focus:outline-none focus:ring-1 focus:ring-cyan-500"
+>
+    <option value="">Custom</option>
+    <option value="today">Today</option>
+    <option value="weekly">Last 7 Days</option>
+    <option value="monthly">This Month</option>
+</select>
 
                 <input
                     type="date"
