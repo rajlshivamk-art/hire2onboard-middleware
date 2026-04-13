@@ -1,7 +1,7 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --font-size: 16px;
+  --font-size: 18px;
 
   /* Glass theme tokens */
   --glass-bg: rgba(255, 255, 255, 0.06);
@@ -376,4 +376,14 @@ select {
 select option {
   background-color: #0d0840;
   color: rgba(255, 255, 255, 0.85);
+}
+
+html {
+  font-size: var(--font-size);
+}
+
+#root {
+  transform: scale(1.08);
+  transform-origin: top left;
+  width: 92%;
 }

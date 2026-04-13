@@ -206,8 +206,9 @@
   }
 
   html,
-  :host {
-    -webkit-text-size-adjust: 100%;
+:host {
+   font-size: 18px; /* 🔥 force bigger UI */
+   -webkit-text-size-adjust: 100%;
     tab-size: 4;
     line-height: 1.5;
     font-family: var(--default-font-family, ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji");
@@ -2506,7 +2507,7 @@
 }
 
 :root {
-  --font-size: 16px;
+  --font-size: 18px;
   --background: #fff;
   --foreground: oklch(.145 0 0);
   --card: #fff;
