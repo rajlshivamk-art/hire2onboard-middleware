@@ -69,7 +69,7 @@ async def install(
         return HTMLResponse(f"""
         <html><body>
         <script>
-            window.top.location.href = "{FRONTEND_URL}/dashboard/integrations";
+            window.location.href = "{FRONTEND_URL}/dashboard/integrations";
         </script>
         </body></html>
         """)
@@ -87,7 +87,7 @@ async def install_redirect():
     return HTMLResponse(f"""
         <html><body>
             <script>
-                window.top.location.href = "{FRONTEND_URL}/dashboard/integrations";
+                window.location.href = "{FRONTEND_URL}/dashboard/integrations";
             </script>
         </body></html>
     """)
