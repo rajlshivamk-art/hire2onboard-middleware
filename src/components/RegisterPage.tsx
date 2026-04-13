@@ -338,7 +338,7 @@ export function RegisterPage({ onRegisterSuccess }: RegisterPageProps) {
               <div
                 style={{
                   textAlign: "center",
-                  fontSize: "14px",
+                  fontSize: "16px",
                   color: "rgba(255,255,255,0.55)",
                   fontFamily: "Inter, sans-serif",
                 }}

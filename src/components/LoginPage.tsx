@@ -322,7 +322,7 @@ export function LoginPage({
             <div
               style={{
                 textAlign: 'center',
-                fontSize: '14px',
+                fontSize: '16px',
                 color: 'rgba(255,255,255,0.55)',
                 fontFamily: 'Inter, sans-serif',
               }}
@@ -338,7 +338,7 @@ export function LoginPage({
                   fontWeight: 600,
                   cursor: 'pointer',
                   fontFamily: 'Inter, sans-serif',
-                  fontSize: '12px',
+                  fontSize: '16px',
                   textDecoration: 'underline',
                   padding: 0,
                   marginLeft: '3px',
