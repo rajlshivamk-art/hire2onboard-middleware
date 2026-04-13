@@ -1,10 +1,10 @@
 from fastapi import APIRouter, Request, Response, Depends
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.responses import HTMLResponse
 from datetime import datetime, timedelta
 
 from backend.config import settings
 from backend.models import Portal, Integration, User
-from backend.routers.auth import get_current_user_optional  # ✅ SAFE OPTIONAL AUTH
+from backend.routers.auth import get_current_user_optional
 
 router = APIRouter(prefix="/bitrix", tags=["Bitrix"])
 
@@ -12,7 +12,7 @@ FRONTEND_URL = settings.FRONTEND_URL
 
 
 # ===========================================================
-# POST /install → Bitrix Marketplace install
+# ✅ INSTALL (BITRIX MARKETPLACE INSTALL HANDLER)
 # ===========================================================
 @router.post("/install", response_class=HTMLResponse)
 async def install(
@@ -22,7 +22,7 @@ async def install(
     try:
         query = dict(request.query_params)
 
-        # ✅ HANDLE BOTH JSON + FORM (BITRIX FIX)
+        # ✅ HANDLE JSON + FORM (BITRIX sends FORM)
         try:
             body = await request.json()
         except:
@@ -66,12 +66,18 @@ async def install(
 
         print("✅ Portal saved:", member_id)
 
-        return HTMLResponse(f"""
-        <html><body>
-        <script>
-            window.location.href = "{FRONTEND_URL}/dashboard/integrations";
-        </script>
-        </body></html>
+        # ✅ IMPORTANT: Finish install (NO redirect here)
+        return HTMLResponse("""
+        <html>
+          <head>
+            <script src="//api.bitrix24.com/api/v1/"></script>
+          </head>
+          <body>
+            <script>
+              BX24.installFinish();
+            </script>
+          </body>
+        </html>
         """)
 
     except Exception as e:
@@ -80,26 +86,36 @@ async def install(
 
 
 # ===========================================================
-# GET /install → fallback redirect
+# OPTIONAL GET INSTALL (fallback)
 # ===========================================================
 @router.get("/install", response_class=HTMLResponse)
 async def install_redirect():
-    return HTMLResponse(f"""
-        <html><body>
-            <script>
-                window.location.href = "{FRONTEND_URL}/dashboard/integrations";
-            </script>
-        </body></html>
+    return HTMLResponse("""
+    <html>
+      <head>
+        <script src="//api.bitrix24.com/api/v1/"></script>
+      </head>
+      <body>
+        <script>
+          BX24.installFinish();
+        </script>
+      </body>
+    </html>
     """)
 
 
 # ===========================================================
-# POST /uninstall → Bitrix uninstall webhook
+# ✅ UNINSTALL
 # ===========================================================
 @router.post("/uninstall")
 async def uninstall(request: Request):
     try:
-        body = await request.json()
+        try:
+            body = await request.json()
+        except:
+            form = await request.form()
+            body = dict(form)
+
         member_id = body.get("member_id")
 
         if member_id:
@@ -115,9 +131,9 @@ async def uninstall(request: Request):
 
 
 # ===========================================================
-# ALL /app → App launcher inside Bitrix
+# ✅ APP (MAIN UI INSIDE BITRIX IFRAME)
 # ===========================================================
-@router.api_route("/app", methods=["GET", "POST"])
+@router.api_route("/app", methods=["GET", "POST"], response_class=HTMLResponse)
 async def app_launcher(request: Request):
     try:
         query_params = dict(request.query_params)
@@ -132,7 +148,31 @@ async def app_launcher(request: Request):
 
         redirect_url = f"{FRONTEND_URL}/dashboard/integrations?{query_string}"
 
-        return RedirectResponse(url=redirect_url)
+        # ✅ PROPER IFRAME LOAD (NO WHITE BORDER)
+        return HTMLResponse(f"""
+        <html>
+          <head>
+            <script src="//api.bitrix24.com/api/v1/"></script>
+            <style>
+              html, body {{
+                margin: 0;
+                padding: 0;
+                height: 100%;
+                overflow: hidden;
+              }}
+            </style>
+          </head>
+          <body>
+            <script>
+              BX24.init(function() {{
+                BX24.resizeWindow(1200, 800);
+                window.location.replace("{redirect_url}");
+              }});
+            </script>
+          </body>
+        </html>
+        """)
 
-    except Exception:
-        return Response(content="OK", status_code=200)
+    except Exception as e:
+        print("❌ /app error:", str(e))
+        return Response(content="ERROR", status_code=500)
