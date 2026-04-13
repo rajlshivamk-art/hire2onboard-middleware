@@ -17,11 +17,17 @@ FRONTEND_URL = settings.FRONTEND_URL
 @router.post("/install", response_class=HTMLResponse)
 async def install(
     request: Request,
-    current_user: User = Depends(get_current_user_optional)  # ✅ OPTIONAL (Bitrix safe)
+    current_user: User = Depends(get_current_user_optional)
 ):
     try:
-        body = await request.json()
         query = dict(request.query_params)
+
+        # ✅ HANDLE BOTH JSON + FORM (BITRIX FIX)
+        try:
+            body = await request.json()
+        except:
+            form = await request.form()
+            body = dict(form)
 
         AUTH_ID = body.get("AUTH_ID")
         REFRESH_ID = body.get("REFRESH_ID")
@@ -34,7 +40,6 @@ async def install(
 
         expires_at = datetime.utcnow() + timedelta(seconds=AUTH_EXPIRES)
 
-        # ✅ SaaS: resolve companyId (if user context exists)
         company_id = str(current_user.companyId) if current_user and current_user.companyId else None
 
         existing = await Portal.find_one(Portal.member_id == member_id)
@@ -45,12 +50,10 @@ async def install(
             existing.domain = DOMAIN
             existing.expires_at = expires_at
 
-            # ✅ SaaS FIX
             if company_id:
                 existing.companyId = company_id
 
             await existing.save()
-
         else:
             await Portal(
                 member_id=member_id,
@@ -58,17 +61,17 @@ async def install(
                 refresh_token=REFRESH_ID,
                 domain=DOMAIN,
                 expires_at=expires_at,
-                companyId=company_id  # ✅ CRITICAL
+                companyId=company_id
             ).insert()
 
         print("✅ Portal saved:", member_id)
 
         return HTMLResponse(f"""
-            <html><body>
-            <script>
-                window.top.location.href = "{FRONTEND_URL}/dashboard/integrations";
-            </script>
-            </body></html>
+        <html><body>
+        <script>
+            window.top.location.href = "{FRONTEND_URL}/dashboard/integrations";
+        </script>
+        </body></html>
         """)
 
     except Exception as e:
