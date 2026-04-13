@@ -1,7 +1,7 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --font-size: 18px;
+  --font-size: 19px;
 
   /* Glass theme tokens */
   --glass-bg: rgba(255, 255, 255, 0.06);

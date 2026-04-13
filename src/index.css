@@ -207,7 +207,7 @@
 
   html,
 :host {
-   font-size: 18px; /* 🔥 force bigger UI */
+   font-size: 19px; /* 🔥 force bigger UI */
    -webkit-text-size-adjust: 100%;
     tab-size: 4;
     line-height: 1.5;
