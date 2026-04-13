@@ -32,7 +32,7 @@ export function JobManagement({ user, navigateTo }: JobManagementProps) {
   };
 
   return (
-    <div className="p-4 md:p-6 lg:p-8">
+    <div className="w-full h-full p-2">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 md:mb-8">
         <div>
           <h1 className="text-white/90 mb-2">Job Postings</h1>

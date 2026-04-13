@@ -354,7 +354,7 @@ function Column({ stage, candidates, user, onCardClick, onDrop, onHeaderClick }:
     }), [candidates, selectedJobId, searchQuery, dateFilter, customStartDate, customEndDate, specificDate, sortBy]);
     return (
       <DndProvider backend={HTML5Backend}>
-        <div className="p-4 md:p-6 lg:p-8">
+        <div className="w-full h-full p-2">
           <div className="mb-6">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
               <h1 className="text-white/90 mb-2">Recruitment Pipeline</h1>

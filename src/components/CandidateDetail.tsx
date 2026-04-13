@@ -320,7 +320,7 @@ export function CandidateDetail({
   const nextStage = getNextStage(candidate.stage);
 
   return (
-    <div className="p-4 md:p-6 lg:p-8">
+    <div className="w-full h-full p-2">
       <button
         onClick={() => navigateTo("pipeline")}
         className="flex items-center gap-2 text-white/60 hover:text-white/90 mb-4 md:mb-6"

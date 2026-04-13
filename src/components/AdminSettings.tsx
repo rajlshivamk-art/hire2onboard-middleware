@@ -246,7 +246,7 @@ export function AdminSettings() {
   };
 
   return (
-    <div className="p-4 md:p-6 lg:p-8">
+    <div className="w-full h-full p-2">
       <div className="mb-6 md:mb-8">
         <h1 className="text-white/90 mb-2">Admin Settings</h1>
         <p className="text-white/60">Manage user roles and permissions</p>

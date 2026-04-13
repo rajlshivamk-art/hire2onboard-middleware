@@ -180,7 +180,7 @@ export function Dashboard({ user, navigateTo }: DashboardProps) {
   }
 
   return (
-    <div className="p-4 md:p-6 lg:p-8">
+    <div className="w-full h-full p-2">
 
       {/* ── Header ── */}
       <div className="mb-6 md:mb-8 flex flex-col xl:flex-row xl:items-center justify-between gap-4">
