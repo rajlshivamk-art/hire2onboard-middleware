@@ -159,6 +159,14 @@ export const api = {
             });
             return response.data;
         },
+        
+        setPassword: async (token: string, newPassword: string) => {
+            const response = await apiClient.post('/auth/set-password', {
+                token,
+                new_password: newPassword,
+            });
+            return response.data;
+        },
 
         refreshAccessToken: async () => {
             const response = await apiClient.post<{ access_token: string }>(

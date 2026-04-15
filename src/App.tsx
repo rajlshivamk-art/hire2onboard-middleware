@@ -19,6 +19,7 @@ import { User } from "./types";
 import { api } from "./lib/api";
 import { OnboardingUploadPage } from "./components/DocsUpload";
 import { RegisterPage } from "./components/RegisterPage";
+import SetPasswordPage from "./components/SetPasswordPage";
 
 const urlParams = new URLSearchParams(window.location.search);
 const resetToken = urlParams.get('token');
@@ -44,7 +45,7 @@ export default function App() {
 
   useEffect(() => {
     if (resetToken) {
-      setCurrentScreen("reset-password");
+      setCurrentScreen("set-password");
       return;
     }
     if (uploadToken) {
@@ -149,6 +150,7 @@ export default function App() {
 
   // ── RESET PASSWORD ──
   if (currentScreen === "reset-password" && resetToken) {
+    
     return (
       <ResetPasswordPage
         token={resetToken}
@@ -156,6 +158,14 @@ export default function App() {
       />
     );
   }
+
+  // ── SET PASSWORD ──
+  if (currentScreen === "set-password" && resetToken) {
+  return (
+    <SetPasswordPage />
+  );
+}
+
 
   // ── FORGOT PASSWORD ──
   if (currentScreen === "forgot-password") {

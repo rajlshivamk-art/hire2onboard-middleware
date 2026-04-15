@@ -33,7 +33,7 @@ class Company(Document):
 class User(Document, UserBase):
     id: Optional[PydanticObjectId] = None
 
-    password: str
+    password: Optional[str] = None
 
     # 🔥 OLD FIELD (KEEP - backward compatibility)
     company: Optional[str] = None

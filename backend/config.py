@@ -22,6 +22,8 @@ class Settings(BaseSettings):
     # Cors - Explicitly list origins because allow_credentials=True doesn't work with "*"
     CORS_ORIGINS: str = "http://localhost:5173,https://hrms-3nbj.onrender.com,https://hrms-recruitment-portal.onrender.com"
 
+    
+
     # Email Settings
     MAIL_USERNAME: str = "kunal.s@indianwellness.org"
     MAIL_PASSWORD: str = "Kunal@s1234"
@@ -34,6 +36,9 @@ class Settings(BaseSettings):
     USE_CREDENTIALS: bool = True
     VALIDATE_CERTS: bool = True
     
+    EMAIL_SERVICE_URL: str = "https://email-middleware-qyrt.onrender.com"
+    EMAIL_API_KEY: str = "averlon-mail-2026!"
+
     # Auto-detect Render environment
     ENVIRONMENT: str = "production" if os.environ.get("RENDER") else "development"
 

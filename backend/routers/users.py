@@ -1,5 +1,10 @@
 from fastapi import APIRouter, HTTPException, status, Depends
 from typing import List
+from datetime import datetime, timedelta
+import secrets
+
+from backend.config import settings
+from backend.utils.email_service import send_email
 from ..models import User
 from ..schemas import UserCreate, UserResponse, UserUpdate
 from beanie import PydanticObjectId
@@ -17,17 +22,14 @@ router = APIRouter(
 @router.get("/", response_model=List[UserResponse])
 async def get_users(current_user: User = Depends(get_current_user)):
 
-    # Super Admin → all users
     if current_user.email == "administrator":
         return await User.find_all().to_list()
 
-    # ✅ SaaS: strict tenant isolation
     if current_user.companyId:
-        return await User.find(
-            User.companyId == current_user.companyId
-        ).to_list()
+        return await User.find(User.companyId == current_user.companyId).to_list()
 
     return []
+
 
 
 # ==========================================================
@@ -52,8 +54,9 @@ async def get_erp_employees(company: str, current_user: User = Depends(get_curre
     return await ERPService.get_employees_by_company(company)
 
 
+
 # ==========================================================
-# IMPORT USER (FIXED)
+# IMPORT USER (UPDATED - NO DEFAULT PASSWORD)
 # ==========================================================
 @router.post("/import", response_model=UserResponse)
 async def import_user(employee_data: dict, current_user: User = Depends(get_current_user)):
@@ -69,27 +72,63 @@ async def import_user(employee_data: dict, current_user: User = Depends(get_curr
     if existing:
         return existing
 
-    from .auth import pwd_context
+    token = secrets.token_urlsafe(32)
 
-    new_user = User(
-        name=employee_data.get("employee_name"),
-        email=email,
-        role="HR",
-        company=employee_data.get("company"),
-        companyId=current_user.companyId,   # ✅ SaaS FIX
-        password=pwd_context.hash("password123"),
-        canViewSalary=True,
-        canMoveCandidate=True,
-        canEditJob=True,
-        canManageUsers=True
-    )
+    user_data = {
+        "name": employee_data.get("employee_name"),
+        "email": email,
+        "role": "HR",
+        "company": employee_data.get("company"),
+        "companyId": current_user.companyId,
+        "password": None,
+        "reset_token": token,
+        "reset_token_expiry": datetime.utcnow() + timedelta(hours=24),
+        "canViewSalary": True,
+        "canMoveCandidate": True,
+        "canEditJob": True,
+        "canManageUsers": True
+    }
 
+    new_user = User(**user_data)
     await new_user.insert()
+
+    # 🔥 SEND EMAIL
+    set_password_link = f"{settings.FRONTEND_URL}/?token={token}"
+
+    try:
+        await send_email(
+            to=new_user.email,
+            subject="Averlon : Complete Your Account Setup",
+            html=f"""
+            <h2>Welcome to Averlon Hire2Onboard Platform</h2>
+
+            <p>Hello,</p>
+
+            <p>Your account has been successfully created by your organization.</p>
+
+            <p>Please click the button below to securely set your password:</p>
+            <a href="{set_password_link}">Set Password</a>
+            <p>This link is valid for 24 hours.</p>
+
+            <p>If you did not expect this email, you can safely ignore it.</p>
+
+            <hr/>
+
+            <p style="font-size:12px;color:#666;">
+            Averlon HR System • This is an automated message <br/>
+            For support, contact: support@averlonworld.com
+            </p>
+            """
+        )
+    except Exception as e:
+        print("Email failed:", e)
+
     return new_user
 
 
+
 # ==========================================================
-# CREATE USER (CRITICAL FIX)
+# CREATE USER (FIXED - EMAIL + RETURN)
 # ==========================================================
 @router.post("/", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
 async def create_user(user: UserCreate, current_user: User = Depends(get_current_user)):
@@ -100,23 +139,45 @@ async def create_user(user: UserCreate, current_user: User = Depends(get_current
 
     user_data = user.model_dump()
 
-    from .auth import pwd_context
-    user_data["password"] = pwd_context.hash(user_data["password"])
+    # 🔥 GENERATE SET PASSWORD TOKEN
+    token = secrets.token_urlsafe(32)
 
-    # ✅ SaaS FIX: force tenant binding
+    user_data["password"] = None
+    user_data["reset_token"] = token
+    user_data["reset_token_expiry"] = datetime.utcnow() + timedelta(hours=24)
+
+    # ✅ SaaS binding
     user_data["companyId"] = current_user.companyId
 
     if current_user.email == "administrator":
-        if not user_data.get("company"):
-            user_data["company"] = "Default Company"
+        user_data["company"] = user_data.get("company") or "Default Company"
     else:
         user_data["company"] = current_user.company
 
     new_user = User(**user_data)
     await new_user.insert()
+
+    # 🔥 SEND EMAIL (THIS WAS MISSING)
+    set_password_link = f"{settings.FRONTEND_URL}/?token={token}"
+
+    try:
+        await send_email(
+            to=new_user.email,
+            subject="Set Your Password",
+            html=f"""
+            <h2>Welcome!</h2>
+            <p>Your account has been created.</p>
+            <p>Click below to set your password:</p>
+            <a href="{set_password_link}">Set Password</a>
+            <p>This link expires in 24 hours.</p>
+            """
+        )
+    except Exception as e:
+        print("EMAIL ERROR:", e)
+
+    # ✅ CRITICAL FIX (THIS SOLVES 500 ERROR)
     return new_user
-
-
+   
 # ==========================================================
 # GET USER (SECURE)
 # ==========================================================

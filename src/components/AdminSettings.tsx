@@ -179,23 +179,24 @@ export function AdminSettings() {
     resetEdit();
   };
 
-  const onAddUser = async (data: UserFormValues) => {
-    try {
-      // Add default password for new users
-      const userToCreate = {
-        ...data,
-        password: 'password123' // Default password
-      };
-      await api.users.create(userToCreate);
-      await loadUsers();
-      setShowAddModal(false);
-      resetAdd();
-      alert('User created successfully. Default password is "password123"');
-    } catch (error) {
-      console.error('Failed to create user:', error);
-      alert('Failed to create user');
-    }
-  };
+const onAddUser = async (data: UserFormValues) => {
+  try {
+    // ✅ REMOVE DEFAULT PASSWORD
+    const userToCreate = {
+      ...data
+    };
+
+    await api.users.create(userToCreate);
+    await loadUsers();
+    setShowAddModal(false);
+    resetAdd();
+
+    alert('User created successfully. Password setup link has been sent.');
+  } catch (error) {
+    console.error('Failed to create user:', error);
+    alert('Failed to create user');
+  }
+};
 
   const removeUser = async (userId: string) => {
     const userToRemove = users.find(u => u.id === userId);

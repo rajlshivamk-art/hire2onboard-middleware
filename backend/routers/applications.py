@@ -6,7 +6,7 @@ from beanie import PydanticObjectId
 from ..models import Application, Feedback, OnboardingTask, User, Job, EmailTracking
 from ..schemas import ApplicationCreate, ApplicationUpdate, FeedbackCreate, ApplicationResponse, FeedbackResponse, StageUpdate, TaskCreate, OfferCreate, TaskStatusUpdate, CandidateInteraction, UserResponse, EvaluationScore, OnboardingDocument
 from ..utils.files import upload_file_from_stream, get_file_stream, get_gridfs
-from ..utils.email import send_email
+from ..utils.email_Fastmail import send_email
 from .auth import get_current_user # Imported get_current_user
 from ..services.erp_service import ERPService # Added ERPService
 from fastapi import Form, Body

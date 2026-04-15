@@ -20,6 +20,25 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/auth/login", auto_error=False
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
+# ===========================================================
+# SET PASSWORD (NEW API)
+# ===========================================================
+@router.post("/set-password")
+async def set_password(payload: ResetPasswordRequest):
+
+    user = await User.find_one(User.reset_token == payload.token)
+
+    if not user or not user.reset_token_expiry or user.reset_token_expiry < datetime.utcnow():
+        raise HTTPException(400, "Invalid or expired token")
+
+    user.password = hash_password(payload.new_password)
+    user.reset_token = None
+    user.reset_token_expiry = None
+
+    await user.save()
+
+    return {"message": "Password set successfully"}
+
 
 # ===========================================================
 # FIXED PASSWORD VERIFY (REMOVED INSECURE LOGIC)
@@ -29,6 +48,10 @@ def verify_password(plain_password, hashed_password):
         return pwd_context.verify(plain_password, hashed_password)
     except Exception:
         return False
+
+
+def hash_password(password: str) -> str:
+    return pwd_context.hash(password)
 
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
@@ -142,7 +165,14 @@ async def login(response: Response, user_credentials: UserLogin):
 
     user = await User.find_one(User.email == user_credentials.email)
 
-    if not user or not verify_password(user_credentials.password, user.password):
+    # 🔥 NEW CHECK: user must have password set
+    if not user or not user.password:
+        raise HTTPException(
+            status_code=401,
+            detail="Account not activated. Please set your password."
+        )
+
+    if not verify_password(user_credentials.password, user.password):
         raise HTTPException(status_code=401, detail="Incorrect email or password")
 
     if not user.companyId:

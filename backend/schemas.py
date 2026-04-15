@@ -17,7 +17,7 @@ class UserBase(BaseModel):
     isSuperUser: bool = False
 
 class UserCreate(UserBase):
-    password: str
+    password: Optional[str] = None
 
 class UserUpdate(BaseModel):
     name: Optional[str] = None
